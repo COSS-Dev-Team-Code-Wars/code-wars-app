@@ -1,38 +1,33 @@
 /* eslint-disable */ 
-import { Box, Typography } from "@mui/material";
+import Overlay from "./Overlay";
+import { Box, CircularProgress, Typography } from "@mui/material";
 
-const Loading = () => {
+
+/**
+ * Purpose: Displays overlay for loading screen.
+ * Params: None
+ */
+const LoadingOverlay =() =>{
 	return (
-		<Box  
-            sx={{
-                display: 'flex', 
-                height: '100vh',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'rgba(255, 255, 255, 0.1)',
-                boxShadow: '0px 0px 10px 5px rgba(0, 0, 0, 0.5)',
-                backdropFilter: 'blur(10px)',
-            }}
-        >
-            <Box 
-                sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    color: '#FFF',
-                }}	
-            >		
-            <Typography 
-                variant="h4"
-                sx={{
-                    whiteSpace: 'pre-wrap',
-                    textAlign: 'center'
-                }}
-            >
-                LOADING...
-            </Typography>
-            </Box>
-        </Box>
+		<Box sx={{ zIndex: 1650 }}>
+			<Overlay
+				icon={
+					<CircularProgress color="white" />
+				}
+				text={
+					<Typography 
+						variant="body1"
+						sx={{
+							whiteSpace: 'pre-wrap',
+							textAlign: 'center'
+						}}
+					>
+						Loading...
+					</Typography>
+				}
+			/> 
+		</Box>
 	)
 }
 
-export default Loading;
+export default LoadingOverlay;

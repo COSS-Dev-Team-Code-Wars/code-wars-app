@@ -4,6 +4,7 @@ import CustomModal from "./ui/CustomModal";
 import DropdownSelect from "./ui/DropdownSelect";
 import ErrorWindow from "./ui/ErrorWindow";
 import FreezeOverlay from "./widgets/screen-overlays/FreezeOverlay";
+import LoadingOverlay from "./widgets/screen-overlays/Loading";
 import Sidebar from "./ui/Sidebar";
 import SuccessWindow from "./ui/SuccessWindow";
 import Table from "./ui/Table";
@@ -23,6 +24,7 @@ export {
   CustomModal,
   ErrorWindow,
   FreezeOverlay,
+  LoadingOverlay,
   ParticipantsLeaderboard,
   PowerUpList,
   PowerUpType,
