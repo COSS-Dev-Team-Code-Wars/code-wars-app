@@ -20,7 +20,6 @@
     "socket.io-client": "^4.7.4",
     "sweetalert2": "^11.10.5",
     "universal-cookie": "^7.0.2",
-    "uuid": "^9.0.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
