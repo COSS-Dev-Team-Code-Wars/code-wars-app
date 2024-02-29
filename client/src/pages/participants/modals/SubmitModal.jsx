@@ -6,11 +6,8 @@ import SourceIcon from '@mui/icons-material/Source';
 import { Box, Button, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
-import {
-	SuccessWindow
-} from 'components';
+import { SuccessWindow } from 'components';
 
-import { socketClient } from 'socket/socket';
 import { baseURL } from 'utils/constants';
 import { postFetch } from 'utils/apiRequest';
 import { ErrorWindow } from 'components';
@@ -74,18 +71,6 @@ const  SubmitModal = ({
 	const handleSubmit = async () => { 
 		// close submit button modal window
 		setOpen(false);
-
-		// add post request to db here
-		// socketClient.emit("newupload",{
-		// 	filename,
-		// 	content,
-		// 	problemId,
-		// 	problemTitle,
-		// 	possiblePoints,
-		// 	"teamId": JSON.parse(localStorage.getItem("user"))._id,
-		// 	"teamName": JSON.parse(localStorage.getItem("user")).username,
-		// 	totalCases
-		// });
 
 		if (!alreadySubmitted.current) {
 		alreadySubmitted.current = true;

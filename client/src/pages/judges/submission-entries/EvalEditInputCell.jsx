@@ -77,6 +77,8 @@ export default function EvalEditInputCell({props, submissionsList, setSubmission
 			// ask for confirmation of action
 			ConfirmWindow.fire({
 				text: 'Are you sure you want to choose ' + `${currVal}` + ' as the evaluation?',
+				html:
+				'<p>Please take note that submitted evaluations are irreversible.</p>'
 				
 			}).then((res) => {
 				let judgeID = JSON.parse(localStorage?.getItem("user"))?._id;
@@ -85,15 +87,7 @@ export default function EvalEditInputCell({props, submissionsList, setSubmission
 				if (res['isConfirmed']) {
 
 					setConfirmed(true);
-					// websocket for judge evaluation
-					// socketClient.emit("submitEval", {
-					// 	submissionId: row.dbId,
-					// 	evaluation: currVal,
-					// 	judgeId: judgeID,
-					// 	judgeName: judgeName,
-					// 	correctCases: correctTestCases,
-					// 	possiblePoints: row.possible_points
-					// });
+
 					const eResponse = postFetch(`${baseURL}/checksubmission`, {
 						submissionId: row.dbId,
 						evaluation: currVal,
@@ -142,11 +136,6 @@ export default function EvalEditInputCell({props, submissionsList, setSubmission
 			});
 			}
 		}
-		// else if (currVal === "Pending") {
-		// 	// replace with making pending an unclickable option in dropdown select
-		// 	setCurrVal("initialVal")
-		// }
-
 		
 	}, [currVal])
 	
