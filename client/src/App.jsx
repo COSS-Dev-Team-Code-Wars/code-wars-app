@@ -24,6 +24,7 @@ import Cookies from "universal-cookie";
 import { socketClient } from 'socket/socket';
 import AdminLayout from 'pages/layouts/AdminLayout';
 import JudgeLayout from 'pages/layouts/JudgeLayout';
+import ParticipantLayout from 'pages/layouts/ParticipantLayout';
 
 
 
@@ -176,21 +177,23 @@ function App() {
 					{/* Login page */}
 					<Route index element={<LoginPage />} />
 
-					{/* Pages with same backgrounds */}
-					<Route path="/" element={<Layout />}>
-						<Route path="participant/view-all-problems" 
-							element={<ViewAllProblemsPage 
+					{/* Participant Pages */}
+					<Route
+						element={
+							<ParticipantLayout
+								freezeOverlay={freezeOverlay}
 								isLoggedIn={isLoggedIn} 
 								setIsLoggedIn={setIsLoggedIn} 
 								checkIfLoggedIn={checkIfLoggedIn}
 								currRound={currRound}
-								setCurrRound={setCurrRound}
 								isBuyImmunityChecked={buyImmunityChecked}
-								//seconds={sec}
-									/>} />
-						<Route path="participant/view-specific-problem" element={<ViewSpecificProblemPage isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
+							/>
+						}
+					>
+						<Route path="participant/view-all-problems" element={<ViewAllProblemsPage currRound={currRound} />} />
+						<Route path="participant/view-specific-problem" element={<ViewSpecificProblemPage />} />
 					</Route>
-					
+
 					{/* Judge Pages */}
 					<Route
 						element={

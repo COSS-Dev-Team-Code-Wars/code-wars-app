@@ -13,7 +13,10 @@ import {
 import LogoutIcon from '@mui/icons-material/Logout';
 
 import { handleLogout } from 'utils/commonFunctions';
-/*
+import seal from 'assets/UPLB COSS.png';
+
+
+/**
  * Purpose: Displays the topbar component for the participant and judge-related pages.
  * Params:
  *    <Boolean> 	isImg - tells whether 'icon' parameter is an image or not.
@@ -79,7 +82,7 @@ const TopBar = ({
 						}}
 					>
 						{/* Displays either an image or an icon */}
-						{image ? (
+						{isImg ? (
 							<img
 								src={icon}
 								style={{
