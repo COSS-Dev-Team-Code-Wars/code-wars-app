@@ -64,26 +64,6 @@ function App() {
 		//}, 1000);
 	}
 
-	/**
-	 * This will set the common background for all pages (except login page)
-	 */
-	function Layout() {
-		return (
-			<Box
-				style={{
-					backgroundImage: `url(${GeneralBackground})`,
-					backgroundSize: 'cover',
-					height: '100vh',
-					overflow: 'hidden',
-				}}
-				id="commonBox"
-			>
-				{/* Children will be displayed through outlet */}
-				{freezeOverlay ? <div className='fOverlayScreen' style={{zIndex: "10000"}}><FreezeOverlay /></div> : null}
-				<Outlet />
-			</Box>
-		);
-	}
 
 	// state for context API
 	//const [userDetails, setUserDetails] = useContext(userDetailsContext ?? null);
@@ -198,6 +178,7 @@ function App() {
 					<Route
 						element={
 							<JudgeLayout
+								freezeOverlay={freezeOverlay}
 								isLoggedIn={isLoggedIn}
 								setIsLoggedIn={setIsLoggedIn} 
 								checkIfLoggedIn={checkIfLoggedIn} 
