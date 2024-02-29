@@ -189,9 +189,21 @@ function App() {
 								//seconds={sec}
 									/>} />
 						<Route path="participant/view-specific-problem" element={<ViewSpecificProblemPage isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
-						<Route path="judge/submissions" element={<ViewSubmissionsPage isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
 					</Route>
-
+					
+					{/* Judge Pages */}
+					<Route
+						element={
+							<JudgeLayout
+								isLoggedIn={isLoggedIn}
+								setIsLoggedIn={setIsLoggedIn} 
+								checkIfLoggedIn={checkIfLoggedIn} 
+							/>
+						}
+					>
+						<Route path="judge/submissions" element={<ViewSubmissionsPage isLoggedIn={isLoggedIn} />} />
+					</Route>
+					
 					{/* Admin Pages */}
 					<Route
 						element={

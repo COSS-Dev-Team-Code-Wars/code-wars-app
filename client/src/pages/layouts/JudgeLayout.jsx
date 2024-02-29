@@ -39,6 +39,15 @@ const JudgeLayout = ({
   checkIfLoggedIn,
 }) => {
   /**
+   * State handler for overall leaderboard modal window
+   */
+  const [open, setOpen] = useState(false);
+  /**
+   * State handler for rows of overall leaderboard
+   */
+	const [leaderboardRows, setLeaderboardRows] = useState([]);
+
+  /**
    * For logging in
    */
   useEffect(() => { 
@@ -56,7 +65,28 @@ const JudgeLayout = ({
 			setIsLoggedIn(false);
 		}
 
+    /**
+	   * Fetch overall leaderboard data
+	   */
+		async function fetchData() {
+			let currLeaderboard = await getLeaderboard()
+			setLeaderboardRows(currLeaderboard);
+		}
+
+    fetchData()
+    
   }, []);
+
+  /**
+	* Handles opening of modal window for overall leaderboard.
+	*/
+	const handleButton = () => {
+		setOpen(true);
+  }
+  
+  const handleClickAway = () => {
+    setOpen(false);
+  }
   
   return (
     <Box
@@ -77,7 +107,42 @@ const JudgeLayout = ({
 
         // if user is logged in as judge
         : isLoggedIn ?
+          <Box
+            sx={{
+              '& .timeColumn': {
+                fontFamily: 'monospace'
+              }
+            }}
+          >
+            <TopBar
+              isImg={true}
+              icon={seal}
+              title="Code Wars"
+              subtitle="UPLB Computer Science Society"
+              buttonText="VIEW LEADERBOARD"
+              startIcon={<ViewListIcon />}
+              handleButton={handleButton}
+            />
+  
+            {/* Children */}
             <Outlet />
+
+            {/* Overall Leaderboard Modal Window */}
+            <CustomModal isOpen={open} setOpen={setOpen} windowTitle="Leaderboard">
+              <Table
+                // editMode="row" 
+                rows={leaderboardRows}
+                columns={columnsLeaderboard}
+                hideFields={['id', 'totalSpent']}
+                additionalStyles={additionalStylesLeaderboard}
+                pageSize={5}
+                pageSizeOptions={[5, 10]}
+                initialState={{
+                  pagination: { paginationModel: { pageSize: 5 } },
+                }}
+              />
+            </CustomModal>
+          </Box>
 
           // replace with protected page sana
           : <LoadingOverlay />
