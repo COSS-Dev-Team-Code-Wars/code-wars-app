@@ -22,6 +22,8 @@ import { baseURL } from 'utils/constants';
 import { postFetch } from 'utils/apiRequest';
 import Cookies from "universal-cookie";
 import { socketClient } from 'socket/socket';
+import AdminLayout from 'pages/layouts/AdminLayout';
+import JudgeLayout from 'pages/layouts/JudgeLayout';
 
 
 
@@ -169,31 +171,41 @@ function App() {
 
 	return (
 		<ThemeProvider theme={theme}>
-				<Router>
-					<Routes>
-						{/* Login page */}
-						<Route index element={<LoginPage />} />
+			<Router>
+				<Routes>
+					{/* Login page */}
+					<Route index element={<LoginPage />} />
 
-						{/* Pages with same backgrounds */}
-						<Route path="/" element={<Layout />}>
-							<Route path="participant/view-all-problems" 
-								element={<ViewAllProblemsPage 
-									isLoggedIn={isLoggedIn} 
-									setIsLoggedIn={setIsLoggedIn} 
-									checkIfLoggedIn={checkIfLoggedIn}
-									currRound={currRound}
-									setCurrRound={setCurrRound}
-									isBuyImmunityChecked={buyImmunityChecked}
-									//seconds={sec}
-									 />} />
-							<Route path="participant/view-specific-problem" element={<ViewSpecificProblemPage isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
-							<Route path="judge/submissions" element={<ViewSubmissionsPage isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
+					{/* Pages with same backgrounds */}
+					<Route path="/" element={<Layout />}>
+						<Route path="participant/view-all-problems" 
+							element={<ViewAllProblemsPage 
+								isLoggedIn={isLoggedIn} 
+								setIsLoggedIn={setIsLoggedIn} 
+								checkIfLoggedIn={checkIfLoggedIn}
+								currRound={currRound}
+								setCurrRound={setCurrRound}
+								isBuyImmunityChecked={buyImmunityChecked}
+								//seconds={sec}
+									/>} />
+						<Route path="participant/view-specific-problem" element={<ViewSpecificProblemPage isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
+						<Route path="judge/submissions" element={<ViewSubmissionsPage isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
+					</Route>
 
-							<Route path="admin/general" 
-								element={<GeneralOptionsPage 
-									isLoggedIn={isLoggedIn} 
-									setIsLoggedIn={setIsLoggedIn} 
-									checkIfLoggedIn={checkIfLoggedIn} 
+					{/* Admin Pages */}
+					<Route
+						element={
+							<AdminLayout
+								freezeOverlay={freezeOverlay}
+								isLoggedIn={isLoggedIn}
+								setIsLoggedIn={setIsLoggedIn} 
+								checkIfLoggedIn={checkIfLoggedIn} 
+							/>
+						}
+					>
+						<Route path="admin/general" 
+							element={
+								<GeneralOptionsPage 
 									currRound={currRound}
 									setCurrRound={setCurrRound}
 									roundRef={roundRef}
@@ -203,14 +215,16 @@ function App() {
 									buyImmunityChecked={buyImmunityChecked}
 									setFreezeChecked={setFreezeChecked}
 									setBuyImmunityChecked={setBuyImmunityChecked}
-									/>} />
-							<Route path="admin/logs" element={<PowerUpLogs isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
-							<Route path="admin/podium" element={<TopTeamsPage isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} checkIfLoggedIn={checkIfLoggedIn} />} />
+								/>
+							}
+						/>
+						<Route path="admin/logs" element={ <PowerUpLogs /> } />
+						<Route path="admin/podium" element={<TopTeamsPage />} />
+					</Route>
+				</Routes>
 
-						</Route>
-					</Routes>
-					<ToastContainerConfig />
-				</Router>
+				<ToastContainerConfig />
+			</Router>
 		</ThemeProvider>
 	);
 }

@@ -12,7 +12,6 @@ import {
 import {
 	DropdownSelect,
 	ErrorWindow,
-	Sidebar,
 	SuccessWindow,
 	Table
 } from 'components/';
@@ -21,14 +20,13 @@ import {
 	columnsLeaderboard,
 } from 'utils/dummyData';
 import { enterAdminPassword } from 'utils/enterAdminPassword';
-import { useNavigate } from 'react-router-dom';
 
 import { baseURL } from 'utils/constants';
 import { postFetch } from 'utils/apiRequest';
 import getLeaderboard from 'components/widgets/leaderboard/getLeaderboard';
 
-import Loading from 'components/widgets/screen-overlays/Loading';
 import { socketClient } from 'socket/socket';
+
 
 // styling for leaderboard table
 const additionalStyles = {
@@ -41,9 +39,6 @@ const additionalStyles = {
  * Params: None
  */
 const GeneralOptionsPage = ({
-	isLoggedIn,
-	setIsLoggedIn,
-	checkIfLoggedIn,
 	currRound,
 	setCurrRound,
 	roundRef,
@@ -57,24 +52,7 @@ const GeneralOptionsPage = ({
 
 	const [leaderboardRows, setLeaderboardRows] = useState([]);
 
-	// used for client-side routing to other pages
-	const navigate = useNavigate();
-
 	useEffect(() => { 
-		let usertype = JSON.parse(localStorage?.getItem("user"))?.usertype;
-		if (usertype == "judge") {
-			navigate('/judge/submissions');
-		}
-		else if (usertype == "participant") {
-			navigate('/participant/view-all-problems');
-		}
-		else if (usertype == "admin") {
-			checkIfLoggedIn();	
-		}
-		else {
-			setIsLoggedIn(false);
-		}
-
 		/**
 	   * Fetch overall leaderboard data
 	   */
@@ -269,98 +247,87 @@ const GeneralOptionsPage = ({
 
 
 	return (
-		<> 
-		{
-			isLoggedIn ?
-		<Box sx={{ display: 'flex' }}>
-			{/* Sidebar */}
-			<Sidebar />
+		<Stack spacing={7} sx={{ margin:'4em', width:'100%' }}>
 
-			{/* Other components */}
-			<Stack spacing={7} sx={{ margin:'4em', width:'100%' }}>
+			{/* General Options */}
+			<Box>
+				<Typography variant="h4">GENERAL</Typography>  
+				<Typography
+					variant="h6"
+					sx={{
+						display: 'flex',
+						flexDirection: 'row',
+						marginLeft: '4em',
+						marginTop: '2em',
+					}}
+				>
+					{/* Labels */}
+					<Stack spacing={4} sx={{ marginRight: '2em' }}>
+						<span>Freeze all screens</span>
+						<span>Allow buy immunity</span>
+						<span>Logout all sessions</span>
+						<span>Move Round</span>
+					</Stack>
 
-				{/* General Options */}
-				<Box>
-					<Typography variant="h4">GENERAL</Typography>  
-					<Typography
-						variant="h6"
-						sx={{
-							display: 'flex',
-							flexDirection: 'row',
-							marginLeft: '4em',
-							marginTop: '2em',
-						}}
-					>
-						{/* Labels */}
-						<Stack spacing={4} sx={{ marginRight: '2em' }}>
-							<span>Freeze all screens</span>
-							<span>Allow buy immunity</span>
-							<span>Logout all sessions</span>
-							<span>Move Round</span>
-						</Stack>
+					{/* Buttons */}
+					<Stack spacing={3} sx={{ width: '15%' }}>
 
-						{/* Buttons */}
-						<Stack spacing={3} sx={{ width: '15%' }}>
+						{/* Toggle Switch */}
+						<Switch checked={freezeRef.current} onChange={(e) => handleFreeze(e)} />
+						
+						{/* Toggle Switch */}
+						<Switch checked={immunityRef.current} onChange={(e) => handleBuyImmunity(e)} />
+						
+						{/* Apply Button */}
+						<Button
+							variant="contained"
+							color="major"
+							onClick={handleAllLogout}
+							sx={{
+								'&:hover': {
+									bgcolor: 'major.light',
+									color: 'general.main',
+								}
+							}}
+						>
+							Apply
+						</Button>
 
-							{/* Toggle Switch */}
-							<Switch checked={freezeRef.current} onChange={(e) => handleFreeze(e)} />
-							
-							{/* Toggle Switch */}
-							<Switch checked={immunityRef.current} onChange={(e) => handleBuyImmunity(e)} />
-							
-							{/* Apply Button */}
-							<Button
-								variant="contained"
-								color="major"
-								onClick={handleAllLogout}
-								sx={{
-									'&:hover': {
-										bgcolor: 'major.light',
-										color: 'general.main',
-									}
-								}}
-							>
-                Apply
-							</Button>
+						{/* Dropdown Select */}
+						<DropdownSelect
+							isDisabled={false}
+							variant="filled"
+							label="Select Round"
+							minWidth="100px"
+							options={optionsRounds}
+							handleChange={(e) => handleRounds(e.target.value)}
+							value={roundRef.current}
+						/>
+					</Stack>
+				</Typography>
+			</Box>
 
-							{/* Dropdown Select */}
-							<DropdownSelect
-								isDisabled={false}
-								variant="filled"
-								label="Select Round"
-								minWidth="100px"
-								options={optionsRounds}
-								handleChange={(e) => handleRounds(e.target.value)}
-								value={roundRef.current}
-							/>
-						</Stack>
-					</Typography>
-				</Box>
-
-				{/* Overall Leaderboard Table */}
-				<Box>
-					<Typography variant="h4">LEADERBOARD</Typography>
-					<Box sx={{ display: 'flex', justifyContent: 'center' }}>
-						<Box sx={{ width: '65%'}}>
-							<Table
-								rows={leaderboardRows}
-								columns={columnsLeaderboard}
-								hideFields={['id']}
-								additionalStyles={additionalStyles}
-								pageSizeOptions={[5, 7]}
-								pageSize={7}
-								autoHeight
-								initialState={{
-									pagination: { paginationModel: { pageSize: 7 } },
-								}}
-							/>
-						</Box>
+			{/* Overall Leaderboard Table */}
+			<Box>
+				<Typography variant="h4">LEADERBOARD</Typography>
+				<Box sx={{ display: 'flex', justifyContent: 'center' }}>
+					<Box sx={{ width: '65%'}}>
+						<Table
+							rows={leaderboardRows}
+							columns={columnsLeaderboard}
+							hideFields={['id']}
+							additionalStyles={additionalStyles}
+							pageSizeOptions={[5, 7]}
+							pageSize={7}
+							autoHeight
+							initialState={{
+								pagination: { paginationModel: { pageSize: 7 } },
+							}}
+						/>
 					</Box>
 				</Box>
-			</Stack>
-		</Box> : <Loading /> 
-		} 
-		</>
+			</Box>
+		</Stack>
 	);
 };
 
