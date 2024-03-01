@@ -28,7 +28,7 @@ import { baseURL } from 'utils/constants';
  *    <Boolean>   open - tells whether to 
  *    <Object> 		powerUp - state containing the details about the power-up selected.
  */
-const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
+const PowerUpDetails = ({ type, handleReturn, powerUp, fetchLeaderboardData }) => {
 	/**
 	 * State handler for selected team recipient for debuff
 	 */
@@ -200,6 +200,8 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 						SuccessWindow.fire({
 							text: 'Successfully used '+`${powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}`+' on your team!'
 						});
+					
+						fetchLeaderboardData();
 					}
 				});
 

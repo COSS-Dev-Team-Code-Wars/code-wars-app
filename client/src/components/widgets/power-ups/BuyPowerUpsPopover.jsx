@@ -22,7 +22,8 @@ const BuyPowerUpsPopover = ({
 	debuffsState,
 	detailsState,
 	powerUpState,
-	isBuyImmunityChecked
+	isBuyImmunityChecked,
+	fetchLeaderboardData
 }) => {
 
 	const [showBuffs, setShowBuffs] = buffsState;
@@ -114,6 +115,7 @@ const BuyPowerUpsPopover = ({
         			handleReturn={handleReturn}
         			selectedPowerUp={selectedPowerUp}
 							isBuyImmunityChecked={isBuyImmunityChecked}
+							fetchLeaderboardData={fetchLeaderboardData}
         		/> : null
         	}
           
@@ -130,6 +132,7 @@ const BuyPowerUpsPopover = ({
         			handleClick={(powerup) => { setSelectedPowerUp(powerup); }}
         			handleReturn={handleReturn}
         			selectedPowerUp={selectedPowerUp}
+					fetchLeaderboardData={fetchLeaderboardData}
         		/> : null
         	}
         </Box>

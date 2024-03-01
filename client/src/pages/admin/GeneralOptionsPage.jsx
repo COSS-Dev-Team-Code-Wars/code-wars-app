@@ -60,6 +60,15 @@ const GeneralOptionsPage = ({
 	// used for client-side routing to other pages
 	const navigate = useNavigate();
 
+	/**
+	   * Fetch overall leaderboard data
+	   */
+	async function fetchLeaderboardData() {
+		let currLeaderboard = await getLeaderboard();
+		let copy = cloneDeep(currLeaderboard);
+		setLeaderboardRows(currLeaderboard);
+	}
+
 	useEffect(() => { 
 		let usertype = JSON.parse(localStorage?.getItem("user"))?.usertype;
 		if (usertype == "judge") {
@@ -75,16 +84,23 @@ const GeneralOptionsPage = ({
 			setIsLoggedIn(false);
 		}
 
-		/**
-	   * Fetch overall leaderboard data
-	   */
-		async function fetchData() {
-			let currLeaderboard = await getLeaderboard()
-			setLeaderboardRows(currLeaderboard);
-		}
-
-		fetchData()
+		fetchLeaderboardData()
 	}, []);
+
+	useEffect(()=>{
+		socketClient.on("evalupdate", ()=>{
+			fetchLeaderboardData();
+		});
+
+		socketClient.on("powerupscorechange", ()=>{
+			fetchLeaderboardData();
+		});
+
+		return () => {
+			socketClient.off("evalupdate");
+			socketClient.off("powerupscorechange");
+		};
+	});
 
 	/**
 	 * Purpose: Handler for toggle switch button. This will freeze the screens of all active sessions

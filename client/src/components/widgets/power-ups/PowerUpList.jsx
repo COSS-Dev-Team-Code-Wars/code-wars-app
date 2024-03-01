@@ -35,7 +35,8 @@ const PowerUpList = ({
 	handleReturn,
 	handleClick,
 	selectedPowerUp,
-	isBuyImmunityChecked
+	isBuyImmunityChecked,
+	fetchLeaderboardData
 }) => {
 	// State handler for buffs and debuffs
 	const [buffs, setBuffs] = useState([]);
@@ -224,6 +225,7 @@ const PowerUpList = ({
 						type={selectedPowerUp.type}
 						handleReturn={handleReturn}
 						powerUp={selectedPowerUp}
+						fetchLeaderboardData={fetchLeaderboardData}
 					/>
 				</>
 			}

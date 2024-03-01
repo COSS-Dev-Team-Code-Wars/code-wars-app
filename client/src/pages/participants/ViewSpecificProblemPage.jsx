@@ -22,6 +22,7 @@ import {
 	columnsLeaderboard,
 	rowsLeaderboard
 } from 'utils/dummyData';
+import getLeaderboard from 'components/widgets/leaderboard/getLeaderboard';
 
 import SubmitModal from './modals/SubmitModal';
 import Loading from 'components/widgets/screen-overlays/Loading';
@@ -57,6 +58,8 @@ const ViewSpecificProblemPage = ({
 	const problemSubtitle = 'UPLB Computer Science Society';
 	//const problemDescription = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean mauris dolor, euismod nec commodo aliquam, porta vitae ante. Vivamus tincidunt egestas erat nec condimentum. Sed nec ex quis arcu lacinia laoreet. In interdum ipsum orci, ac gravida urna pharetra non. Etiam pretium, ipsum sed volutpat mollis, eros est hendrerit turpis, eget hendrerit libero dui ut eros. Donec sit amet dui sapien. Aliquam nec mi nec mauris placerat gravida. Cras egestas nisl semper semper mollis. Sed dictum augue congue porttitor ultricies. In accumsan, libero at suscipit aliquam, neque lorem eleifend velit, a vulputate lectus lorem in ante.\nMorbi non felis et lorem ultrices porttitor sit amet vitae est. Pellentesque magna urna, posuere a tincidunt a, vehicula sit amet ex. Vestibulum vehicula lectus eget consectetur imperdiet. Aenean interdum ante vel massa ultricies, a aliquet libero tempor. Mauris laoreet ipsum lacus, in iaculis nibh pharetra eget. Nunc eget purus egestas, elementum nulla eget, tincidunt nunc.';
 	
+	const [leaderboardRows, setLeaderboardRows] = useState([]);
+
 	const [problem, setProblem] = useState();
 	const [problemDescription, setProblemDescription] = useState();
 	const [sampleInput, setSampleInput] = useState("");
@@ -97,6 +100,14 @@ const ViewSpecificProblemPage = ({
 		setSampleInputOutput(qResponse.question.samples);
 	}
 
+	/**
+	   * Fetch overall leaderboard data
+	   */
+	async function fetchLeaderboardData() {
+		let currLeaderboard = await getLeaderboard()
+		setLeaderboardRows(currLeaderboard);
+	}
+
 	useEffect(() => {
 		let usertype = JSON.parse(localStorage?.getItem("user"))?.usertype;
 		if (usertype == "judge") {
@@ -113,7 +124,7 @@ const ViewSpecificProblemPage = ({
 		}
 
 		getQuestionContent();
-
+		fetchLeaderboardData();
 	}, []);
 
 	// websocket listener for power-ups toast notifs
@@ -123,6 +134,10 @@ const ViewSpecificProblemPage = ({
 		const user = JSON.parse(localStorage?.getItem("user"));
 		socketClient.emit("join", user);
 		socketClient.emit("getActivePowerups");
+
+		socketClient.on("powerupscorechange", ()=>{
+			fetchLeaderboardData();
+		});
 
 		socketClient.on("fetchActivePowerups", async() => {
 			const res = await getFetch(`${baseURL}/teams/${user._id}`);
@@ -218,6 +233,7 @@ const ViewSpecificProblemPage = ({
 
 		socketClient.on('evalupdate', (arg)=>{
 			var teamId = JSON.parse(localStorage?.getItem("user"))?._id;
+			fetchLeaderboardData();
 			
 			if (teamId == arg.team_id) {
 				getQuestionContent();
@@ -234,6 +250,7 @@ const ViewSpecificProblemPage = ({
 			socketClient.off("dismissToasts");
 			socketClient.off("fetchActivePowerups");
 			socketClient.off("evalupdate");
+			socketClient.off("powerupscorechange");
 		};
 	});
 

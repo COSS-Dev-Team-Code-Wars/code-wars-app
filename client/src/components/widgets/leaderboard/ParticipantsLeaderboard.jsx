@@ -34,20 +34,20 @@ const ParticipantsLeaderboard = ({ rows }) => {
 
 	// state handler for overall leaderboard modal
 	const [open, setOpen] = useState(false);
-	// state handler for rows of overall leaderboard
-	const [leaderboardRows, setLeaderboardRows] = useState([]);
+	// // state handler for rows of overall leaderboard
+	// const [leaderboardRows, setLeaderboardRows] = useState([]);
 
-	/**
-	 * Fetch overall leaderboard data
-	 */
-	useEffect(() => { 
-		async function fetchData() {
-			let currLeaderboard = await getLeaderboard()
-			setLeaderboardRows(currLeaderboard);
-		}
+	// /**
+	//  * Fetch overall leaderboard data
+	//  */
+	// useEffect(() => { 
+	// 	async function fetchData() {
+	// 		let currLeaderboard = await getLeaderboard()
+	// 		setLeaderboardRows(currLeaderboard);
+	// 	}
 
-		fetchData()
-	}, []);
+	// 	fetchData()
+	// }, []);
 
 	/**
 	* Purpose: Handles opening of modal window for overall leaderboard.
@@ -84,7 +84,7 @@ const ParticipantsLeaderboard = ({ rows }) => {
 
 				{/* Rankings */}
 				<Box sx={{ marginTop: 2, width: '100%' }}>
-					{leaderboardRows.map((row, idx) => (
+					{rows.map((row, idx) => (
 						// check if row belongs to top 4
 						idx < 4 ? (
 							// if row is in top 4, display this
@@ -132,7 +132,7 @@ const ParticipantsLeaderboard = ({ rows }) => {
 			{/* Overall Leaderboard Modal Window */}
 			<CustomModal isOpen={open} setOpen={setOpen} windowTitle="Leaderboard">
 				<Table
-					rows={leaderboardRows}
+					rows={rows}
 					columns={columnsLeaderboard}
 					hideFields={['id', 'totalSpent']}
 					additionalStyles={additionalStyles}

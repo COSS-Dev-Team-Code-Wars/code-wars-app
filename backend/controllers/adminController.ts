@@ -33,7 +33,7 @@ const commandChannel = (req: Request, res: Response) => {
               counter = 0;
             }
           }
-      }, 500);
+      }, 1000);
     
       res.on("close", () => {
         clearInterval(interval);

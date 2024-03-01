@@ -259,6 +259,10 @@ const ViewSubmissionsPage = ({
 			//console.log("socketClient is present")
 		}
 
+		socketClient.on("powerupscorechange", ()=>{
+			fetchLeaderboardData();
+		});
+
 		socketClient.on('newupload', (arg)=>{
 			//console.log(subListRef.current);
 			
@@ -343,12 +347,13 @@ const ViewSubmissionsPage = ({
 				subListRef.current = newSubmissionsList;
 			}
 
-
+			fetchLeaderboardData();
 		});
   
 		return () => {
 			socketClient.off('newupload');
 			socketClient.off('evalupdate');
+			socketClient.off('powerupscorechange');
 		};
 
     }; 
@@ -409,6 +414,13 @@ const ViewSubmissionsPage = ({
 	}
 
 	// console.log(options)
+	/**
+	   * Fetch overall leaderboard data
+	   */
+	async function fetchLeaderboardData() {
+		let currLeaderboard = await getLeaderboard()
+		setLeaderboardRows(currLeaderboard);
+	}
 
 	useEffect(() => { 
 		let usertype = JSON.parse(localStorage?.getItem("user"))?.usertype;
@@ -430,15 +442,7 @@ const ViewSubmissionsPage = ({
 		// console.log("questionsList", questionsList)
 
 
-		/**
-	   * Fetch overall leaderboard data
-	   */
-		async function fetchData() {
-			let currLeaderboard = await getLeaderboard()
-			setLeaderboardRows(currLeaderboard);
-		}
-
-		fetchData()
+		fetchLeaderboardData();
 		
 	}, []);
 

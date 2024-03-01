@@ -187,6 +187,8 @@ io.on("connection", (socket: any) => {
           }
 
         }
+
+        socket.broadcast.emit("powerupscorechange", "");
       }
     } else {
       console.log("Team not found! Error on buy buff.");
@@ -261,6 +263,8 @@ io.on("connection", (socket: any) => {
               " has bought a debuff to be used against " +
               recipientTeam.team_name
           );
+
+          socket.broadcast.emit("powerupscorechange", "");
         }
       }
     } catch(err){

@@ -29,6 +29,7 @@ import {
 	rowsProblems
 } from 'utils/dummyData';
 import Loading from 'components/widgets/screen-overlays/Loading';
+import getLeaderboard from 'components/widgets/leaderboard/getLeaderboard';
 
 import { baseURL } from 'utils/constants';
 import { postFetch } from 'utils/apiRequest';
@@ -59,6 +60,8 @@ const ViewAllProblemsPage = ({
 
 	const [currQuestions, setCurrQuestions] = useState([]);
 	const questionsRef = useRef();
+
+	const [leaderboardRows, setLeaderboardRows] = useState([]);
 	
 	// options for round labels
 	const rounds = ['EASY', 'MEDIUM', 'WAGER', 'HARD'];
@@ -105,6 +108,17 @@ const ViewAllProblemsPage = ({
 		setCurrQuestions(sortedList);
 	}
 
+	/**
+	   * Fetch overall leaderboard data
+	   */
+	const fetchLeaderboardData = async () => {
+		//console.log("fetchLeaderboard");
+		let currLeaderboard = await getLeaderboard();
+		let copy = cloneDeep(currLeaderboard);
+		//console.log(copy);
+		setLeaderboardRows(copy);
+	}
+
 	useEffect(() => {
 		setSeeDetails(false);
 		setShowBuffs(false);
@@ -128,6 +142,7 @@ const ViewAllProblemsPage = ({
 		}
 		
 		getRoundQuestions();
+		fetchLeaderboardData();
 	}, [currRound]);
 
 
@@ -138,6 +153,11 @@ const ViewAllProblemsPage = ({
 		const user = JSON.parse(localStorage?.getItem("user"));
 		socketClient.emit("join", user);
 		socketClient.emit("getActivePowerups");
+
+		socketClient.on("powerupscorechange", ()=>{
+			fetchLeaderboardData();
+		})
+
 
 		socketClient.on("startRound", () => {
 			socketClient.emit("activateImmunity", user._id);
@@ -168,6 +188,7 @@ const ViewAllProblemsPage = ({
 						theme: "dark",
 						transition: Bounce,
 					});
+
 				}
 			});
 			
@@ -218,6 +239,8 @@ const ViewAllProblemsPage = ({
 				theme: "dark",
 				transition: Bounce,
 			});
+
+			fetchLeaderboardData();
 		});
 
 		// listener for debuffs
@@ -246,6 +269,7 @@ const ViewAllProblemsPage = ({
 		});
 		socketClient.on('evalupdate', (arg)=>{
 			var teamId = JSON.parse(localStorage?.getItem("user"))?._id;
+			fetchLeaderboardData();
 			
 			if (teamId == arg.team_id) {
 				getRoundQuestions();
@@ -260,6 +284,7 @@ const ViewAllProblemsPage = ({
 			socketClient.off("fetchActivePowerups");
 			socketClient.off("startRound");
 			socketClient.off("evalupdate");
+			socketClient.off("powerupscorechange");
 		};
 	});
 
@@ -356,7 +381,7 @@ const ViewAllProblemsPage = ({
 									justifyContent: "center"
 								}}
 							>
-								<ParticipantsLeaderboard rows={rowsLeaderboard} columns={columnsLeaderboard} />
+								<ParticipantsLeaderboard rows={leaderboardRows} columns={columnsLeaderboard} />
 								<Box
 									gap={7}
 									sx={{
@@ -384,7 +409,7 @@ const ViewAllProblemsPage = ({
 								}}
 							>
 								<RoundTimer  />
-								<ParticipantsLeaderboard rows={rowsLeaderboard} columns={columnsLeaderboard} />
+								<ParticipantsLeaderboard rows={leaderboardRows} columns={columnsLeaderboard} />
 								<SponsorCarousel />
 							</Stack>
 
@@ -461,6 +486,7 @@ const ViewAllProblemsPage = ({
 								debuffsState={[showDebuffs, setShowDebuffs]}
 								detailsState={[seeDetails, setSeeDetails]}
 								powerUpState={[selectedPowerUp, setSelectedPowerUp]}
+								fetchLeaderboardData={fetchLeaderboardData}
 							/>
 						</Box>
 					</ClickAwayListener>
