@@ -418,8 +418,9 @@ const ViewSubmissionsPage = ({
 	   * Fetch overall leaderboard data
 	   */
 	async function fetchLeaderboardData() {
-		let currLeaderboard = await getLeaderboard()
-		setLeaderboardRows(currLeaderboard);
+		let currLeaderboard = await getLeaderboard();
+		let copy = cloneDeep(currLeaderboard);
+		setLeaderboardRows(copy);
 	}
 
 	useEffect(() => { 

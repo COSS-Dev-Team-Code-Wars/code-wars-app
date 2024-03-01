@@ -32,7 +32,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { baseURL } from 'utils/constants';
 import { postFetch } from 'utils/apiRequest';
 import { getFetch } from 'utils/apiRequest';
-
+import { clone, cloneDeep } from 'lodash';
 
 /*
  * Purpose: Displays the Specific Problem Page for participants.
@@ -105,7 +105,8 @@ const ViewSpecificProblemPage = ({
 	   */
 	async function fetchLeaderboardData() {
 		let currLeaderboard = await getLeaderboard()
-		setLeaderboardRows(currLeaderboard);
+		let copy = cloneDeep(currLeaderboard);
+		setLeaderboardRows(copy);
 	}
 
 	useEffect(() => {

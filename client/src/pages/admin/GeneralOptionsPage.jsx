@@ -34,6 +34,7 @@ import { socketClient } from 'socket/socket';
 const additionalStyles = {
 	backgroundColor: '#fff',
 };
+import { cloneDeep } from 'lodash';
 
 
 /**
@@ -66,7 +67,7 @@ const GeneralOptionsPage = ({
 	async function fetchLeaderboardData() {
 		let currLeaderboard = await getLeaderboard();
 		let copy = cloneDeep(currLeaderboard);
-		setLeaderboardRows(currLeaderboard);
+		setLeaderboardRows(copy);
 	}
 
 	useEffect(() => { 
