@@ -4,12 +4,13 @@ import { checkSubmission } from './submissionSocket'
 import { endTimer, setEndTimer } from '../controllers/adminController';
 import { PowerupInfo } from '../models/powerup';
 import { activateImmunity } from './powerupSocket';
+import { serverIP } from '../../ipaddress';
 
 var roundStartTime: any;
 
 let io = require("socket.io")(8000, {
   cors: {
-    origin: ["http://localhost:3000", process.env.FRONTEND_URL || "", process.env.DEV_FRONTEND_URL || "", process.env.PROD_FRONTEND_URL || ""],
+    origin: [`http://${serverIP}:3000`, process.env.FRONTEND_URL || "", process.env.DEV_FRONTEND_URL || "", process.env.PROD_FRONTEND_URL || ""],
   }
   // if ever there will be cors errors from the web-sockets, create .env files to store the frontend urls that you're using to connect to this socket server. (populate the FRONTEND_URL, DEV_FRONTEND_URL, PROD_FRONTEND_URL with the urls of the frontend that you're using.)
 });

@@ -23,12 +23,13 @@ import { checkTokenMiddleware } from "./controllers/authController";
 
 import './sockets/socket';
 import { baseURL } from "./constants";
+import { serverIP } from "../ipaddress";
 
 const cors = require("cors");
 const app = express();
 
 app.use(cors({
-  origin : ["http://localhost:3000", 
+  origin : [`http://${serverIP}:3000`,  //"http://localhost:3000",
             process.env.DEV_FRONTEND_URL || "",
             process.env.PROD_FRONTEND_URL || ""],
   credentials: true
