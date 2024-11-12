@@ -8,3 +8,8 @@ the University of the Philippines - Los Banos Computer Science Society (UPLB COS
 @frontend Lara, Dhudot, Les, Ruth
 
 #Change the nicknames to full names in the future
+
+@date November 11, 2024
+@team UPLB COSS Developers Team X Code Wars Committee AY 2023-2024
+@backend Taj, Pam, Farrel
+@frontend Ray, KC, Jerico
