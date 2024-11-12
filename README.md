@@ -11,5 +11,5 @@ the University of the Philippines - Los Banos Computer Science Society (UPLB COS
 
 @date November 11, 2024
 @team UPLB COSS Developers Team X Code Wars Committee AY 2023-2024
-@backend Taj, Pam, Farrel
+@backend Taj, Pam, Farrel, Echo
 @frontend Ray, KC, Jerico
