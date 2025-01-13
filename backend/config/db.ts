@@ -3,12 +3,16 @@ require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
 
 
+// mongodb+srv://jetjetcerezo:EHtQlH6Kbs5IeciH@codewars.mdmsh.mongodb.net/?retryWrites=true&w=majority&appName=codewars
+//`mongodb+srv://${dbUsername}:${dbPassword}@${dbCluster}.od4z6.mongodb.net/code-wars`;///?retryWrites=true&w=majority
+
+
 const dbUsername = process.env.DB_USERNAME;
 const dbPassword = process.env.DB_PASSWORD;
 const dbCluster = process.env.DB_CLUSTER;
 const dbName = process.env.DB_NAME;
 
-const uri = `mongodb+srv://${dbUsername}:${dbPassword}@${dbCluster}.od4z6.mongodb.net/code-wars`;///?retryWrites=true&w=majority
+const uri = `mongodb+srv://${dbUsername}:${dbPassword}@${dbCluster}`;///?retryWrites=true&w=majority
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 // const client = new MongoClient(uri, {
@@ -21,7 +25,7 @@ const uri = `mongodb+srv://${dbUsername}:${dbPassword}@${dbCluster}.od4z6.mongod
 
 async function connectDB() {
   try {
-    await mongoose.connect(uri);
+    await mongoose.connect(process.env.MONGO_URI || "");
     console.log("Successfully connected to MongoDB!")
   
     //await client.connect();
