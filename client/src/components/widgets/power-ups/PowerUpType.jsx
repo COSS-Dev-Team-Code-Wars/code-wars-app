@@ -50,9 +50,9 @@ const PowerUpType = ({ seePowerups, label, handleClick }) => {
           - points downwards if showing the list of buffs
         */}
 				{ seePowerups ? (
-					<KeyboardArrowUpIcon sx={{ width: '1em', height: '1em', transform: 'rotate(180deg)' }} />
-				) : (
 					<KeyboardArrowUpIcon sx={{ width: '1em', height: '1em' }} />
+				) : (
+					<KeyboardArrowUpIcon sx={{ width: '1em', height: '1em', transform: 'rotate(180deg)' }} />
 				)}
 			</Toolbar>
 		</Box>

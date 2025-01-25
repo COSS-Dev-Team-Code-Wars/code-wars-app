@@ -307,7 +307,7 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 					Cost: { powerUp.code == "dispel" ? "120% of the cost of the dispelled debuff" : powerUp.code == "immune" && Object.keys(powerUp.tier)[0] == 4 ? "1000 + 10% of the team\’s current total points" : powerUp.tier[Object.keys(powerUp.tier)[0]].cost}
 				</Typography>
 				
-				{type === 0 ?
+				{type === 2 ?
 					// Debuffs should have ui elements that allow the participants to select an enemy team to inflict the power-up on.
 					<>
 						{/* Select team dropdown select */}

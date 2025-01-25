@@ -1,9 +1,10 @@
 /* eslint-disable */ 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Box } from '@mui/material';
 
 import { PowerUpList, PowerUpType } from 'components';
+import { baseURL } from 'utils/constants';
 
 
 /**
@@ -30,20 +31,29 @@ const BuyPowerUpsPopover = ({
 	const [seeDetails, setSeeDetails] = detailsState;
 	const [selectedPowerUp, setSelectedPowerUp] = powerUpState;
 
+	const [buffs, setBuffs] = useState([]);
+	const [debuffs, setDebuffs] = useState([]);
+
 	/**
    * Reset the view of buffs and debuffs when powerup modal is closed
    */
 	useEffect(() => {
-
-		if (isOpen) return;
-		else if (!isOpen) {
-			setShowBuffs(false);
-			setShowDebuffs(false);
-			setSeeDetails(false);
-			setSelectedPowerUp(null);
-		}
-
+		if (isOpen) loadPowerUps()
+		// if (isOpen) return;
+		// else if (!isOpen) {
+		// 	setShowBuffs(false);
+		// 	setShowDebuffs(false);
+		// 	setSeeDetails(false);
+		// 	setSelectedPowerUp(null);
+		// }
 	}, [isOpen]);
+
+	const loadPowerUps = async () => {
+		const res = await fetch(`${baseURL}/powerups`)
+		const data = await res.json();
+		setBuffs(data.message.filter((powerup => powerup.type === 1)))
+		setDebuffs(data.message.filter((powerup => powerup.type === 2)))
+	}
 
 	/**
    * For viewing the details of selected power-up.
@@ -113,7 +123,8 @@ const BuyPowerUpsPopover = ({
         	{/* The Buffs List */}
         	{ showBuffs ?
         		<PowerUpList
-        			type="buff"
+        			// type="buff"
+					powerups={buffs}
         			openDetails={seeDetails}
         			handleClick={(powerup) => { setSelectedPowerUp(powerup); }}
         			handleReturn={handleReturn}
@@ -128,9 +139,11 @@ const BuyPowerUpsPopover = ({
         	{/* The Debuffs List 
 						*		Debuffs cannot be bought when buy immunity is enabled
 						*/}
-        	{showDebuffs && !isBuyImmunityChecked ?
+        	{/* {showDebuffs && !isBuyImmunityChecked ? */}
+        	{showDebuffs ?
         		<PowerUpList
-        			type="debuff"
+        			// type="debuff"
+					powerups={debuffs}
         			openDetails={seeDetails}
         			handleClick={(powerup) => { setSelectedPowerUp(powerup); }}
         			handleReturn={handleReturn}
