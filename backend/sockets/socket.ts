@@ -14,11 +14,15 @@ let io = require("socket.io")(8000, {
   // if ever there will be cors errors from the web-sockets, create .env files to store the frontend urls that you're using to connect to this socket server. (populate the FRONTEND_URL, DEV_FRONTEND_URL, PROD_FRONTEND_URL with the urls of the frontend that you're using.)
 });
 
+// store user data with their unique ID as the key and socket ID as the value
+let users: {[key:string]: string} = {}
+
 io.on("connection", (socket: any) => {
   //ADD SOCKET EVENTS HERE
   socket.on("join", (user:any) => {
     socket.join("user:" + user._id);
     console.log("joined user:" + user._id);
+    users[user._id] = socket.id;    // Store the mapping of user ID to socket ID to keep track of the connection
   });
 
   socket.on("logout", () => {
@@ -151,7 +155,11 @@ io.on("connection", (socket: any) => {
                 "active_buffs": info,
               },
             });
-            
+            console.log(`${powerUp.code} has been applied to user ${userTeam._id}.`);
+            setTimeout(() => {  // notify the team that their buff has ended after the specified duration
+              console.log(`${powerUp.code} has ended for user ${userTeam._id}.`);
+              io.to(users[userTeam._id??""]).emit("buffEnded", powerUp);
+            }, powerUp.tier[tier_no].duration);
           } else{
 
             socket.emit("scenarioCheckerBuff", 'success');
@@ -240,7 +248,13 @@ io.on("connection", (socket: any) => {
   
           //  apply debuffs_received and show toast if there is no immunity active
           if(!recipientTeam.active_buffs.find((buff: any) => buff.code === 'immune')){
-            socket.to("user:" + recipientTeam._id).emit("newDebuff", powerUp);
+            console.log(`${powerUp.code} applied to team ${recipientTeam._id}.`);            
+            io.to(users[recipientTeam._id??""]).emit("newDebuff", powerUp);   // send the debuff to the recipient team
+            setTimeout(() => {    // notify the recipient team that their debuff has ended after the specified duration
+              console.log(`${powerUp.code}" has ended for team ${recipientTeam._id}.`);
+              io.to(users[recipientTeam._id??""]).emit('debuffEnded', powerUp);
+            }, powerUp.tier[tier_no].duration);
+
             await TeamModel.updateOne({ _id: recipientTeam._id }, {
               $push: { "debuffs_received": {
                 _id: powerUp._id,

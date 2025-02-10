@@ -52,7 +52,7 @@ const BuyPowerUpsPopover = ({
 		const res = await fetch(`${baseURL}/powerups`)
 		const data = await res.json();
 		setBuffs(data.message.filter((powerup => powerup.type === 1)))
-		setDebuffs(data.message.filter((powerup => powerup.type === 2)))
+		setDebuffs(data.message.filter((powerup => powerup.type === 0)))
 	}
 
 	/**
