@@ -14,6 +14,7 @@ import "prismjs/components/prism-go";
 import "prismjs/components/prism-javascript";
 import { Button } from "@mui/material";
 import { postFetch } from "utils/apiRequest";
+import { CustomModal } from "components";
 
 const programmingLanguages = [
   { name: "Python", value: "python", extension: ".py" },
@@ -32,6 +33,8 @@ function CodeEditor() {
   const [isStunned, setIsStunned] = useState(false);
   const [isHighlightDisabled, setIsHighlightDisabled] = useState(false);
   const [isImmune, setIsImmune] = useState(false);
+  const [isSubmissionError, setIsSubmissionError] = useState(false);
+  const [isSubmissionSuccess, setIsSubmissionSuccess] = useState(false);
 
   // Handles applying debuffs and buffs
   const processDebuff = (debuff, activate) => {
@@ -107,8 +110,13 @@ function CodeEditor() {
         body.currentTeamEasySet = user.easy_set;
         body.currentTeamMediumSet = user.medium_set;
       }
-      const res = await postFetch(`${baseURL}/uploadsubmission`, body);
-      console.log("Submission response:", res);
+      const res = await fetch(`${baseURL}/uploadsubmission`, {
+        method: "POST",
+        headers: { "Content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.status === 200) setIsSubmissionSuccess(true);
+      else setIsSubmissionError(true);
     } catch (error) {
       console.error("Error submitting code:", error);
     }
@@ -135,6 +143,24 @@ function CodeEditor() {
       <Button style={{ alignSelf: "end" }} variant="contained" color="primary" size="large" onClick={handleSubmitCode} disabled={!code}>
         Submit
       </Button>
+      <CustomModal isOpen={isSubmissionError} windowTitle="Submission Error">
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
+          <p>
+            The system encountered an error while processing your submission. Please try submitting again. If the error continues, contact an usher or watcher for assistance.
+          </p>
+          <Button style={{ alignSelf: "end" }} variant="contained" color="primary" size="large" onClick={() => setIsSubmissionError(false)}>
+            OK
+          </Button>
+        </div>
+      </CustomModal>
+      <CustomModal isOpen={isSubmissionSuccess} windowTitle="Submission Success">
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
+          <p>Your code has been successfully submitted!</p>
+          <Button style={{ alignSelf: "center" }} variant="contained" color="primary" size="large" onClick={() => setIsSubmissionSuccess(false)}>
+            OK
+          </Button>
+        </div>
+      </CustomModal>
     </div>
   );
 }
