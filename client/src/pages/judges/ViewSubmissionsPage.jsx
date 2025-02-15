@@ -391,6 +391,7 @@ const ViewSubmissionsPage = ({ isLoggedIn }) => {
 		//setFetchAllPrevious(true);
 		
 		//handleSocket();
+		console.log("Fetched submissions:", submissionEntries);
 	};
 	
 	
