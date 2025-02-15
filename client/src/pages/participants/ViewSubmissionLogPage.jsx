@@ -7,7 +7,7 @@ import {
 
 import {
   Box,
-  MenuItem,
+MenuItem,
   Stack,
   Typography
 } from '@mui/material';
@@ -15,7 +15,7 @@ import { cloneDeep } from 'lodash';
 import { Link, useOutletContext } from 'react-router-dom';
 
 import {
-  DropdownSelect,
+DropdownSelect,
   Table,
 } from 'components/';
 import { socketClient } from 'socket/socket';
@@ -27,7 +27,6 @@ import {
 
 import EvalEditInputCell from '../judges/submission-entries/EvalEditInputCell';
 import renderEval from '../judges/submission-entries/EvalEditInputCell';
-
 
 /**
  * Additional Styling for Submissions table
@@ -53,7 +52,7 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
   const renderEvalEditInputCell = (params) => {
       return <EvalEditInputCell props={params} submissionsList={submissionsList} setSubmissionsList={setSubmissionsList} subListRef={subListRef} />;
   };
-  /**
+/**
    * State handler for team dropdown select
    */
   const [selectedTeam, setSelectedTeam] = useState('');
@@ -86,9 +85,6 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 			}
     }
   }, [isLoggedIn]);
-
-  //balik sa dati yung getsubmissions
-  //modify filtered submissions list, doon dapat ififilter by team name para makuha yung rows
 
   /**
    * Handles on click event on submitted file for a particular submission entry.
@@ -177,47 +173,10 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 
   /**
   * Client-side filtering based on values from the dropdown selects.
-  * will be replaced if magkakaron ng server-side filtering
+* will be replaced if magkakaron ng server-side filtering
   */
   const getFilteredRows = (rowsSubmissions) => {
-    // will hold the filtered rows
-    let temp = [];
-    let temp2 = [];
-
-    // if (selectedProblem === '') return rowsSubmissions;
-
-    // Filter out rows based on selectedTeam
-    // if (teamInfo.teamName != '') {
-      console.log(teamInfo.teamName);
-      rowsSubmissions.filter((row) => {
-        // if entry is submitted by selectedTeam
-        if (row.teamName === teamInfo.teamName) {
-          // If matched row is not yet in temp, push to temp
-          if (!temp.find(obj => obj.id === row.id)) {
-            temp.push(row);
-          }
-        }
-      });
-    // }
-
-    if (selectedProblem != '') {
-      // if there is a selectedTeam, filter based on temp, not on rowsSubmissions
-      if (temp.length > 0) {
-        temp.filter((row) => {
-          // if problemTitle matches selectedProblem
-          if (row.problemTitle === selectedProblem) {
-            // If matched row is not yet in temp2, push to temp
-            if (!temp2.find(obj => obj.id === row.id)) {
-              temp2.push(row);
-            }
-          }
-        });
-        return temp2;
-
-        // if there is no selected team
-      }
-    }
-    return temp;
+    return rowsSubmissions;
   };
 
   /**
@@ -232,9 +191,7 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
       //console.log("socketClient is present")
     }
 
-    socketClient.on('newupload', (arg)=>{
-			//console.log(subListRef.current);
-
+    socketClient.on('newupload', (arg)=> {
 			if (!presentDbIds.current.includes(arg._id)) {
 				presentDbIds.current.push(arg._id);
 
@@ -256,8 +213,7 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 				let newSubmissionsList = [];
 				let present = false;
 				
-				subListRef.current?.map((submission)=>{
-					//console.log(submission.dbId,"==",newsubmission.dbId);
+				subListRef.current?.map((submission)=> {
 					if (submission.dbId == newsubmission.dbId) {
 						present = true;
 					} else {
@@ -266,29 +222,22 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 				});
 				newSubmissionsList.unshift(newsubmission);
 
-				//console.log(subListRef.current,"\n", newSubmissionsList, "\n", present);
-
 				if (!present) {
-					//console.log("NEW SUBMISSION:",arg._id,"\n", new Date().toLocaleTimeString());
 					setSubmissionsList(newSubmissionsList);
 					subListRef.current = newSubmissionsList;
 				}
 			}
-			//getSubmissions();
 		});
 
-    socketClient.on('evalupdate', (arg)=>{
+    socketClient.on('evalupdate', (arg)=> {
 			var judgeId = JSON.parse(localStorage?.getItem('user'))?._id;
 			
 			if (judgeId != arg.judge_id) {
-				//console.log("evalupdate", arg);
-				//let copy = cloneDeep(submissionsList);
 				let foundIt = false;
 
 				let newSubmissionsList = [];
 
-				subListRef.current?.map((submission)=>{
-					//console.log(submission.dbId,"==",newsubmission.dbId);
+				subListRef.current?.map((submission)=> {
 					if (!foundIt && submission.id == arg.display_id) {
 						foundIt = true;
 
@@ -308,12 +257,9 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 					newSubmissionsList.push(submission);
 				});
 				
-				//console.log(copy);
 				setSubmissionsList(newSubmissionsList);
 				subListRef.current = newSubmissionsList;
 			}
-
-
 		});
 
     return () => {
@@ -327,8 +273,7 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
    * Fetching submissions on page mount.
    */
   const getSubmissions = async () => {
-      console.log("Fetching submissions...");
-      const submissions = await getFetch(`${baseURL}/getallsubmissions`,);
+      const submissions = await getFetch(`${baseURL}/getteamsubmissions`);
   
       let submissionEntries = [];
   
@@ -337,7 +282,7 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
         submissions.results.forEach((entry, index) => {
           // entries should be in reverse chronological order
           submissionEntries.unshift({
-            id: entry.display_id,//submissions.results.length - index,
+            id: entry.display_id,
             teamName: entry.team_name,
             problemTitle: entry.problem_title,
             submittedAt: new Date(entry.timestamp).toLocaleTimeString(),
@@ -370,17 +315,6 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
         setSubmissionsList([...submissionEntries]);
         subListRef.current = submissionEntries;
       }
-      
-  
-      //console.log(questionsList, teamsList)
-      // console.log(options[0])
-      // console.log(options[1])
-      //console.log("submissionEntries", submissionEntries)
-  
-      //setFetchAllPrevious(true);
-      
-      //handleSocket();
-      console.log("Fetched submissions:", submissionEntries);
     };
 
   return (
