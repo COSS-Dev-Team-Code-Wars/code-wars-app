@@ -9,7 +9,8 @@ import {
 	Box,
 	MenuItem,
 	Stack,
-	Typography
+	Typography,
+	Button,
 } from '@mui/material';
 import { cloneDeep } from 'lodash';
 import { Link } from 'react-router-dom';
@@ -27,7 +28,7 @@ import {
 
 import EvalEditInputCell from './submission-entries/EvalEditInputCell';
 import renderEval from './submission-entries/EvalViewInputCell';
-
+import TestCaseModal from './modals/TestCaseModal';
 
 
 /**
@@ -132,6 +133,9 @@ const ViewSubmissionsPage = ({ isLoggedIn }) => {
 		window.URL.revokeObjectURL(elem.href);
 	};
 
+	const [openModal, setOpenModal] = useState(false);
+	const [selectedSubmission, setSelectedSubmission] = useState(null);
+
 	/**
 	 * Rendering cells dropdown selects for uploaded file and evaluation column of submission table
 	 */
@@ -155,6 +159,25 @@ const ViewSubmissionsPage = ({ isLoggedIn }) => {
 						>
 							{params.value}
 						</Link>
+					);
+				}
+			};
+		}
+		if (obj.field === 'runTests') {
+			return {
+				...obj,
+				renderCell: (params) => {
+					return (
+						<Button 
+							variant="contained" 
+							color="primary"
+							onClick={() => {
+								setOpenModal(true);
+								setSelectedSubmission(params.row);
+							}}
+						>
+							Run Tests
+						</Button>
 					);
 				}
 			};
@@ -469,6 +492,11 @@ const ViewSubmissionsPage = ({ isLoggedIn }) => {
 						</Stack>
 					)
 				}}
+			/>
+			<TestCaseModal 
+				open={openModal} 
+				setOpen={setOpenModal} 
+				submission={selectedSubmission} 
 			/>
 		</Stack>
 	);
