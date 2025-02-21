@@ -60,6 +60,7 @@ const ParticipantLayout = ({
 	setIsLoggedIn,
 	checkIfLoggedIn,
 	currRound,
+	currAnnouncements,
 	isBuyImmunityChecked
 }) => {
 
@@ -84,6 +85,11 @@ const ParticipantLayout = ({
 	 */
 	const [openLeaderboard, setOpenLeaderboard] = useState(false);
 	/**
+	 * State handler for announcement modal.
+	 */
+	const [openAnnouncement, setOpenAnnouncement] = useState(false);
+	currAnnouncements = [];
+	/**
 	 * State handler for team details
 	 * -- need na andito para sa buy power-ups
 	 */
@@ -92,6 +98,14 @@ const ParticipantLayout = ({
 		score: 0
 	});
 
+	// used for announcement icon red badge
+	const [isClicked, setIsClicked] = useState(false);
+	const [hasNewUpdate, setHasNewUpdate] = useState(true);
+
+	const handleClick = () => {
+		setIsClicked(true); // Remove the red dot after clicking
+		handleOpenAnnouncement();
+	};
 
 	// used for client-side routing from view all problems page
 	const location = useLocation();
@@ -161,6 +175,13 @@ const ParticipantLayout = ({
 		setSelectedPowerUp(null);
 	}, [currRound]);
 
+	useEffect(() => {
+		if (currAnnouncements.length > 0) {
+			console.log("Announcements updated:", currAnnouncements);
+			
+			localStorage.setItem("announcements", JSON.stringify(currAnnouncements));
+		}
+	}, [currAnnouncements]);
 
 	/**
 	 * Web sockets listener for power-ups toast notifs
@@ -461,6 +482,14 @@ const ParticipantLayout = ({
 	};
 
 	/**
+   * Handles opening of modal window for announcements.
+   */
+	const handleOpenAnnouncement = () => {
+		setOpenAnnouncement(true);
+		setHasNewUpdate(false);
+	};
+
+	/**
 	 * Get the score of the team
 	 */
 	const getTeamScore = async () => {
@@ -514,6 +543,9 @@ const ParticipantLayout = ({
 									buttonText="BUY POWER-UP"
 									disabledState={roundsDisablePowerUps.includes(currRound.toLowerCase()) && !isBuyImmunityChecked}
 									handleButton={handleViewPowerUps}
+									handleClick={handleClick}
+									isClicked={isClicked}
+									hasNewUpdate={hasNewUpdate}
 								/> 
 								:
 								<TopBar
@@ -539,6 +571,9 @@ const ParticipantLayout = ({
 									buttonText="UPLOAD SUBMISSION"
 									startIcon={<FileUploadIcon />}
 									handleButton={handleButton}
+									handleClick={handleClick}
+									isClicked={isClicked}
+									hasNewUpdate={hasNewUpdate}
 									disabledState={
 										currRound.toLowerCase() == 'wager' ?
 										evaluation != 'No Submission' :
@@ -691,6 +726,33 @@ const ParticipantLayout = ({
 									)
 								}}
 							/>
+						</CustomModal>
+						
+						{/* Announcement Modal Window */}
+						<CustomModal isOpen={openAnnouncement} setOpen={setOpenAnnouncement} windowTitle="Announcement">
+							{/* console.log(currAnnouncements); */}
+							{/* <Table
+								rows={currAnnouncements}
+								columns={[
+									{ field: 'message', headerName: 'Message', flex: 1 },
+									{ field: 'time', headerName: 'Time Sent', flex: 1 }
+								]}
+								additionalStyles={additionalStyles}
+								pageSize={5}
+								pageSizeOptions={[5, 10]}
+								initialState={{
+									pagination: { paginationModel: { pageSize: 5 } },
+								}}
+								// If there are no entries yet
+								slots={{
+									noRowsOverlay: () => (
+										<Stack height="100%" alignItems="center" justifyContent="center">
+											<Typography><em>No announcements to display.</em></Typography>
+										</Stack>
+									)
+								}}
+							/> */}
+							<span>No announcements to display.</span>
 						</CustomModal>
 
 						{/* Submit Modal Window */}
