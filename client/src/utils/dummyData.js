@@ -295,6 +295,11 @@ export const columnsSubmissions = [
 		// flex: 1,
 	},
 	{
+		field: 'runTests',
+		headerName: 'Test Cases',
+		minWidth: 200,
+	},
+	{
 		field: 'evaluation',
 		headerName: 'Evaluation',
 		minWidth: 250,

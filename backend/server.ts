@@ -4,6 +4,7 @@ import "./models/admin";
 import "./models/team";
 import "./models/question";
 import "./models/submission";
+import "./models/testcase";
 
 import express from 'express';
 import bodyParser from 'body-parser';
@@ -19,6 +20,7 @@ import adminRoutes from './routes/adminRoutes';
 import questionRoutes from './routes/questionRoutes';
 import teamDetailsRoute from './routes/teamDetailsRoute';
 import leaderboardRoutes from './routes/leaderboardRoutes';
+import testCaseRoutes from './routes/testCaseRoutes';
 import { checkTokenMiddleware } from "./controllers/authController";
 
 import './sockets/socket';
@@ -67,6 +69,7 @@ app.use(powerupRoutes);
 app.use(submissionRoutes);
 app.use(questionRoutes);
 app.use(leaderboardRoutes);
+app.use(testCaseRoutes);
 
 //app.use('/api', sampleRoutes);
 
