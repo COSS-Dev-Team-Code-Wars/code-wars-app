@@ -31,7 +31,8 @@ import PowerUpItem from './PowerUpItem';
  *    <Object>    selectedPowerUp - state containing the details of the power-up selected.
  */
 const PowerUpList = ({
-	type,
+	// type,
+	powerups,
 	openDetails,
 	handleReturn,
 	handleClick,
@@ -206,10 +207,13 @@ const PowerUpList = ({
 			{!openDetails ?
 				<>
 					{/* Showing the list of buffs */}
-					{ type == 'buff' ?
+					{powerups.map((powerup, ind) => (
+						<PowerUpItem key={ind} icon={itemIcons(powerup)} item={powerup} handleClick={handleClick}/>
+					))}
+					{/* { type == 'buff' ? */}
 						<>
 							{/* Show the list of buffs */}
-							{ buffs.map((item, index) => (
+							{/* { buffs.map((item, index) => (
 								<PowerUpItem
 									key={index}
 									icon={itemIcons(item)}
@@ -218,18 +222,18 @@ const PowerUpList = ({
 								/>
 							))}
 						</> :
-						<>
+						<> */}
 							{/* Show the list of debuffs */}
-							{ debuffs.map((item, index) => (
+							{/* { debuffs.map((item, index) => (
 								<PowerUpItem
 									key={index}
 									icon={itemIcons(item)}
 									item={item}
 									handleClick={handleClick}
 								/>
-							))}
+							))} */}
 						</>
-					}
+					{/* } */}
 				</> :
 				<>
 					{/* Show details of selected power-up */}

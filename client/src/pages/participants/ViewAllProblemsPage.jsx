@@ -84,7 +84,8 @@ const ViewAllProblemsPage = ({ currRound }) => {
 			sx={{
 				display: 'flex',
 				width: '100%',
-				height: '100%',
+				paddingBottom: "20px",
+				// height: '100%',
 				alignContent: {
 					xs: 'center',
 					md: 'none'
@@ -97,7 +98,7 @@ const ViewAllProblemsPage = ({ currRound }) => {
 		>
 			{/* Full Desktop View for round buttons and problem table */}
 			{/* Right column is for the round buttons and problem list table */}
-			<Stack
+			<Stack	
 				spacing={5}
 				sx={{
 					px: { xs: 8, xl: 0 },
@@ -105,7 +106,7 @@ const ViewAllProblemsPage = ({ currRound }) => {
 					// mt: { xs: 3, md: 4, lg: 6 },
 					mt: { xs: 0, xl: 6},
 					pr: { xl: 7 },
-					height: '100%',
+					// height: '100%',
 					width: { xs: '100%'},
 				}}
 			>

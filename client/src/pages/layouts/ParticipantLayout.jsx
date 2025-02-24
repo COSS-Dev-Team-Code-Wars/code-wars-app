@@ -310,7 +310,7 @@ const ParticipantLayout = ({
 			socketClient.off('evalupdate');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
-	});
+	}, [socketClient]);
   
 	/**
 	 * Web sockets for real time update of leaderboard
@@ -335,7 +335,7 @@ const ParticipantLayout = ({
 			socketClient.off('updateScoreOnBuyDebuff');
 			socketClient.off('newBuff');
 		};
-	});
+	}, [socketClient]);
 
 	/**
 	 * Fetching questions for the current round
@@ -400,8 +400,8 @@ const ParticipantLayout = ({
 			teamId: JSON.parse(localStorage?.getItem('user'))._id
 		});
 
-		console.log("qResponse")
-		console.log(qResponse);
+		// console.log("qResponse")
+		// console.log(qResponse);
 
 		setProblem(qResponse.question);
 		setProblemDescription(qResponse.question.body);
@@ -503,7 +503,7 @@ const ParticipantLayout = ({
 				: isLoggedIn ?
           
 					<>
-						<Stack>
+						<Stack style={{height: "100%"}}>
 							{ location.pathname === '/participant/view-all-problems' ?
 								<TopBar
 									isImg={true}
@@ -548,9 +548,10 @@ const ParticipantLayout = ({
 							}
 
 							<Box
-								gap={7}
+								gap={2}
 								sx={{
 									display: 'flex',
+									height: "100%",
 									flexDirection: {
 										xs: 'column',
 										xl: 'row'
