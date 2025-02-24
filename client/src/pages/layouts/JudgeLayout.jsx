@@ -5,7 +5,7 @@ import ViewListIcon from '@mui/icons-material/ViewList';
 import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
-import GeneralBackground from 'assets/GeneralBackground.png';
+import GeneralBackground from 'assets/GeneralBG.png';
 import seal from 'assets/UPLB COSS.png';
 import {
 	CustomModal,

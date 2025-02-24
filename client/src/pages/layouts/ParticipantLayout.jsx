@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
+import ListIcon from '@mui/icons-material/List';
 import {
 	Box,
 	Button,
@@ -15,7 +16,7 @@ import SubmitModal from 'pages/participants/modals/SubmitModal';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bounce, toast } from 'react-toastify';
 
-import GeneralBackground from 'assets/GeneralBackground.png';
+import GeneralBackground from 'assets/GeneralBG.png';
 import seal from 'assets/UPLB COSS.png';
 import { 
 	BuyPowerUpsPopover,
@@ -418,7 +419,13 @@ const ParticipantLayout = ({
 		let currLeaderboard = await getLeaderboard();
 		setLeaderboardRows(currLeaderboard);
 	}
-	
+	/**
+	 * Handles on click event of view submission log button and navigates to submission log.
+	 */
+	const handleSubmissionLog = () => {
+		navigate('/participant/view-submission-log');
+	};
+  
 	/**
 	 * Handles opening of power-up popover.
 	 */
@@ -510,11 +517,21 @@ const ParticipantLayout = ({
 									icon={seal}
 									title="Code Wars"
 									subtitle="UPLB Computer Science Society"
+									additionalButtonIcon={<ListIcon/>}
+									additionalButtonText="Submission Log"
+									handleAdditionalButton={handleSubmissionLog}
 									startIcon={<ShoppingBasketIcon />}
 									buttonText="BUY POWER-UP"
 									disabledState={roundsDisablePowerUps.includes(currRound.toLowerCase()) && !isBuyImmunityChecked}
 									handleButton={handleViewPowerUps}
 								/> 
+								: location.pathname === '/participant/view-submission-log' ?
+								<TopBar
+                  isImg={true}
+                  icon={seal}
+                  title="Code Wars"
+                  subtitle="UPLB Computer Science Society"
+                />
 								:
 								<TopBar
 									isImg={false}

@@ -37,7 +37,11 @@ const TopBar = ({
 	buttonText,
 	startIcon,
 	handleButton,
-	disabledState
+	disabledState,
+	additionalButtonText,
+  additionalButtonIcon,
+  additionalButtonDisabled,
+  handleAdditionalButton
 }) => {
 	/** 
    * State handler for the element to be displayed before the title and subtitle.
@@ -126,7 +130,34 @@ const TopBar = ({
 
 				<div>
 					{/* Button */}
-					<Button
+					{additionalButtonText && (
+						<Button
+						variant="contained"
+						color="major"
+						size="large"
+						disabled={additionalButtonDisabled}
+						onClick={handleAdditionalButton}
+						startIcon={additionalButtonIcon ? <>{additionalButtonIcon}</> : <></>}
+						sx={{
+							minWidth: 30,
+							'&:hover': {
+								bgcolor: 'major.light',
+								color: 'general.main',
+							},
+							'&:disabled': {
+								bgcolor: 'major.light',
+								color: 'major.contrastText'
+							}
+						}}
+					>
+						{
+							onlySmallScreen ? null : <>{additionalButtonText}</>
+						}
+						</Button>
+					)}
+
+					{buttonText && (
+						<Button
 						variant="contained"
 						color="major"
 						size="large"
@@ -142,13 +173,16 @@ const TopBar = ({
 							'&:disabled': {
 								bgcolor: 'major.light',
 								color: 'major.contrastText'
-							}
+							},
+							marginLeft: "10px"
+
 						}}
 					>
 						{
 							onlySmallScreen ? null : <>{buttonText}</>
 						}
-					</Button>
+						</Button>
+					)}
 
 					{/* Temporary Logout Button for participants */}
 					<Button
