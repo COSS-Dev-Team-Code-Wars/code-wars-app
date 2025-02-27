@@ -1,0 +1,51 @@
+.container_editor_area {
+  tab-size: 2ch;
+  overflow: auto;
+}
+
+.container__editor {
+  font-size: 12px;
+  font-variant-ligatures: common-ligatures;
+  background-color: #201c1c;
+  border-radius: 3px;
+  color: #ddd;
+  line-height: 1.5;
+  font-size: 14px;
+  font-family: 'Fira code', 'Fira Mono', Consolas, Menlo, Courier, monospace;
+}
+
+.container__editor textarea {
+  outline: 0;
+}
+
+
+
+/* FOR DARK SCROLLBAR */
+/* Dark scrollbar only for .container_editor_area */
+.container_editor_area::-webkit-scrollbar {
+  width: 10px; /* Vertical scrollbar width */
+  height: 10px; /* Horizontal scrollbar height */
+}
+
+/* Style the scrollbar track (background of the scrollbar) */
+.container_editor_area::-webkit-scrollbar-track {
+  background-color: #333; /* Dark background for the scrollbar track */
+  border-radius: 10px;
+}
+
+/* Style the scrollbar thumb (the draggable part) */
+.container_editor_area::-webkit-scrollbar-thumb {
+  background-color: #555; /* Darker thumb color for dark mode */
+  border-radius: 10px;
+}
+
+/* Hover effect for the scrollbar thumb */
+.container_editor_area::-webkit-scrollbar-thumb:hover {
+  background-color: #888; /* Lighter thumb color on hover */
+}
+
+/* Apply Firefox scrollbar styles */
+.container_editor_area {
+  scrollbar-color: #555 #333; /* Thumb color and track color for Firefox */
+  scrollbar-width: thin; /* Thin scrollbar in Firefox */
+}

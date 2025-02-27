@@ -176,6 +176,45 @@ export const columnsProblems = [
 	},
 ];
 
+// columns for submission history log
+// used in participants - view submission log page
+export const columnsSubmissionLog = [
+	{
+		field: 'id',
+		headerName: 'ID',
+		width: 75,
+	},
+	{
+		field: 'teamName',
+		headerName: 'Team Name',
+		minWidth: 250,
+		// flex: 1,
+	},
+	{
+		field: 'problemTitle',
+		headerName: 'Problem Title',
+		minWidth: 300,
+		// maxWidth: 500,
+		// flex: 1,
+	},
+	{
+		field: 'submittedAt',
+		headerName: 'Submitted At',
+		minWidth: 200,
+		// maxWidth: 200,
+		// flex: 1,
+	},
+	{
+		field: 'uploadedFile',
+		headerName: 'Uploaded File',
+		minWidth: 250,
+		// maxWidth: 200,
+		headerAlign: 'left',
+		align: 'left',
+		// flex: 1,
+	},
+];
+
 // problem list rows
 // used in participants - view all problems page
 export const rowsProblems = [
@@ -256,6 +295,11 @@ export const columnsSubmissions = [
 		// flex: 1,
 	},
 	{
+		field: 'runTests',
+		headerName: 'Test Cases',
+		minWidth: 200,
+	},
+	{
 		field: 'evaluation',
 		headerName: 'Evaluation',
 		minWidth: 250,
@@ -281,9 +325,9 @@ export const rowsSubmissions = [
 	{ id: 0,teamName: 'Team Yeah Yeah', problemTitle: 'Special Calculator', submittedAt: '09:55:01', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Hermocilla'},
 	{ id: 1,teamName: 'Team Wiwzzz', problemTitle: 'Listing All Addends', submittedAt: '09:48:55', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Isungga'},
 	{ id: 2,teamName: 'Team Ooohh', problemTitle: 'BINGO', submittedAt: '09:45:08', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Doria'},
-	{ id: 3,teamName: 'Team One', problemTitle: 'Hamming distance, interleavings, and isomorphic', submittedAt: '09:37:44', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Hermocilla'},
-	{ id: 4,teamName: 'Team Two', problemTitle: 'The "Without" Problems', submittedAt: '09:33:04', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Isungga' },
-	{ id: 5,teamName: 'Team Three', problemTitle: 'Figuring Patterns', submittedAt: '09:30:15', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Doria' },
+	{ id: 3,teamName: 'team1', problemTitle: 'Hamming distance, interleavings, and isomorphic', submittedAt: '09:37:44', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Hermocilla'},
+	{ id: 4,teamName: 'team1', problemTitle: 'The "Without" Problems', submittedAt: '09:33:04', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Isungga' },
+	{ id: 5,teamName: 'Team 1', problemTitle: 'Figuring Patterns', submittedAt: '09:30:15', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Doria' },
 	{ id: 6,teamName: 'Team Four', problemTitle: 'Recursive Shifting', submittedAt: '09:10:45', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Hermocilla'},
 	{ id: 7,teamName: 'Team Five', problemTitle: 'Sudoku Validator', submittedAt: '09:10:45', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Isungga'},
 	{ id: 8,teamName: 'Team Six', problemTitle: 'Figure Output Pattern', submittedAt: '09:00:27', uploadedFile: 'filename.txt', evaluation: '', checkedBy: 'Sir Doria' },

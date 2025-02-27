@@ -23,6 +23,7 @@ import { theme } from 'theme.js';
 import { postFetch } from 'utils/apiRequest';
 import { baseURL } from 'utils/constants';
 import TimerPage from 'pages/admin/TimerPage';
+import ViewSubmissionLogPage from 'pages/participants/ViewSubmissionLogPage';
 
 
 
@@ -171,6 +172,7 @@ function App() {
 					>
 						<Route path="participant/view-all-problems" element={<ViewAllProblemsPage currRound={currRound} />} />
 						<Route path="participant/view-specific-problem" element={<ViewSpecificProblemPage />} />
+						<Route path="participant/view-submission-log" element={<ViewSubmissionLogPage/>}/>
 					</Route>
 
 					{/* Judge Pages */}

@@ -28,7 +28,7 @@ export const enterAdminPassword = async ({ title }) => {
 	let passwordVerify = async (pw) => {
 		// admin login POST request
 		const loginResponse = await postFetch(`${baseURL}/login`, {
-			username: 'Admin1',
+			username: 'admin',
 			password: pw
 		});
 

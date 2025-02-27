@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
-import GeneralBackground from 'assets/GeneralBackground.png';
+import GeneralBackground from 'assets/GeneralBG.png';
 import { FreezeOverlay, LoadingOverlay, Sidebar } from 'components';
 
 
