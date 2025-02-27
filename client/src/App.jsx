@@ -40,6 +40,10 @@ function App() {
 	 */
 	const [currRound, setCurrRound] = useState('START');
 	/**
+	 * State handler for current announcements.
+	 */
+	const [currAnnouncements, setCurrAnnouncements] = useState([]);
+	/**
 	 * State handler for toggle switch state of freeze screens.
 	 */
 	const [freezeChecked, setFreezeChecked] = useState(false);
@@ -161,6 +165,7 @@ function App() {
 								setIsLoggedIn={setIsLoggedIn} 
 								checkIfLoggedIn={checkIfLoggedIn}
 								currRound={currRound}
+								currAnnouncements={[]}
 								isBuyImmunityChecked={buyImmunityChecked}
 							/>
 						}
@@ -199,6 +204,7 @@ function App() {
 							element={
 								<GeneralOptionsPage 
 									setCurrRound={setCurrRound}
+									setCurrAnnouncements={setCurrAnnouncements}
 									roundRef={roundRef}
 									freezeRef={freezeRef}
 									immunityRef={immunityRef}

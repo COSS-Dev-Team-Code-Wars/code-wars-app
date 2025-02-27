@@ -1,11 +1,12 @@
 /* eslint-disable */ 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
 import {
 	Box,
 	Button,
 	Stack,
 	Switch,
+	TextField,
 	Typography
 } from '@mui/material';
 
@@ -39,6 +40,7 @@ const additionalStyles = {
  */
 const GeneralOptionsPage = ({
 	setCurrRound,
+	setCurrAnnouncements,
 	roundRef,
 	freezeRef,
 	immunityRef,
@@ -50,6 +52,12 @@ const GeneralOptionsPage = ({
 	 * State handler for rows in leaderboard modal.
 	 */
 	const [leaderboardRows, setLeaderboardRows] = useState([]);
+
+	/**
+	 * State handler for announcements.
+	 */
+	const [messages, setMessages] = React.useState([]);
+	const [newMessage, setNewMessage] = useState("");
 
 	/**
 	 * Fetch overall leaderboard data
@@ -182,6 +190,42 @@ const GeneralOptionsPage = ({
 	};
 
 	/**
+	 * Handler for the announce button. This will post the message to all active sessions.
+	 */
+	const handleAnnounce = async () => {
+		await enterAdminPassword({ title:'Post message to everyone'})
+			.then(async (res) => {
+
+				// proceed to request for announcement
+				if (res == true) {
+					if (!newMessage.trim()) return;
+
+					const timestamp = new Date().toLocaleString();
+					const newEntry = { message: newMessage, time: timestamp };
+
+					setMessages((prevMessages) => [newEntry, ...prevMessages]);
+					setNewMessage("");
+
+					const fResponse = await postFetch(`${baseURL}/announce`, {
+						messages: messages
+					});
+
+					setCurrAnnouncements(messages);
+
+					SuccessWindow.fire({
+						text: 'Successfully announced to everyone!'
+					});
+
+				} else if (res == false) {
+					ErrorWindow.fire({
+						title: 'Invalid Password!',
+						text: 'Password is incorrect.'
+					});
+				}
+			});
+	};
+
+	/**
 	 * Handler for the apply button. This will terminate all active sessions.
 	 */
 	const handleAllLogout = async () => {
@@ -258,15 +302,16 @@ const GeneralOptionsPage = ({
 					}}
 				>
 					{/* Labels */}
-					<Stack spacing={4} sx={{ marginRight: '2em' }}>
+					<Stack spacing={5} sx={{ marginRight: '2em' }}>
 						<span>Freeze all screens</span>
 						<span>Allow buy immunity</span>
+						<span>Announcement</span>
 						<span>Logout all sessions</span>
 						<span>Move Round</span>
 					</Stack>
 
 					{/* Buttons */}
-					<Stack spacing={3} sx={{ width: '15%' }}>
+					<Stack spacing={3} sx={{ width: '25%' }}>
 
 						{/* Toggle Switch */}
 						<Switch checked={freezeRef.current} onChange={(e) => handleFreeze(e)} />
@@ -274,12 +319,42 @@ const GeneralOptionsPage = ({
 						{/* Toggle Switch */}
 						<Switch checked={immunityRef.current} onChange={(e) => handleBuyImmunity(e)} />
 						
+						{/* Announcement Input Field and Post Button */}
+						<Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+							<TextField
+								variant="outlined"
+								multiline
+								value={newMessage}
+								onChange={(e) => setNewMessage(e.target.value)}
+								sx={{
+									bgcolor: 'major.light',
+									color: 'general.main',
+									borderRadius: '5px',
+								}}
+							/>
+							<Button
+								variant="contained"
+								color="major"
+								onClick={handleAnnounce}
+								sx={{
+									width: '30%',
+									'&:hover': {
+										bgcolor: 'major.light',
+										color: 'general.main',
+									}
+								}}
+							>
+								Post
+							</Button>
+						</Box>
+
 						{/* Apply Button */}
 						<Button
 							variant="contained"
 							color="major"
 							onClick={handleAllLogout}
 							sx={{
+								width: '55%',
 								'&:hover': {
 									bgcolor: 'major.light',
 									color: 'general.main',
@@ -298,6 +373,7 @@ const GeneralOptionsPage = ({
 							options={optionsRounds}
 							handleChange={(e) => handleRounds(e.target.value)}
 							value={roundRef.current}
+							sx={{ width: '55%' }}
 						/>
 					</Stack>
 				</Typography>
