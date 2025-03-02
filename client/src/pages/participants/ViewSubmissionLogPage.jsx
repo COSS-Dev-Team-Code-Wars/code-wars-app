@@ -7,7 +7,7 @@ import {
 
 import {
   Box,
-MenuItem,
+  MenuItem,
   Stack,
   Typography
 } from '@mui/material';
@@ -15,7 +15,7 @@ import { cloneDeep } from 'lodash';
 import { Link, useOutletContext } from 'react-router-dom';
 
 import {
-DropdownSelect,
+  DropdownSelect,
   Table,
 } from 'components/';
 import { socketClient } from 'socket/socket';
@@ -78,13 +78,11 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
   }, [fetchAllPrevious]);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      if (!fetchAllPrevious.current) {
-				fetchAllPrevious.current = true;
-				getSubmissions();
-			}
+    if (!fetchAllPrevious.current) {
+        fetchAllPrevious.current = true;
+        getSubmissions();
     }
-  }, [isLoggedIn]);
+}, [isLoggedIn]); 
 
   /**
    * Handles on click event on submitted file for a particular submission entry.
@@ -176,7 +174,24 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 * will be replaced if magkakaron ng server-side filtering
   */
   const getFilteredRows = (rowsSubmissions) => {
-    return rowsSubmissions;
+    // will hold the filtered rows
+		let temp = [];
+
+		if (selectedProblem === '') return rowsSubmissions;
+		
+		if (selectedProblem != '') {
+				rowsSubmissions.filter((row) => {
+					// if problemTitle matches selectedProblem
+					if (row.problemTitle === selectedProblem) {
+						// If matched row is not yet in temp2, push to temp
+						if (!temp.find(obj => obj.id === row.id)) {
+							temp.push(row);
+						}
+					}
+				});
+				return temp;
+		}
+		return temp;
   };
 
   /**
@@ -226,6 +241,9 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 					setSubmissionsList(newSubmissionsList);
 					subListRef.current = newSubmissionsList;
 				}
+
+        // Fetch submissions again after new submission
+        getSubmissions();
 			}
 		});
 
@@ -269,55 +287,55 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 
   };
 
-  /**
-   * Fetching submissions on page mount.
-   */
-  const getSubmissions = async () => {
-      const submissions = await getFetch(`${baseURL}/getallsubmissions`);
-  
-      let submissionEntries = [];
-  
-      if (submissions.results.length > 0) {
-        // map out the entries returned by fetch
-        submissions.results.forEach((entry, index) => {
-          // entries should be in reverse chronological order
-          submissionEntries.unshift({
-            id: entry.display_id,
-            teamName: entry.team_name,
-            problemTitle: entry.problem_title,
-            submittedAt: new Date(entry.timestamp).toLocaleTimeString(),
-            uploadedFile: entry.filename,
-            evaluation: entry.evaluation,
-            checkedBy: entry.judge_name,
-            content: entry.content,
-            possible_points: entry.possible_points,
-            dbId: entry._id,
-            totalCases: entry.total_test_cases,
-            isDisabled: true
-          });
-  
-          // add team name to teamsList
-          if (!teamsList.includes(entry.team_name)) {
-            teamsList.push(entry.team_name);
-          }
-          // add problem title to questionsList
-          if (!questionsList.includes(entry.problem_title)) {
-            questionsList.push(entry.problem_title);
-          }
-          
-          presentDbIds.current.push(entry._id);
-  
-          // set options for dropdown select filtering
-          setOptions([teamsList, questionsList]);
-        });
-  
-        // setting UI table state
-        setSubmissionsList([...submissionEntries]);
-        subListRef.current = submissionEntries;
-      }
+/**
+ * Fetching submissions on page mount.
+ */
+const getSubmissions = async () => {
+  const submissions = await getFetch(`${baseURL}/getallsubmissions`);
 
-      console.log("Fetched submissions:", submissionEntries);
-    };
+  let submissionEntries = [];
+
+  if (submissions.results.length > 0) {
+
+      // Filter submissions to only include the hardcoded team
+      const teamSubmissions = submissions.results.filter(
+          (entry) => entry.team_name === teamInfo.teamName
+      );
+
+      teamSubmissions.forEach((entry) => {
+          submissionEntries.unshift({
+              id: entry.display_id,
+              teamName: entry.team_name,
+              problemTitle: entry.problem_title,
+              submittedAt: new Date(entry.timestamp).toLocaleTimeString(),
+              uploadedFile: entry.filename,
+              evaluation: entry.evaluation,
+              checkedBy: entry.judge_name,
+              content: entry.content,
+              possible_points: entry.possible_points,
+              dbId: entry._id,
+              totalCases: entry.total_test_cases,
+              isDisabled: true,
+          });
+
+          // Add problem title to the questionsList
+          if (!questionsList.includes(entry.problem_title)) {
+              questionsList.push(entry.problem_title);
+          }
+
+          presentDbIds.current.push(entry._id);
+      });
+
+      // Set dropdown options for filtering
+      setOptions([questionsList]);
+
+      // Update table state
+      setSubmissionsList([...submissionEntries]);
+      subListRef.current = submissionEntries;
+  }
+};
+
+
 
   return (
     <Stack spacing={5} sx={{
@@ -362,7 +380,7 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
         additionalStyles={additionalStylesSubmissions}
         density={'comfortable'}
         columnHeaderHeight={45}
-        pageSizeOptions={[5, 8, 10]}
+        pageSizeOptions={[5, 8]}
         autoHeight
         initialState={{
           pagination: { paginationModel: { pageSize: 5 } },
