@@ -10,7 +10,8 @@ import {
 	Button,
 	ClickAwayListener,
 	IconButton,
-	Stack
+	Stack,
+	Typography
 } from '@mui/material';
 import SubmitModal from 'pages/participants/modals/SubmitModal';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -61,8 +62,8 @@ const ParticipantLayout = ({
 	setIsLoggedIn,
 	checkIfLoggedIn,
 	currRound,
-	currAnnouncements,
-	isBuyImmunityChecked
+	isBuyImmunityChecked,
+	currAnnouncements
 }) => {
 
 	/**
@@ -89,7 +90,7 @@ const ParticipantLayout = ({
 	 * State handler for announcement modal.
 	 */
 	const [openAnnouncement, setOpenAnnouncement] = useState(false);
-	currAnnouncements = [];
+
 	/**
 	 * State handler for team details
 	 * -- need na andito para sa buy power-ups
@@ -100,13 +101,8 @@ const ParticipantLayout = ({
 	});
 
 	// used for announcement icon red badge
-	const [isClicked, setIsClicked] = useState(false);
-	const [hasNewUpdate, setHasNewUpdate] = useState(true);
-
-	const handleClick = () => {
-		setIsClicked(true); // Remove the red dot after clicking
-		handleOpenAnnouncement();
-	};
+	const [hasNewUpdate, setHasNewUpdate] = useState(false);
+	const [lastSeenCount, setLastSeenCount] = useState(0);
 
 	// used for client-side routing from view all problems page
 	const location = useLocation();
@@ -175,14 +171,6 @@ const ParticipantLayout = ({
 		setShowDebuffs(false);
 		setSelectedPowerUp(null);
 	}, [currRound]);
-
-	useEffect(() => {
-		if (currAnnouncements.length > 0) {
-			console.log("Announcements updated:", currAnnouncements);
-			
-			localStorage.setItem("announcements", JSON.stringify(currAnnouncements));
-		}
-	}, [currAnnouncements]);
 
 	/**
 	 * Web sockets listener for power-ups toast notifs
@@ -359,6 +347,12 @@ const ParticipantLayout = ({
 		};
 	}, [socketClient]);
 
+	useEffect(() => {
+		if (currAnnouncements.length > lastSeenCount) {
+			setHasNewUpdate(true);
+		}
+	}, [currAnnouncements]);
+
 	/**
 	 * Fetching questions for the current round
 	 */
@@ -489,11 +483,12 @@ const ParticipantLayout = ({
 	};
 
 	/**
-   * Handles opening of modal window for announcements.
-   */
+     * Handles opening of modal window for announcements.
+     */
 	const handleOpenAnnouncement = () => {
-		setOpenAnnouncement(true);
+		setOpenAnnouncement(!openAnnouncement);
 		setHasNewUpdate(false);
+		setLastSeenCount(currAnnouncements.length);
 	};
 
 	/**
@@ -553,8 +548,7 @@ const ParticipantLayout = ({
 									buttonText="BUY POWER-UP"
 									disabledState={roundsDisablePowerUps.includes(currRound.toLowerCase()) && !isBuyImmunityChecked}
 									handleButton={handleViewPowerUps}
-									handleClick={handleClick}
-									isClicked={isClicked}
+									handleClick={handleOpenAnnouncement}
 									hasNewUpdate={hasNewUpdate}
 								/> 
 								: location.pathname === '/participant/view-submission-log' ?
@@ -588,8 +582,7 @@ const ParticipantLayout = ({
 									buttonText="UPLOAD SUBMISSION"
 									startIcon={<FileUploadIcon />}
 									handleButton={handleButton}
-									handleClick={handleClick}
-									isClicked={isClicked}
+									handleClick={handleOpenAnnouncement}
 									hasNewUpdate={hasNewUpdate}
 									disabledState={
 										currRound.toLowerCase() == 'wager' ?
@@ -748,29 +741,26 @@ const ParticipantLayout = ({
 						
 						{/* Announcement Modal Window */}
 						<CustomModal isOpen={openAnnouncement} setOpen={setOpenAnnouncement} windowTitle="Announcement">
-							{/* console.log(currAnnouncements); */}
-							{/* <Table
-								rows={currAnnouncements}
-								columns={[
-									{ field: 'message', headerName: 'Message', flex: 1 },
-									{ field: 'time', headerName: 'Time Sent', flex: 1 }
-								]}
-								additionalStyles={additionalStyles}
-								pageSize={5}
-								pageSizeOptions={[5, 10]}
-								initialState={{
-									pagination: { paginationModel: { pageSize: 5 } },
-								}}
-								// If there are no entries yet
-								slots={{
-									noRowsOverlay: () => (
-										<Stack height="100%" alignItems="center" justifyContent="center">
-											<Typography><em>No announcements to display.</em></Typography>
-										</Stack>
-									)
-								}}
-							/> */}
-							<span>No announcements to display.</span>
+							{currAnnouncements.length > 0 ? (
+								<Table
+									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
+									columns={[
+										{ field: "message", headerName: "Message", flex: 1 },
+										{ field: "time", headerName: "Time Sent", flex: 1 }
+									]}
+									hideFields={[]}
+									additionalStyles={additionalStyles}
+									pageSize={5}
+									pageSizeOptions={[5, 10]}
+									initialState={{
+										pagination: { paginationModel: { pageSize: 5 } },
+									}}
+								/>
+							) : (
+								<Stack height="100%" alignItems="center" justifyContent="center">
+									<Typography><em>No announcements to display.</em></Typography>
+								</Stack>
+							)}
 						</CustomModal>
 
 						{/* Submit Modal Window */}

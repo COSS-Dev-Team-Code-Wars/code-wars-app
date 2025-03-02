@@ -40,10 +40,6 @@ function App() {
 	 */
 	const [currRound, setCurrRound] = useState('START');
 	/**
-	 * State handler for current announcements.
-	 */
-	const [currAnnouncements, setCurrAnnouncements] = useState([]);
-	/**
 	 * State handler for toggle switch state of freeze screens.
 	 */
 	const [freezeChecked, setFreezeChecked] = useState(false);
@@ -51,11 +47,16 @@ function App() {
 	 * State handler for toggle switch state of buying immunity.
 	 */
 	const [buyImmunityChecked, setBuyImmunityChecked] = useState(false);
+	/**
+	 * State handler for announcements.
+	 */
+	const [announcementList, setAnnouncementList] = useState([]);
 
 	const roundRef = useRef('START');
 	const freezeRef = useRef(false); 
 	const immunityRef = useRef(false); 
 	const overlayFreezeLoad = useRef(false);
+	const announcementRef = useRef([]);
 
 
 	const checkIfLoggedIn = async () => {
@@ -138,6 +139,11 @@ function App() {
 				immunityRef.current = false; 
 			}
 
+			if (adminMessage.messages && announcementRef.current && adminMessage.messages.length > announcementRef.current.length) {
+				setAnnouncementList(adminMessage.messages);
+				announcementRef.current = adminMessage.messages;
+			}
+
 			if (adminMessage.round.toUpperCase() != roundRef.current) {
 				setCurrRound(adminMessage.round.toUpperCase());
 				roundRef.current = adminMessage.round.toUpperCase();
@@ -165,8 +171,8 @@ function App() {
 								setIsLoggedIn={setIsLoggedIn} 
 								checkIfLoggedIn={checkIfLoggedIn}
 								currRound={currRound}
-								currAnnouncements={[]}
 								isBuyImmunityChecked={buyImmunityChecked}
+								currAnnouncements={announcementList}
 							/>
 						}
 					>
@@ -183,6 +189,7 @@ function App() {
 								isLoggedIn={isLoggedIn}
 								setIsLoggedIn={setIsLoggedIn} 
 								checkIfLoggedIn={checkIfLoggedIn} 
+								currAnnouncements={announcementList}
 							/>
 						}
 					>
@@ -204,12 +211,13 @@ function App() {
 							element={
 								<GeneralOptionsPage 
 									setCurrRound={setCurrRound}
-									setCurrAnnouncements={setCurrAnnouncements}
 									roundRef={roundRef}
 									freezeRef={freezeRef}
 									immunityRef={immunityRef}
+									announcementRef={announcementRef}
 									setFreezeChecked={setFreezeChecked}
 									setBuyImmunityChecked={setBuyImmunityChecked}
+									setAnnouncementList={setAnnouncementList}
 								/>
 							}
 						/>
