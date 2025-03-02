@@ -40,12 +40,13 @@ const additionalStyles = {
  */
 const GeneralOptionsPage = ({
 	setCurrRound,
-	setCurrAnnouncements,
 	roundRef,
 	freezeRef,
 	immunityRef,
+	announcementRef,
 	setFreezeChecked,
 	setBuyImmunityChecked,
+	setAnnouncementList
 }) => {
 
 	/**
@@ -56,7 +57,6 @@ const GeneralOptionsPage = ({
 	/**
 	 * State handler for announcements.
 	 */
-	const [messages, setMessages] = React.useState([]);
 	const [newMessage, setNewMessage] = useState("");
 
 	/**
@@ -199,24 +199,30 @@ const GeneralOptionsPage = ({
 				// proceed to request for announcement
 				if (res == true) {
 					if (!newMessage.trim()) return;
-
+			
 					const timestamp = new Date().toLocaleString();
 					const newEntry = { message: newMessage, time: timestamp };
 
-					setMessages((prevMessages) => [newEntry, ...prevMessages]);
-					setNewMessage("");
+					// Update state with new message
+					setAnnouncementList((prevMessages) => {
+						const updatedMessages = [newEntry, ...prevMessages];
 
-					const fResponse = await postFetch(`${baseURL}/announce`, {
-						messages: messages
+						announcementRef.current = updatedMessages;
+
+						return updatedMessages;
 					});
 
-					setCurrAnnouncements(messages);
+					const fResponse = await postFetch(`${baseURL}/announce`, {
+						messages: announcementRef.current,
+					});
+
+					setNewMessage("");
 
 					SuccessWindow.fire({
 						text: 'Successfully announced to everyone!'
 					});
 
-				} else if (res == false) {
+				} else {
 					ErrorWindow.fire({
 						title: 'Invalid Password!',
 						text: 'Password is incorrect.'

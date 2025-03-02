@@ -24,6 +24,7 @@ const commandChannel = (req: Request, res: Response) => {
           res.write(`data: ${JSON.stringify({
             command,
             buyImmunity,
+            messages,
             round
           })}\n\n`);
 
@@ -41,14 +42,6 @@ const commandChannel = (req: Request, res: Response) => {
         clearInterval(interval);
         res.end();
       });
-}
-
-const setAnnouncement = (req: Request, res: Response) => {
-    messages = req.body.messages;
-
-    return res.send(
-      { ok: true }
-    );
 }
 
 const setAdminCommand = (req: Request, res: Response) => {
@@ -93,6 +86,15 @@ const setBuyImmunity = (req: Request, res: Response) => {
   return res.send(
       { ok: true }
     );
+}
+
+const setAnnouncement = (req: Request, res: Response) => {
+  messages = req.body.messages;
+
+  console.log("Real ba", messages);
+  return res.send(
+    { ok: true }
+  );
 }
 
 const setEndTimer = (bool: boolean) => {

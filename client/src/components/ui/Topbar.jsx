@@ -40,7 +40,6 @@ const TopBar = ({
 	startIcon,
 	handleButton,
 	handleClick,
-	isClicked,
 	hasNewUpdate,
 	disabledState,
 	additionalButtonText,
@@ -208,7 +207,7 @@ const TopBar = ({
 						<Badge 
 							color="error" 
 							variant="dot" 
-							invisible={isClicked || !hasNewUpdate}
+							invisible={!hasNewUpdate}
 						>
 							<CampaignIcon />
 						</Badge>
