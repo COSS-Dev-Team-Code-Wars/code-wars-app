@@ -27,7 +27,7 @@ import { socketClient } from 'socket/socket';
 /**
  * Additional styling for Leaderboard table
  */
-const additionalStylesLeaderboard = {
+const additionalStyles = {
 	'& .MuiDataGrid-columnHeader': {
 		bgcolor: 'rgba(0, 0, 0, 0.1)',
 	},
@@ -188,7 +188,7 @@ const JudgeLayout = ({
 								rows={leaderboardRows}
 								columns={columnsLeaderboard}
 								hideFields={['id', 'totalSpent']}
-								additionalStyles={additionalStylesLeaderboard}
+								additionalStyles={additionalStyles}
 								pageSize={5}
 								pageSizeOptions={[5, 10]}
 								initialState={{
@@ -210,9 +210,21 @@ const JudgeLayout = ({
 							{currAnnouncements.length > 0 ? (
 								<Table
 									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
-									columns={[
-										{ field: "message", headerName: "Message", flex: 1 },
-										{ field: "time", headerName: "Time Sent", flex: 1 }
+									columns={[{
+											field: "message", headerName: "Message", flex: 1, minWidth: 150,
+											renderCell: (params) => (
+											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", paddingTop: "10px" }}>
+												{params.value}
+											</div>
+											),
+										},
+										{ field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
+											renderCell: (params) => (
+												<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
+													{params.value}
+												</div>
+												),
+										}
 									]}
 									hideFields={[]}
 									additionalStyles={additionalStyles}
@@ -221,6 +233,7 @@ const JudgeLayout = ({
 									initialState={{
 										pagination: { paginationModel: { pageSize: 5 } },
 									}}
+									getRowHeight={() => "auto"}
 								/>
 							) : (
 								<Stack height="100%" alignItems="center" justifyContent="center">
