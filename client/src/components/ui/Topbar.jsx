@@ -7,12 +7,14 @@ import {
 	AppBar,
 	Box,
 	Button,
+	Badge,
 	Toolbar,
 	Typography,
 	useMediaQuery,
 	useTheme
 } from '@mui/material';
 import LogoutIcon from '@mui/icons-material/Logout';
+import CampaignIcon from '@mui/icons-material/Campaign';
 
 import { handleLogout } from 'utils/commonFunctions';
 
@@ -37,6 +39,8 @@ const TopBar = ({
 	buttonText,
 	startIcon,
 	handleButton,
+	handleClick,
+	hasNewUpdate,
 	disabledState,
 	additionalButtonText,
   additionalButtonIcon,
@@ -60,9 +64,9 @@ const TopBar = ({
 
 
 	const theme = useTheme();
-  const onlySmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
-  const onlyMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
-  const onlyLargeScreen = useMediaQuery(theme.breakpoints.down("lg"));
+	const onlySmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+	const onlyMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
+	const onlyLargeScreen = useMediaQuery(theme.breakpoints.down("lg"));
 
 
 
@@ -183,6 +187,31 @@ const TopBar = ({
 						}
 						</Button>
 					)}
+
+					{/* Temporary Announcement Button for participants */}
+					<Button
+						variant="contained"
+						color="major"
+						size="large"
+						onClick={handleClick}
+						sx={{
+							minWidth: 10,
+							'&:hover': {
+								bgcolor: 'major.light',
+								color: 'general.main',
+							},
+							marginLeft: "10px"
+						}}
+					>
+						{/* Red dot appears when there's a new update & button hasn't been clicked yet */}
+						<Badge 
+							color="error" 
+							variant="dot" 
+							invisible={!hasNewUpdate}
+						>
+							<CampaignIcon />
+						</Badge>
+					</Button>
 
 					{/* Temporary Logout Button for participants */}
 					<Button

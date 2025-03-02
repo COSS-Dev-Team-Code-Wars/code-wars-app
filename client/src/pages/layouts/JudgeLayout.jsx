@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 
 import ViewListIcon from '@mui/icons-material/ViewList';
-import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
 
 import GeneralBackground from 'assets/GeneralBG.png';
@@ -14,6 +13,11 @@ import {
 	Table,
 	TopBar
 } from 'components';
+import {
+	Box,
+	Stack,
+	Typography
+} from '@mui/material';
 import getLeaderboard from 'components/widgets/leaderboard/getLeaderboard';
 import { columnsLeaderboard } from 'utils/dummyData';
 import { socketClient } from 'socket/socket';
@@ -23,7 +27,7 @@ import { socketClient } from 'socket/socket';
 /**
  * Additional styling for Leaderboard table
  */
-const additionalStylesLeaderboard = {
+const additionalStyles = {
 	'& .MuiDataGrid-columnHeader': {
 		bgcolor: 'rgba(0, 0, 0, 0.1)',
 	},
@@ -41,15 +45,24 @@ const JudgeLayout = ({
 	isLoggedIn,
 	setIsLoggedIn,
 	checkIfLoggedIn,
+	currAnnouncements
 }) => {
 	/**
-   * State handler for overall leaderboard modal window
-   */
+     * State handler for overall leaderboard modal window
+     */
 	const [open, setOpen] = useState(false);
 	/**
-   * State handler for rows of overall leaderboard
-   */
+     * State handler for rows of overall leaderboard
+     */
 	const [leaderboardRows, setLeaderboardRows] = useState([]);
+	/**
+	 * State handler for announcement modal.
+	 */
+	const [openAnnouncement, setOpenAnnouncement] = useState(false);
+
+	// used for announcement icon red badge
+	const [hasNewUpdate, setHasNewUpdate] = useState(false);
+	const [lastSeenCount, setLastSeenCount] = useState(0);
 
 	/**
 	 * Fetch overall leaderboard data
@@ -105,11 +118,26 @@ const JudgeLayout = ({
 		};
 	});
 
+	useEffect(() => {
+		if (currAnnouncements.length > lastSeenCount) {
+			setHasNewUpdate(true);
+		}
+	}, [currAnnouncements]);
+
 	/**
-	* Handles opening of modal window for overall leaderboard.
-	*/
+	 * Handles opening of modal window for overall leaderboard.
+	 */
 	const handleButton = () => {
 		setOpen(true);
+	};
+
+	/**
+     * Handles opening of modal window for announcements.
+     */
+	const handleOpenAnnouncement = () => {
+		setOpenAnnouncement(!openAnnouncement);
+		setHasNewUpdate(false);
+		setLastSeenCount(currAnnouncements.length);
 	};
   
   
@@ -147,6 +175,8 @@ const JudgeLayout = ({
 							buttonText="VIEW LEADERBOARD"
 							startIcon={<ViewListIcon />}
 							handleButton={handleButton}
+							handleClick={handleOpenAnnouncement}
+							hasNewUpdate={hasNewUpdate}
 						/>
   
 						{/* Children */}
@@ -158,7 +188,7 @@ const JudgeLayout = ({
 								rows={leaderboardRows}
 								columns={columnsLeaderboard}
 								hideFields={['id', 'totalSpent']}
-								additionalStyles={additionalStylesLeaderboard}
+								additionalStyles={additionalStyles}
 								pageSize={5}
 								pageSizeOptions={[5, 10]}
 								initialState={{
@@ -173,6 +203,43 @@ const JudgeLayout = ({
 									)
 								}}
 							/>
+						</CustomModal>
+
+						{/* Announcement Modal Window */}
+						<CustomModal isOpen={openAnnouncement} setOpen={setOpenAnnouncement} windowTitle="Announcement">
+							{currAnnouncements.length > 0 ? (
+								<Table
+									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
+									columns={[{
+											field: "message", headerName: "Message", flex: 1, minWidth: 150,
+											renderCell: (params) => (
+											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", paddingTop: "10px" }}>
+												{params.value}
+											</div>
+											),
+										},
+										{ field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
+											renderCell: (params) => (
+												<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
+													{params.value}
+												</div>
+												),
+										}
+									]}
+									hideFields={[]}
+									additionalStyles={additionalStyles}
+									pageSize={5}
+									pageSizeOptions={[5, 10]}
+									initialState={{
+										pagination: { paginationModel: { pageSize: 5 } },
+									}}
+									getRowHeight={() => "auto"}
+								/>
+							) : (
+								<Stack height="100%" alignItems="center" justifyContent="center">
+									<Typography><em>No announcements to display.</em></Typography>
+								</Stack>
+							)}
 						</CustomModal>
 					</Box>
 

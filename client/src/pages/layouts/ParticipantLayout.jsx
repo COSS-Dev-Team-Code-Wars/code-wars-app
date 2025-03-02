@@ -10,7 +10,8 @@ import {
 	Button,
 	ClickAwayListener,
 	IconButton,
-	Stack
+	Stack,
+	Typography
 } from '@mui/material';
 import SubmitModal from 'pages/participants/modals/SubmitModal';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
@@ -61,7 +62,8 @@ const ParticipantLayout = ({
 	setIsLoggedIn,
 	checkIfLoggedIn,
 	currRound,
-	isBuyImmunityChecked
+	isBuyImmunityChecked,
+	currAnnouncements
 }) => {
 
 	/**
@@ -85,6 +87,11 @@ const ParticipantLayout = ({
 	 */
 	const [openLeaderboard, setOpenLeaderboard] = useState(false);
 	/**
+	 * State handler for announcement modal.
+	 */
+	const [openAnnouncement, setOpenAnnouncement] = useState(false);
+
+	/**
 	 * State handler for team details
 	 * -- need na andito para sa buy power-ups
 	 */
@@ -93,6 +100,9 @@ const ParticipantLayout = ({
 		score: 0
 	});
 
+	// used for announcement icon red badge
+	const [hasNewUpdate, setHasNewUpdate] = useState(false);
+	const [lastSeenCount, setLastSeenCount] = useState(0);
 
 	// used for client-side routing from view all problems page
 	const location = useLocation();
@@ -161,7 +171,6 @@ const ParticipantLayout = ({
 		setShowDebuffs(false);
 		setSelectedPowerUp(null);
 	}, [currRound]);
-
 
 	/**
 	 * Web sockets listener for power-ups toast notifs
@@ -311,7 +320,7 @@ const ParticipantLayout = ({
 			socketClient.off('evalupdate');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
-	});
+	}, [socketClient]);
   
 	/**
 	 * Web sockets for real time update of leaderboard
@@ -336,7 +345,13 @@ const ParticipantLayout = ({
 			socketClient.off('updateScoreOnBuyDebuff');
 			socketClient.off('newBuff');
 		};
-	});
+	}, [socketClient]);
+
+	useEffect(() => {
+		if (currAnnouncements.length > lastSeenCount) {
+			setHasNewUpdate(true);
+		}
+	}, [currAnnouncements]);
 
 	/**
 	 * Fetching questions for the current round
@@ -401,8 +416,8 @@ const ParticipantLayout = ({
 			teamId: JSON.parse(localStorage?.getItem('user'))._id
 		});
 
-		console.log("qResponse")
-		console.log(qResponse);
+		// console.log("qResponse")
+		// console.log(qResponse);
 
 		setProblem(qResponse.question);
 		setProblemDescription(qResponse.question.body);
@@ -468,6 +483,15 @@ const ParticipantLayout = ({
 	};
 
 	/**
+     * Handles opening of modal window for announcements.
+     */
+	const handleOpenAnnouncement = () => {
+		setOpenAnnouncement(!openAnnouncement);
+		setHasNewUpdate(false);
+		setLastSeenCount(currAnnouncements.length);
+	};
+
+	/**
 	 * Get the score of the team
 	 */
 	const getTeamScore = async () => {
@@ -510,7 +534,7 @@ const ParticipantLayout = ({
 				: isLoggedIn ?
           
 					<>
-						<Stack>
+						<Stack style={{height: "100%"}}>
 							{ location.pathname === '/participant/view-all-problems' ?
 								<TopBar
 									isImg={true}
@@ -524,6 +548,8 @@ const ParticipantLayout = ({
 									buttonText="BUY POWER-UP"
 									disabledState={roundsDisablePowerUps.includes(currRound.toLowerCase()) && !isBuyImmunityChecked}
 									handleButton={handleViewPowerUps}
+									handleClick={handleOpenAnnouncement}
+									hasNewUpdate={hasNewUpdate}
 								/> 
 								: location.pathname === '/participant/view-submission-log' ?
 								<TopBar
@@ -556,6 +582,8 @@ const ParticipantLayout = ({
 									buttonText="UPLOAD SUBMISSION"
 									startIcon={<FileUploadIcon />}
 									handleButton={handleButton}
+									handleClick={handleOpenAnnouncement}
+									hasNewUpdate={hasNewUpdate}
 									disabledState={
 										currRound.toLowerCase() == 'wager' ?
 										evaluation != 'No Submission' :
@@ -565,9 +593,10 @@ const ParticipantLayout = ({
 							}
 
 							<Box
-								gap={7}
+								gap={2}
 								sx={{
 									display: 'flex',
+									height: "100%",
 									flexDirection: {
 										xs: 'column',
 										xl: 'row'
@@ -708,6 +737,43 @@ const ParticipantLayout = ({
 									)
 								}}
 							/>
+						</CustomModal>
+						
+						{/* Announcement Modal Window */}
+						<CustomModal isOpen={openAnnouncement} setOpen={setOpenAnnouncement} windowTitle="Announcement">
+							{currAnnouncements.length > 0 ? (
+								<Table
+									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
+									columns={[{
+											field: "message", headerName: "Message", flex: 1, minWidth: 150,
+											renderCell: (params) => (
+											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", paddingTop: "10px" }}>
+												{params.value}
+											</div>
+											),
+										},
+										{ field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
+											renderCell: (params) => (
+												<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
+													{params.value}
+												</div>
+												),
+										}
+									]}
+									hideFields={[]}
+									additionalStyles={additionalStyles}
+									pageSize={5}
+									pageSizeOptions={[5, 10]}
+									initialState={{
+										pagination: { paginationModel: { pageSize: 5 } },
+									}}
+									getRowHeight={() => "auto"}
+								/>
+							) : (
+								<Stack height="100%" alignItems="center" justifyContent="center">
+									<Typography><em>No announcements to display.</em></Typography>
+								</Stack>
+							)}
 						</CustomModal>
 
 						{/* Submit Modal Window */}

@@ -7,6 +7,8 @@ var buyImmunity = "disabled";
 var round = "start";
 var counter = 0;
 var endTimer = false;
+type Message = { message: string; timestamp: string };
+let messages: Message[] = [];
 
 const commandChannel = (req: Request, res: Response) => {
     console.log("Connected channel for admin commands.");
@@ -22,6 +24,7 @@ const commandChannel = (req: Request, res: Response) => {
           res.write(`data: ${JSON.stringify({
             command,
             buyImmunity,
+            messages,
             round
           })}\n\n`);
 
@@ -85,8 +88,17 @@ const setBuyImmunity = (req: Request, res: Response) => {
     );
 }
 
+const setAnnouncement = (req: Request, res: Response) => {
+  messages = req.body.messages;
+
+  console.log("Real ba", messages);
+  return res.send(
+    { ok: true }
+  );
+}
+
 const setEndTimer = (bool: boolean) => {
   endTimer = bool;
 }
 
-export { commandChannel, setAdminCommand, setBuyImmunity, round, endTimer, buyImmunity, setEndTimer };
+export { commandChannel, setAdminCommand, setAnnouncement, setBuyImmunity, messages, round, endTimer, buyImmunity, setEndTimer };
