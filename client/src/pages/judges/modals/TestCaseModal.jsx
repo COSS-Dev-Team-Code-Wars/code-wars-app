@@ -170,7 +170,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
-        <Box sx={{ maxHeight: "400px", overflowY: "auto", width: "500px" }}>
+        <Box sx={{ maxHeight: "400px", overflowY: "auto" }}>
           <Typography variant="body1" sx={{ marginBottom: "20px" }}>
             Below are the test cases and their results:
           </Typography>
@@ -212,14 +212,17 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
         </Box>
       )}
 
-      <Box sx={{ display: "flex", justifyContent: "flex-end", marginTop: "20px" }}>
-        <Button
-          variant="contained"
-          onClick={() => setOpen(false)}
-          sx={{ bgcolor: "#808080", "&:hover": { bgcolor: "#646464" } }}
-        >
-          Close
-        </Button>
+      <Box sx={{ marginTop: "20px", padding: "10px", border: "1px solid #ddd", borderRadius: "5px", width: "800px"}}>
+        <Typography variant="h6" color="#4978c6" sx={{ fontWeight: "bold" }}>Uploaded File</Typography>
+        <Typography variant="body2" sx={{ fontWeight: "bold" }}>
+          {submission?.uploadedFile || "No file uploaded"}
+        </Typography>
+
+        <Box sx={{ maxHeight: "200px", overflowY: "auto", padding: "5px", backgroundColor: "#f4f4f4", borderRadius: "5px", maxHeight: "550px" }}>
+          <Typography variant="body2" component="pre" sx={{ whiteSpace: "pre-wrap" }}>
+            {submission?.content || "No content available"}
+          </Typography>
+        </Box>
       </Box>
     </CustomModal>
   );
