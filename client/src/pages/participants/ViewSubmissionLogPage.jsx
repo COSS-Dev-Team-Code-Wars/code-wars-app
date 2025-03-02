@@ -273,7 +273,7 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
    * Fetching submissions on page mount.
    */
   const getSubmissions = async () => {
-      const submissions = await getFetch(`${baseURL}/getteamsubmissions`);
+      const submissions = await getFetch(`${baseURL}/getallsubmissions`);
   
       let submissionEntries = [];
   
@@ -315,6 +315,8 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
         setSubmissionsList([...submissionEntries]);
         subListRef.current = submissionEntries;
       }
+
+      console.log("Fetched submissions:", submissionEntries);
     };
 
   return (
@@ -323,7 +325,8 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
         xs: 5,
         md: 8,
         lg: 15
-      }
+      },
+      mb: 2.5 // Add bottom margin
     }} >
 
       {/* Dropdown selects for problem title */}
