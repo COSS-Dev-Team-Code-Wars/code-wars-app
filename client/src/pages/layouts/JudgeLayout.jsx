@@ -211,7 +211,7 @@ const JudgeLayout = ({
 								<Table
 									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
 									columns={[{
-											field: "message", headerName: "Message", flex: 1, minWidth: 150,
+											field: "message", headerName: "Message", flex: 1.2, minWidth: 150,
 											renderCell: (params) => (
 											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", paddingTop: "10px" }}>
 												{params.value}
@@ -234,6 +234,17 @@ const JudgeLayout = ({
 										pagination: { paginationModel: { pageSize: 5 } },
 									}}
 									getRowHeight={() => "auto"}
+									sx={{
+										height: 400, 
+										width: 600,
+										overflow: "auto",
+										'& .MuiDataGrid-columnHeader': {
+											bgcolor: 'rgba(0, 0, 0, 0.1)',
+										},
+										bgcolor: 'transparent',
+										border: 'none',
+										padding: 2,
+									}}
 								/>
 							) : (
 								<Stack height="100%" alignItems="center" justifyContent="center">

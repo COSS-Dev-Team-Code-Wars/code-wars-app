@@ -170,7 +170,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
       ) : error ? (
         <Typography color="error">{error}</Typography>
       ) : (
-        <Box sx={{ maxHeight: "400px", overflowY: "auto" }}>
+        <Box sx={{ maxHeight: "250px", overflowY: "auto" }}>
           <Typography variant="body1" sx={{ marginBottom: "20px" }}>
             Below are the test cases and their results:
           </Typography>
@@ -218,7 +218,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
           {submission?.uploadedFile || "No file uploaded"}
         </Typography>
 
-        <Box sx={{ maxHeight: "200px", overflowY: "auto", padding: "5px", backgroundColor: "#f4f4f4", borderRadius: "5px", maxHeight: "550px" }}>
+        <Box sx={{ maxHeight: "400px", overflowY: "auto", padding: "5px", backgroundColor: "#f4f4f4", borderRadius: "5px" }}>
           <Typography variant="body2" component="pre" sx={{ whiteSpace: "pre-wrap" }}>
             {submission?.content || "No content available"}
           </Typography>
