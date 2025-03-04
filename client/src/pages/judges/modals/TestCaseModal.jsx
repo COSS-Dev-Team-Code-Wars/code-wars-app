@@ -15,11 +15,11 @@ import { baseURL } from "utils/constants";
 
 const programmingLanguages = [
     { name: "Python", value: "python", extension: ".py", id: 71 },
-    { name: "C++", value: "cpp", extension: ".cpp", id: 54 },
+    //{ name: "C++", value: "cpp", extension: ".cpp", id: 54 },
     { name: "C", value: "c", extension: ".c", id: 50 },
-    { name: "JavaScript", value: "javascript", extension: ".js", id: 63 },
-    { name: "Java", value: "java", extension: ".java", id: 62 },
-    { name: "Go", value: "go", extension: ".go", id: 60 },
+    //{ name: "JavaScript", value: "javascript", extension: ".js", id: 63 },
+    //{ name: "Java", value: "java", extension: ".java", id: 62 },
+    //{ name: "Go", value: "go", extension: ".go", id: 60 },
 ];  
 
 const TestCaseModal = ({ open, setOpen, submission }) => {
