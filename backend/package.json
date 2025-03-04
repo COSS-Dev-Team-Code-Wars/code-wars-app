@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev:server": "tsnd server.ts"
+    "dev:server": "tsnd server.ts",
+    "build:server": "tsc"
   },
   "keywords": [],
   "author": "",
