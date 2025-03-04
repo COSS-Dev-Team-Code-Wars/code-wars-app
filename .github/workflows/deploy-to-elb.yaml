@@ -55,7 +55,7 @@ jobs:
           aws elasticbeanstalk create-application-version \
             --application-name cosscoss-codewars \
             --version-label ${{ env.VERSION }} \
-            --source-bundle S3Bucket=${{ secrets.AWS_BUCKET_NAME }},S3Key=deploy-${{ env.VERSION }}.zip
+            --source-bundle S3Bucket="${{ secrets.AWS_BUCKET_NAME }}",S3Key=deploy-${{ env.VERSION }}.zip
 
           aws elasticbeanstalk update-environment \
             --environment-name codewars-${{ env.BRANCH_NAME }} \
