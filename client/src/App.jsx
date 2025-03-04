@@ -32,6 +32,14 @@ var immortalHTML = '<div class="MuiBox-root css-1ato3wx"><div class="MuiBox-root
 
 
 function App() {
+
+	const setEnvironmentTitle = () => {
+		const currentEnv = process.env.REACT_APP_ENVIRONMENT;
+		if (currentEnv !== 'production') {
+			document.title = `[${ currentEnv }] - Code Wars`;
+		}
+	};
+
 	const [freezeOverlay, setFreezeOverlay] = useState(false);
 
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -65,6 +73,9 @@ function App() {
 		setIsLoggedIn(response.isLoggedIn);
 	};
 
+	useEffect(() => {
+		setEnvironmentTitle();
+	}, []);
 
 	useEffect(() => {
 		const eventSource = new EventSource(`${baseURL}/admincommand`);
