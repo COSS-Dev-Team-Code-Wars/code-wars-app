@@ -27,7 +27,7 @@ jobs:
 
       - name: Build backend application
         working-directory: backend
-        run: npm run build
+        run: npm run build:server
 
       - name: Generate unique deployment version (based on branch)
         id: version
