@@ -17,13 +17,13 @@ import {
 	TopTeamsPage,
 	ViewAllProblemsPage,
 	ViewSpecificProblemPage,
+	ViewSubmissionLogPage,
 	ViewSubmissionsPage,
 } from 'pages/';
 import { theme } from 'theme.js';
 import { postFetch } from 'utils/apiRequest';
 import { baseURL } from 'utils/constants';
 import TimerPage from 'pages/admin/TimerPage';
-import ViewSubmissionLogPage from 'pages/participants/ViewSubmissionLogPage';
 
 
 
