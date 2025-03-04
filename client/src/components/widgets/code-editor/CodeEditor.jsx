@@ -18,11 +18,11 @@ import { CustomModal } from "components";
 
 const programmingLanguages = [
   { name: "Python", value: "python", extension: ".py" },
-  { name: "C++", value: "cpp", extension: ".cpp" },
+  //{ name: "C++", value: "cpp", extension: ".cpp" },
   { name: "C", value: "c", extension: ".c" },
-  { name: "JavaScript", value: "javascript", extension: ".js" },
-  { name: "Java", value: "java", extension: ".java" },
-  { name: "Go", value: "go", extension: ".go" },
+  //{ name: "JavaScript", value: "javascript", extension: ".js" },
+  //{ name: "Java", value: "java", extension: ".java" },
+  //{ name: "Go", value: "go", extension: ".go" },
 ];
 
 function CodeEditor() {
