@@ -53,7 +53,7 @@ jobs:
       - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk create-application-version \
-            --application-name cosscoss-codewars \
+            --application-name coss-codewars \
             --version-label ${{ env.VERSION }} \
             --source-bundle S3Bucket="${{ secrets.AWS_BUCKET_NAME }}",S3Key=deploy-${{ env.BRANCH_NAME }}.zip
 
