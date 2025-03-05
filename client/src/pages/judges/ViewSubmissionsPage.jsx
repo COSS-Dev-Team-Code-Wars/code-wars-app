@@ -485,6 +485,17 @@ const ViewSubmissionsPage = ({ isLoggedIn }) => {
 					}
 				}}
 
+				onRowClick={(params) => {
+					setSubmissionsList((prevList) =>
+						prevList.map((submission) =>
+							submission.id === params.row.id ? { ...submission, isDisabled: false } : submission
+						)
+					);
+					subListRef.current = subListRef.current.map((submission) =>
+						submission.id === params.row.id ? { ...submission, isDisabled: false } : submission
+					);
+				}}
+
 				// if there are no submission entries yet
 				slots={{
 					noRowsOverlay: () => (

@@ -9,6 +9,7 @@ import LoginPage from './general/LoginPage';
 import ViewSubmissionsPage from './judges/ViewSubmissionsPage';
 import ViewAllProblemsPage from './participants/ViewAllProblemsPage';
 import ViewSpecificProblemPage from './participants/ViewSpecificProblemPage';
+import ViewSubmissionLogPage from './participants/ViewSubmissionLogPage';
 
 
 export {
@@ -21,5 +22,6 @@ export {
 	TopTeamsPage,
 	ViewAllProblemsPage,
 	ViewSpecificProblemPage,
+	ViewSubmissionLogPage,
 	ViewSubmissionsPage,
 };

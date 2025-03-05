@@ -5,6 +5,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import ListIcon from '@mui/icons-material/List';
+import HomeIcon from '@mui/icons-material/Home';
 import {
 	Box,
 	Button,
@@ -557,6 +558,8 @@ const ParticipantLayout = ({
                   icon={seal}
                   title="Code Wars"
                   subtitle="UPLB Computer Science Society"
+									buttonText="back"
+									handleButton={handleReturn}
                 />
 								:
 								<TopBar
