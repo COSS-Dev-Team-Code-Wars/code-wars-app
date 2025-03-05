@@ -146,7 +146,6 @@ function CodeEditor() {
   
       // Find the first test case (display_id: 1)
       const firstTestCase = testCasesResponse.testCases.find(tc => tc.display_id === 1);
-      console.log('First Test Case:', firstTestCase);
   
       if (!firstTestCase) {
         throw new Error('No first test case found');
@@ -161,50 +160,42 @@ function CodeEditor() {
         throw new Error('Unsupported language');
       }
   
-      // Prepare the payload for Judge0
-      const judgePayload = {
+      // Prepare the payload for backend
+      const runPayload = {
         source_code: code,
         language_id: languageConfig.id,
         stdin: firstTestCase.input.replace(/\\n/g, "\n"),
-        expected_output: firstTestCase.expected_output
+        problem_id: question.display_id
       };
   
-      console.log('Judge0 Payload:', judgePayload);
-  
-      // Run the first test case through Judge0
-      const response = await fetch(`http://localhost:2358/submissions?base64_encoded=false`, {
+      // Run the code
+      const response = await fetch(`${baseURL}/testcases/runcode`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(judgePayload)
+        body: JSON.stringify(runPayload)
       });
   
-      const responseData = await response.json();
+      const resultData = await response.json();
   
-      // If a token is received, poll for the result
-      if (responseData.token) {
-        const resultResponse = await fetch(`http://localhost:2358/submissions/${responseData.token}`);
-        const resultData = await resultResponse.json();
-  
-        // Determine if the test case passed
-        const isPassed = resultData.stdout?.trim() === judgePayload.expected_output;
-  
-        setRunResult({
-          status: isPassed ? 'Accepted' : 'Failed',
-          testCaseResult: {
-            testCase: firstTestCase,
-            result: resultData,
-            passed: isPassed
-          }
-        });
-      } else {
-        // Handle case where no token was received
-        setRunResult({
-          status: 'Error',
-          error: 'Failed to submit code to Judge0'
-        });
+      if (!resultData.success) {
+        throw new Error(resultData.message || 'Code execution failed');
       }
+  
+      // Determine if the test case passed
+      const isPassed = 
+        resultData.status === 'Accepted' && 
+        resultData.stdout?.trim() === firstTestCase.expected_output.trim();
+  
+      setRunResult({
+        status: isPassed ? 'Accepted' : 'Failed',
+        testCaseResult: {
+          testCase: firstTestCase,
+          result: resultData,
+          passed: isPassed
+        }
+      });
   
       setIsRunModalOpen(true);
     } catch (error) {

@@ -4,6 +4,6 @@ import { getTestCasesByProblem, runCode } from '../controllers/testCaseControlle
 const router = Router();
 
 router.get('/testcases/:problemId', getTestCasesByProblem);
-router.get('/testcases/runCode', runCode)
+router.post('/testcases/runcode', runCode)
 
 export default router;
