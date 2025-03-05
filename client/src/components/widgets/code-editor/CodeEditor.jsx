@@ -39,6 +39,7 @@ function CodeEditor() {
   const [isRunning, setIsRunning] = useState(false);
   const [runResult, setRunResult] = useState(null);
   const [isRunModalOpen, setIsRunModalOpen] = useState(false);
+  const [problemDifficulty, setProblemDifficulty] = useState(null);
 
   // Handles applying debuffs and buffs
   const processDebuff = (debuff, activate) => {
@@ -60,6 +61,16 @@ function CodeEditor() {
       }
     };
     loadActivePowerUps();
+    const fetchProblemDifficulty = async () => {
+
+      try {
+        const { question } = await postFetch(`${baseURL}/viewquestioncontent`, { problemId: id, teamId: user._id });
+        setProblemDifficulty(question.difficulty);
+      } catch (error) {
+        console.error("Error fetching problem difficulty:", error);
+      }
+    };
+    fetchProblemDifficulty();
 
     const hadnleStartBuffOrDebuff = (powerUp) => processDebuff(powerUp, true);
     const handleEndBuffOrDebuff = (powerUp) => processDebuff(powerUp, false);
@@ -72,7 +83,7 @@ function CodeEditor() {
       socketClient.off("debuffEnded", handleEndBuffOrDebuff);
       socketClient.off("newBuff", hadnleStartBuffOrDebuff);
     };
-  }, []);
+  }, [id, user._id]);
 
   // Highlights code based on the selected language and debuffs
   const highlightCode = (code) => {
@@ -255,7 +266,7 @@ function CodeEditor() {
           color="secondary" 
           size="large" 
           onClick={handleRunCode} 
-          disabled={!code || isRunning}
+          disabled={!code || isRunning || !(['easy', 'medium'].includes(problemDifficulty))} 
         >
           {isRunning ? 'Running...' : 'Run'}
         </Button>
