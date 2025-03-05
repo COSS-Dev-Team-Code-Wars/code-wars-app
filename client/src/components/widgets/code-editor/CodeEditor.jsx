@@ -12,14 +12,14 @@ import "prismjs/components/prism-java";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-go";
 import "prismjs/components/prism-javascript";
-import { Button } from "@mui/material";
-import { postFetch } from "utils/apiRequest";
+import { Button, Typography } from "@mui/material";
+import { postFetch, getFetch } from "utils/apiRequest";
 import { CustomModal } from "components";
 
 const programmingLanguages = [
-  { name: "Python", value: "python", extension: ".py" },
+  { name: "Python", value: "python", extension: ".py", id: 71 },
   //{ name: "C++", value: "cpp", extension: ".cpp" },
-  { name: "C", value: "c", extension: ".c" },
+  { name: "C", value: "c", extension: ".c", id: 50 },
   //{ name: "JavaScript", value: "javascript", extension: ".js" },
   //{ name: "Java", value: "java", extension: ".java" },
   //{ name: "Go", value: "go", extension: ".go" },
@@ -35,6 +35,10 @@ function CodeEditor() {
   const [isImmune, setIsImmune] = useState(false);
   const [isSubmissionError, setIsSubmissionError] = useState(false);
   const [isSubmissionSuccess, setIsSubmissionSuccess] = useState(false);
+
+  const [isRunning, setIsRunning] = useState(false);
+  const [runResult, setRunResult] = useState(null);
+  const [isRunModalOpen, setIsRunModalOpen] = useState(false);
 
   // Handles applying debuffs and buffs
   const processDebuff = (debuff, activate) => {
@@ -122,6 +126,99 @@ function CodeEditor() {
     }
   };
 
+  const handleRunCode = async () => {
+    try {
+      setIsRunning(true);
+      setRunResult(null);
+      
+      // Fetch question details to get problem ID and test cases
+      const { question } = await postFetch(`${baseURL}/viewquestioncontent`, { 
+        problemId: id, 
+        teamId: user._id 
+      });
+  
+      // Fetch test cases for this problem
+      const testCasesResponse = await getFetch(`${baseURL}/testcases/${question.display_id}`);
+      
+      if (!testCasesResponse.success) {
+        throw new Error('Failed to fetch test cases');
+      }
+  
+      // Find the first test case (display_id: 1)
+      const firstTestCase = testCasesResponse.testCases.find(tc => tc.display_id === 1);
+      console.log('First Test Case:', firstTestCase);
+  
+      if (!firstTestCase) {
+        throw new Error('No first test case found');
+      }
+  
+      // Get the language configuration
+      const languageConfig = programmingLanguages.find(
+        (lang) => lang.value === language.value
+      );
+  
+      if (!languageConfig) {
+        throw new Error('Unsupported language');
+      }
+  
+      // Prepare the payload for Judge0
+      const judgePayload = {
+        source_code: code,
+        language_id: languageConfig.id,
+        stdin: firstTestCase.input.replace(/\\n/g, "\n"),
+        expected_output: firstTestCase.expected_output
+      };
+  
+      console.log('Judge0 Payload:', judgePayload);
+  
+      // Run the first test case through Judge0
+      const response = await fetch(`http://localhost:2358/submissions?base64_encoded=false`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(judgePayload)
+      });
+  
+      const responseData = await response.json();
+  
+      // If a token is received, poll for the result
+      if (responseData.token) {
+        const resultResponse = await fetch(`http://localhost:2358/submissions/${responseData.token}`);
+        const resultData = await resultResponse.json();
+  
+        // Determine if the test case passed
+        const isPassed = resultData.stdout?.trim() === judgePayload.expected_output;
+  
+        setRunResult({
+          status: isPassed ? 'Accepted' : 'Failed',
+          testCaseResult: {
+            testCase: firstTestCase,
+            result: resultData,
+            passed: isPassed
+          }
+        });
+      } else {
+        // Handle case where no token was received
+        setRunResult({
+          status: 'Error',
+          error: 'Failed to submit code to Judge0'
+        });
+      }
+  
+      setIsRunModalOpen(true);
+    } catch (error) {
+      console.error("Error running code:", error);
+      setRunResult({
+        status: 'Error',
+        error: error.message || 'Failed to run code'
+      });
+      setIsRunModalOpen(true);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
   const CODE_EDITOR_HEIGHT = 550;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%", minHeight: `${CODE_EDITOR_HEIGHT}px` }}>
@@ -161,6 +258,68 @@ function CodeEditor() {
           </Button>
         </div>
       </CustomModal>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+        <Button 
+          variant="contained" 
+          color="secondary" 
+          size="large" 
+          onClick={handleRunCode} 
+          disabled={!code || isRunning}
+        >
+          {isRunning ? 'Running...' : 'Run'}
+        </Button>
+      </div>
+
+      {/* Run Result Modal */}
+<CustomModal 
+  isOpen={isRunModalOpen} 
+  windowTitle={runResult?.status === 'Accepted' ? 'Run Successful' : 'Run Result'}
+  setOpen={setIsRunModalOpen}
+>
+  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
+    {runResult?.status === 'Accepted' ? (
+      <>
+        <p>Test Case #1 check</p>
+        <p>Code ran successfully!</p>
+      </>
+    ) : (
+      <>
+        <p>Code execution failed.</p>
+        <p><strong>Status:</strong> {runResult?.status}</p>
+      </>
+    )}
+    
+    {runResult?.testCaseResult && (
+      <div>
+        <Typography variant="body2">
+          <strong>Input:</strong> {runResult.testCaseResult.testCase.input}
+        </Typography>
+        <Typography variant="body2">
+          <strong>Expected Output:</strong> {runResult.testCaseResult.testCase.expected_output}
+        </Typography>
+        <Typography variant="body2">
+          <strong>Actual Output:</strong> {runResult.testCaseResult.result.stdout?.trim()}
+        </Typography>
+      </div>
+    )}
+
+    {runResult?.error && (
+      <Typography variant="body2" color="error">
+        <strong>Error:</strong> {runResult.error}
+      </Typography>
+    )}
+
+    <Button 
+      style={{ alignSelf: "center", marginTop: "10px" }} 
+      variant="contained" 
+      color="primary" 
+      size="large" 
+      onClick={() => setIsRunModalOpen(false)}
+    >
+      Close
+    </Button>
+  </div>
+</CustomModal>
     </div>
   );
 }
