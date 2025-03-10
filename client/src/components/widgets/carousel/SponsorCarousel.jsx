@@ -60,7 +60,7 @@ var logos = [
 	},
 	{
 		id: '5',
-		title: 'Company 3',
+		title: 'Company 2',
 		image: `${tenxdev}`,
 	},
 	{
