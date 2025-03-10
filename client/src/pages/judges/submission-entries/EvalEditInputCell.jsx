@@ -10,7 +10,6 @@ import { postFetch } from 'utils/apiRequest';
 import { baseURL } from 'utils/constants';
 import { optionsEval, optionsEvalWager } from 'utils/dummyData';
 
-import EvaluationModal from '../modals/EvaluationModal';
 
 
 /**
@@ -173,27 +172,6 @@ export default function EvalEditInputCell({ props, submissionsList, setSubmissio
 				handleChange={handleChange}
 				value={currVal}
 			/>
-
-			{openModal ?
-				<EvaluationModal
-					props={props}
-					open={openModal}
-					setOpen={setOpenModal}
-					currEval={currVal}
-					initialVal={initialVal}
-					rowValues={row}
-					correctCases={correctTestCases}
-					setCorrectCases={setCorrectTestCases}
-					submissionsList={submissionsList}
-					setSubmissionsList={setSubmissionsList}
-					subListRef={subListRef}
-					id={id}
-					field={field}
-					setCurrVal={setCurrVal}
-					totalCases={row.totalCases}
-				/>
-				: null
-			}
 		</>
 	);
 }
