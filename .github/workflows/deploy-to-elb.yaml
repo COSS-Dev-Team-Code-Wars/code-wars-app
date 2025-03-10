@@ -52,12 +52,12 @@ jobs:
         working-directory: backend
         run: aws s3 cp ${{ env.BRANCH_NAME }}.zip s3://${{ secrets.AWS_BUCKET_NAME }}/deploy-${{ env.BRANCH_NAME }}.zip
 
-      # - name: Deploy to Elastic Beanstalk
-      #   run: |
-      #     aws elasticbeanstalk create-application-version \
-      #       --application-name coss-codewars \
-      #       --version-label ${{ env.VERSION }} \
-      #       --source-bundle S3Bucket="${{ secrets.AWS_BUCKET_NAME }}",S3Key=deploy-${{ env.BRANCH_NAME }}.zip
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name coss-codewars \
+            --version-label ${{ env.VERSION }} \
+            --source-bundle S3Bucket="${{ secrets.AWS_BUCKET_NAME }}",S3Key=deploy-${{ env.BRANCH_NAME }}.zip
 
       #     aws elasticbeanstalk update-environment \
       #       --environment-name codewars-${{ env.BRANCH_NAME }} \
