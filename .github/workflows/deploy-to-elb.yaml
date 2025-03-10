@@ -60,5 +60,5 @@ jobs:
             --source-bundle S3Bucket="${{ secrets.AWS_BUCKET_NAME }}",S3Key=deploy-${{ env.BRANCH_NAME }}.zip
 
           aws elasticbeanstalk update-environment \
-            --environment-name codewars-${{ env.BRANCH_NAME }} \
+            --environment-name ${{ env.BRANCH_NAME }} \
             --version-label ${{ env.VERSION }}
