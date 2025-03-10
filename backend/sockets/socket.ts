@@ -1,6 +1,5 @@
 // ADD YOUR FILE EXPORTS HERE
 import TeamModel, { Team } from '../models/team';
-import { checkSubmission } from './submissionSocket'
 import { endTimer, setEndTimer } from '../controllers/adminController';
 import { PowerupInfo } from '../models/powerup';
 import { activateImmunity } from './powerupSocket';

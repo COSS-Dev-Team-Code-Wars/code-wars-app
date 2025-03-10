@@ -8,8 +8,7 @@ import "./models/testcase";
 
 import express from 'express';
 import bodyParser from 'body-parser';
-import { connectDB, handleDisconnectDB } from './config/db';
-import sampleRoutes from './routes/sampleRoute';
+import { connectDB } from './config/db';
 import loginRoute from './routes/loginRoute';
 import signupRoute from './routes/signupRoute';
 import checkIfLoggedInRoute from './routes/checkIfLoggedInRoute';
@@ -21,7 +20,6 @@ import questionRoutes from './routes/questionRoutes';
 import teamDetailsRoute from './routes/teamDetailsRoute';
 import leaderboardRoutes from './routes/leaderboardRoutes';
 import testCaseRoutes from './routes/testCaseRoutes';
-import { checkTokenMiddleware } from "./controllers/authController";
 
 import './sockets/socket';
 
