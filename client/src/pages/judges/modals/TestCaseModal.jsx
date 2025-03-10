@@ -80,7 +80,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
           source_code: submission.content,
           language_id: language,
           stdin: testCase.input.replace(/\\n/g, "\n"),
-          expected_output: testCase.expected_output,
+          expected_outpur: testCase.expected_output.replace(/\\n/g, "\n"),
         });
     
         if (response.token) {
@@ -163,6 +163,35 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
     }
   };
 
+  const cleanOutput = (stdout, expected) => {
+    if (!stdout) return ""; // Handle empty output
+  
+    stdout = stdout.trim();
+    expected = expected.trim();
+  
+    // Normalize line breaks and spaces before comparing
+    const normalize = (str) => {
+      return str
+        .split("\n")  // Split by lines
+        .map(line => line.trim())  // Trim each line
+        .join("\n");  // Rejoin with line breaks
+    };
+  
+    // Normalize both the stdout and expected output
+    const normalizedStdout = normalize(stdout);
+    const normalizedExpected = normalize(expected);
+  
+    // If the normalized output is equal to the expected, return the output
+    if (normalizedStdout === normalizedExpected) {
+      return normalizedStdout;
+    }
+  
+    // If the stdout is longer than expected, trim the last part of the actual output
+    const actualTrimmed = stdout.slice(-expected.length);
+  
+    return actualTrimmed;
+  };  
+
   return (
     <CustomModal isOpen={open} setOpen={setOpen} windowTitle="Test Case Results">
       {loading ? (
@@ -182,9 +211,9 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
                 display: "flex",
                 justifyContent: "space-between",
                 backgroundColor:
-                result.stdout?.trim() === testCase.expected_output?.trim()
+                  cleanOutput(result.stdout, testCase.expected_output) === testCase.expected_output?.trim()
                     ? "#d4edda"
-                    : result.stdout
+                    : cleanOutput(result.stdout, testCase.expected_output) || result.stderr
                     ? "#f8d7da"
                     : "white",
                 marginBottom: "5px",
@@ -193,18 +222,40 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
             }}
             >
             <ListItemText
-                primary={`Test Case #${testCase.display_id}`}
-                secondary={
+              primary={<Typography variant="body2" sx={{ fontWeight: "bold" }}>Test Case #{index + 1}</Typography>}
+              secondary={
                 <>
-                    <Typography variant="body2"><strong>Input:</strong> {testCase.input.replace(/\\n$/g, "").replace(/\\n/g, ", ")}</Typography>
-                    <Typography variant="body2"><strong>Expected Output:</strong> {testCase.expected_output}</Typography>
-                    {result.status.description === "Running..." ? (
+                  <Typography variant="body2" sx={{ marginTop: "15px", fontWeight: "bold" }}>Input:</Typography>
+                  
+                  <Typography variant="body2">
+                    <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+                      {testCase.input.replace(/\\n$/g, "").replace(/\\n/g, ", ")}
+                    </pre>
+                  </Typography>
+
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Expected Output:</Typography>
+                  
+                  <Typography variant="body2">
+                    <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+                      {cleanOutput(testCase.expected_output, testCase.expected_output)}
+                    </pre>
+                  </Typography>
+
+                  {result.status.description === "Running..." ? (
                     <Typography variant="body2" color="gray"><em>Running...</em></Typography>
-                    ) : (
-                    <Typography variant="body2"><strong>Actual Output:</strong> {result.stdout?.trim() || "Error"}</Typography>
-                    )}
+                  ) : (
+                    <>
+                      <Typography variant="body2" sx={{ fontWeight: "bold" }}>Actual Output:</Typography>
+                      
+                      <Typography variant="body2">
+                        <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+                          {cleanOutput(result.stdout, testCase.expected_output) || (result.stderr ? "Error: " + result.stderr : "Error")}
+                        </pre>
+                      </Typography>
+                    </>
+                  )}
                 </>
-                }
+              }
             />
             </ListItem>
         ))}
