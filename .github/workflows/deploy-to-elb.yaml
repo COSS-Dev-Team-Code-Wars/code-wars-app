@@ -39,7 +39,7 @@ jobs:
 
       - name: Archive deployment package
         working-directory: backend
-        run: zip -r ${{ env.BRANCH_NAME }}.zip . -i "node_modules/*" "build/*"
+        run: zip -r ${{ env.BRANCH_NAME }}.zip .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
