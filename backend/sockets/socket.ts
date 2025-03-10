@@ -19,6 +19,12 @@ let users: {[key:string]: string} = {}
 
 io.on("connection", (socket: any) => {
   //ADD SOCKET EVENTS HERE
+
+  socket.on("socket-health", (data:any) => {
+    console.log("Reading data here::", data);
+    socket.emit("socket-health-response", { message: data }); 
+  });
+
   socket.on("join", (user:any) => {
     socket.join("user:" + user._id);
     console.log("joined user:" + user._id);
