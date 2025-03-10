@@ -67,7 +67,7 @@ app.use(testCaseRoutes);
 
 // Start the server
 //@ Increment this value everytime you restart nginx via commit
-//@ Nginx Restart Commits: 5
+//@ Nginx Restart Commits: 6
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
