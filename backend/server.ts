@@ -48,11 +48,11 @@ connectDB();
 
 // Middleware
 app.use(bodyParser.json());
-// app.use("/socket.io/*", createProxyMiddleware({
-//   target: 'http://localhost:8000',
-//   ws: true,
-//   changeOrigin: true
-// }));
+app.use("/socket.io/*", createProxyMiddleware({
+  target: 'http://localhost:8000',
+  ws: true,
+  changeOrigin: true
+}));
 
 // Routes
 app.use(healthCheckRoute);
