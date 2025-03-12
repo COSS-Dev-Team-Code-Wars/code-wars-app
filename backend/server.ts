@@ -20,6 +20,8 @@ import questionRoutes from './routes/questionRoutes';
 import teamDetailsRoute from './routes/teamDetailsRoute';
 import leaderboardRoutes from './routes/leaderboardRoutes';
 import testCaseRoutes from './routes/testCaseRoutes';
+import healthCheckRoute from "./routes/health-check";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 import './sockets/socket';
 
@@ -44,8 +46,12 @@ connectDB();
 
 // Middleware
 app.use(bodyParser.json());
+app.use("/socket.io", createProxyMiddleware({
+  target: 'http://localhost:8000',
+  ws: true,
+  changeOrigin: true
+}));
 
-import healthCheckRoute from "./routes/health-check";
 // Routes
 app.use(healthCheckRoute);
 app.use(loginRoute);
