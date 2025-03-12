@@ -46,13 +46,14 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 // handleDisconnectDB();
 
+
 // Middleware
 app.use(bodyParser.json());
-app.use("/socket.io/*", createProxyMiddleware({
-  target: 'http://localhost:8000',
-  ws: true,
-  changeOrigin: true
-}));
+// app.use("/socket.io/*", createProxyMiddleware({
+//   target: 'http://localhost:8000',
+//   ws: true,
+//   changeOrigin: true
+// }));
 
 // Routes
 app.use(healthCheckRoute);
