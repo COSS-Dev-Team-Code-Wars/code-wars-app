@@ -52,13 +52,15 @@ export async function getFetch(url, params) {
 		newURL = url;
 	}
 
-	return await axios({
+	return axios({
 		url: newURL,
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json'
 		}
-	});
+	})
+		.then(response => response.data)
+		.catch(error => console.log(error));
 
 	// using the fetch function
 	// return await fetch(newURL, {
@@ -81,29 +83,15 @@ export async function getFetch(url, params) {
  * @param {Object} obj contains information about the data to be inserted into DB.
 */
 export async function postFetch(url, obj) {
-
-	return axios({
-		url,
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json'
-		},
-		withCredentials: false,
-		body: JSON.stringify(obj),
-	});
-		
-	// return fetch(url, {
-	// 	method: 'POST',
-	// 	headers: {
-	// 		'Content-Type': 'application/json',
-	// 	},
-	// 	body: JSON.stringify(obj),
-	// 	credentials: 'omit'
-	// }).then((res) => {
-	// 	return res.json();
-	// }).catch((err) => {
-	// 	console.log(err);
-	// });
+	try {
+		const response = await axios.post(url, obj, {
+			headers: { 'Content-Type': 'application/json' },
+		});
+		return response.data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
 }
 
 
@@ -114,14 +102,15 @@ export async function postFetch(url, obj) {
 export async function putFetch(url, obj) {
 
 	return axios({
-		
 		url,
 		method: 'PUT',
 		headers: {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(obj),
-	}).catch(error => console.log(error));
+	})
+		.then(response => response.data)
+		.catch(error => console.log(error));
 
 	// return fetch(url, {
 	// 	method: 'PUT',
@@ -147,7 +136,9 @@ export async function deleteFetch(url, id) {
 		headers: {
 			'Content-Type': 'application/json'
 		},
-	}).catch(error => console.log(error));
+	})
+		.then(response => response.data)
+		.catch(error => console.log(error));
 
 
 	// return fetch(`${url}${id}`, {
