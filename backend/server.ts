@@ -28,13 +28,15 @@ import './sockets/socket';
 const cors = require("cors");
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: ["*"],
+  methods: ["*"]
+}));
 
 app.use((_, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", ["POST","GET","PUT","DELETE"]);
   res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Authorization, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, X-Authorization");
-  // res.setHeader("Access-Control-Allow-Authorization",true);
   next();
 });
 
@@ -57,7 +59,7 @@ app.use(healthCheckRoute);
 app.use(loginRoute);
 app.use(signupRoute);
 app.use(checkIfLoggedInRoute);
-// app.use(adminRoutes);
+app.use(adminRoutes);
 
 app.use(teamScoreRoutes);
 app.use(teamDetailsRoute);
