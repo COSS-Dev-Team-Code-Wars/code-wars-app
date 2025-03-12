@@ -166,14 +166,14 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
   const cleanOutput = (stdout, expected) => {
     if (!stdout) return ""; // Handle empty output
   
-    stdout = stdout.trim();
-    expected = expected.trim();
+    stdout = stdout.trimEnd();
+    expected = expected.trimEnd();
   
     // Normalize line breaks and spaces before comparing
     const normalize = (str) => {
       return str
         .split("\n")  // Split by lines
-        .map(line => line.trim())  // Trim each line
+        .map(line => line)
         .join("\n");  // Rejoin with line breaks
     };
   
@@ -211,7 +211,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
                 display: "flex",
                 justifyContent: "space-between",
                 backgroundColor:
-                  cleanOutput(result.stdout, testCase.expected_output) === testCase.expected_output?.trim()
+                  cleanOutput(result.stdout, testCase.expected_output) === testCase.expected_output
                     ? "#d4edda"
                     : cleanOutput(result.stdout, testCase.expected_output) || result.stderr
                     ? "#f8d7da"
