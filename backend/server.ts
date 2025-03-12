@@ -46,7 +46,6 @@ const PORT = process.env.PORT || 5000;
 connectDB();
 // handleDisconnectDB();
 
-
 // Middleware
 app.use(bodyParser.json());
 // app.use("/socket.io/*", createProxyMiddleware({
