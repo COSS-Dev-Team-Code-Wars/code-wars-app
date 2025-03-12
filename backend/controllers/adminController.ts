@@ -18,7 +18,7 @@ const commandChannel = (req: Request, res: Response) => {
         Connection: "keep-alive", // allowing TCP connection to remain open for multiple HTTP requests/responses
         "Content-Type": "text/event-stream", // media type for Server Sent Events (SSE)
       });
-      res.flushHeaders();
+      // res.flushHeaders();
     
       const interval = setInterval(() => {
           res.write(`data: ${JSON.stringify({

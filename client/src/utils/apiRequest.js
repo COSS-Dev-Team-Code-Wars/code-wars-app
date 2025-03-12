@@ -83,6 +83,8 @@ export async function postFetch(url, obj) {
 		credentials: 'omit'
 	}).then((res) => {
 		return res.json();
+	}).catch((err) => {
+		console.log(err);
 	});
 }
 

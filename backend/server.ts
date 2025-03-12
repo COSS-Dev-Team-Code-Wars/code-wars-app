@@ -57,9 +57,7 @@ app.use(healthCheckRoute);
 app.use(loginRoute);
 app.use(signupRoute);
 app.use(checkIfLoggedInRoute);
-app.use(adminRoutes);
-
-// app.use(checkTokenMiddleware);
+// app.use(adminRoutes);
 
 app.use(teamScoreRoutes);
 app.use(teamDetailsRoute);
