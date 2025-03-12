@@ -30,13 +30,13 @@ const app = express();
 
 app.use(cors());
 
-// app.use((req, res, next) => {
-//   res.setHeader("Access-Control-Allow-Origin", "*");
-//   res.setHeader("Access-Control-Allow-Methods", ["POST","GET","PUT","DELETE"]);
-//   res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Authorization, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, X-Authorization");
-//   // res.setHeader("Access-Control-Allow-Authorization",true);
-//   next();
-// });
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", ["POST","GET","PUT","DELETE"]);
+  res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Authorization, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, X-Authorization");
+  // res.setHeader("Access-Control-Allow-Authorization",true);
+  next();
+});
 
 const PORT = process.env.PORT || 5000;
 
