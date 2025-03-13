@@ -24,6 +24,7 @@ import { theme } from 'theme.js';
 import { postFetch } from 'utils/apiRequest';
 import { baseURL } from 'utils/constants';
 import TimerPage from 'pages/admin/TimerPage';
+// import JUDGE_SERVICE from 'utils/judge0';
 
 
 
@@ -72,6 +73,15 @@ function App() {
 		
 		setIsLoggedIn(response.isLoggedIn);
 	};
+
+	//@ Test judge0 healthcheck - uncomment to test
+	// useEffect(() => {
+	// 	(async () => {
+	// 		const response = await JUDGE_SERVICE.healthCheck();
+	// 		console.log("My response is here::", response.version);
+	// 		alert(`My judge0 version: ${response.version}`)
+	// 	})()
+	// }, []);
 
 	useEffect(() => {
 		setEnvironmentTitle();
