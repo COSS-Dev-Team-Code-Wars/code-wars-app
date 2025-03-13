@@ -27,7 +27,7 @@ const healthCheck = async () => {
 	return fetchData(options);
 };
 
-const postSubmissions = (data) => {
+const postSubmissions = async (data) => {
 	const options = {
 		url: `${BASE_URL}/submissions`,
 		method: 'POST',
@@ -44,12 +44,17 @@ const postSubmissions = (data) => {
 	return fetchData(options);
 };
 
-const getSubmissions = (submissionToken) => {
+const getSubmissions = async (submissionToken) => {
+	if (!submissionToken) {
+		console.error('Error: submissionToken is undefined!');
+		return null;
+	}
+
 	const options = {
 		method: 'GET',
 		url: `${BASE_URL}/submissions/${submissionToken}`,
 		params: {
-			base64_encoded: 'true',
+			base64_encoded: 'false',
 		},
 		headers: JUDGE_HEADERS
 	};
