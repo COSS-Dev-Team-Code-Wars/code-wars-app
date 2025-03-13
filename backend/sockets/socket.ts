@@ -150,7 +150,7 @@ io.on("connection", (socket: any) => {
               duration: powerUp.tier[tier_no].duration,
               cost: cost,
               startTime: startTime,
-              endTime: new Date(startTime.getTime() + 1000000000000000)
+              endTime: endTime
             }
             // Add the debuff 
             await TeamModel.updateOne({ _id: userTeam._id }, { 
