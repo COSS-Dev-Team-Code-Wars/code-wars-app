@@ -10,8 +10,9 @@ import {
   ListItemText,
 } from "@mui/material";
 import { CustomModal } from "components";
-import { postFetch, getFetch } from "utils/apiRequest";
+import { getFetch } from "utils/apiRequest";
 import { baseURL } from "utils/constants";
+import judge0API from "utils/judge0";
 
 const programmingLanguages = [
     { name: "Python", value: "python", extension: ".py", id: 71 },
@@ -36,8 +37,8 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
   };  
 
   const handleOpen = async () => {
-    if (submission?.problemTitle) {
-      await fetchProblemId(submission.problemTitle);
+    if (submission?.problem_title) {
+      await fetchProblemId(submission.problem_title);
     }
     if (problemId) {
       await fetchTestCases();
@@ -63,50 +64,54 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
       setError("Unsupported language");
       return;
     }
-  
+
     try {
       setLoading(true);
       setError(null);
-  
+
       // Initialize test case results with a "Running..." status
       setResults(testCases.map(testCase => ({
         testCase,
         result: { status: { description: "Running..." } } // Placeholder until result arrives
       })));
-  
+
       // Submit each test case separately and update results immediately
       for (const testCase of testCases) {  
-        const response = await postFetch(`http://localhost:2358/submissions?base64_encoded=false`, {
+        const response = await judge0API.postSubmissions({
           source_code: submission.content,
           language_id: language,
           stdin: testCase.input.replace(/\\n/g, "\n"),
-          expected_outpur: testCase.expected_output.replace(/\\n/g, "\n"),
+          expected_output: testCase.expected_output.replace(/\\n/g, "\n"),
         });
-    
+
         if (response.token) {
           // Poll Judge0 for this specific test case
-          const fetchResult = async () => {
-            while (true) {
-              const res = await fetch(`http://localhost:2358/submissions/${response.token}`);
-              const data = await res.json();
-  
-              if (data.status && data.status.id >= 3) { // Status 3+ means completed
-                // Update results **immediately** for this test case
+          const fetchResult = async (token, testCase) => {
+            const maxRetries = 20; // Stop after 20 attempts (20 sec max)
+            let retries = 0;
+          
+            while (retries < maxRetries) {
+              const res = await judge0API.getSubmissions(token);
+          
+              if (res && res.status && res.status.id >= 3) { // Status 3+ means completed
                 setResults((prevResults) =>
                   prevResults.map((r) =>
                     r.testCase.display_id === testCase.display_id
-                      ? { testCase, result: data }
+                      ? { testCase, result: res }
                       : r
                   )
                 );
-                break; // Exit loop when result is ready
+                return; // Stop polling once we get a result
               }
-  
-              await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait before retrying
+          
+              retries++;
+              await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 sec before retrying
             }
-          };
-  
-          fetchResult(); // Start polling for this test case result immediately
+          
+            setError(`Test case #${testCase.display_id} timed out`);
+          };                    
+
+          fetchResult(response.token, testCase);
         }
       }
     } catch (err) {
@@ -114,7 +119,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
     } finally {
       setLoading(false);
     }
-  };  
+  };
   
   const fetchProblemId = async (problemTitle) => {
     try {
@@ -166,14 +171,14 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
   const cleanOutput = (stdout, expected) => {
     if (!stdout) return ""; // Handle empty output
   
-    stdout = stdout.trim();
-    expected = expected.trim();
+    stdout = stdout.trimEnd();
+    expected = expected.trimEnd();
   
     // Normalize line breaks and spaces before comparing
     const normalize = (str) => {
       return str
         .split("\n")  // Split by lines
-        .map(line => line.trim())  // Trim each line
+        .map(line => line)
         .join("\n");  // Rejoin with line breaks
     };
   
@@ -211,7 +216,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
                 display: "flex",
                 justifyContent: "space-between",
                 backgroundColor:
-                  cleanOutput(result.stdout, testCase.expected_output) === testCase.expected_output?.trim()
+                  cleanOutput(result.stdout, testCase.expected_output) === testCase.expected_output
                     ? "#d4edda"
                     : cleanOutput(result.stdout, testCase.expected_output) || result.stderr
                     ? "#f8d7da"
