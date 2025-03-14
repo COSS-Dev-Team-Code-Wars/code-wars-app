@@ -27,7 +27,7 @@ import gss from 'assets/Org Logos/GSS.png';
 import socomsci from 'assets/Org Logos/SoComSci.png';
 import unreal from 'assets/Org Logos/Unreal.png';
 import uplbcaps from 'assets/Org Logos/UPLBCAPS.png';
-import uplbcasfc from 'assets/Org Logos/UPLBCASFC.png';
+import uplbcasfc from 'assets/Org Logos/UPLBCASFC.jpg';
 import yses from 'assets/Org Logos/YSES.png';
 
 // Media Logos
