@@ -59,67 +59,68 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
   }, [problemId]);
 
   const runJudge0Tests = async (testCases) => {
-    const language = getLanguage(submission.uploadedFile);
-    if (!language) {
-      setError("Unsupported language");
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);
-
-      // Initialize test case results with a "Running..." status
+  
+      // ✅ Show "Running..." before execution
       setResults(testCases.map(testCase => ({
         testCase,
-        result: { status: { description: "Running..." } } // Placeholder until result arrives
+        result: { status: { description: "Running..." } },
       })));
-
-      // Submit each test case separately and update results immediately
-      for (const testCase of testCases) {  
-        const response = await judge0API.postSubmissions({
-          source_code: submission.content,
-          language_id: language,
-          stdin: testCase.input.replace(/\\n/g, "\n"),
-          expected_output: testCase.expected_output.replace(/\\n/g, "\n"),
-        });
-
-        if (response.token) {
-          // Poll Judge0 for this specific test case
-          const fetchResult = async (token, testCase) => {
-            const maxRetries = 20; // Stop after 20 attempts (20 sec max)
-            let retries = 0;
-          
-            while (retries < maxRetries) {
-              const res = await judge0API.getSubmissions(token);
-          
-              if (res && res.status && res.status.id >= 3) { // Status 3+ means completed
-                setResults((prevResults) =>
-                  prevResults.map((r) =>
-                    r.testCase.display_id === testCase.display_id
-                      ? { testCase, result: res }
-                      : r
-                  )
-                );
-                return; // Stop polling once we get a result
-              }
-          
-              retries++;
-              await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 sec before retrying
-            }
-          
-            setError(`Test case #${testCase.display_id} timed out`);
-          };                    
-
-          fetchResult(response.token, testCase);
-        }
+  
+      const batchSubmissions = testCases.map(testCase => ({
+        source_code: submission.content,
+        language_id: getLanguage(submission.uploadedFile),
+        stdin: testCase.input.replace(/\\n/g, "\n"),
+        expected_output: testCase.expected_output.replace(/\\n/g, "\n"),
+      }));
+  
+      // ✅ Submit batch and extract tokens correctly
+      const tokens = await judge0API.postBatchSubmissions(batchSubmissions);
+  
+      if (!tokens) {
+        setError("Failed to submit test cases");
+        return;
       }
+  
+      // ✅ Polling for results
+      const fetchBatchResults = async () => {
+        const maxRetries = 20;
+        let retries = 0;
+  
+        while (retries < maxRetries) {
+          const res = await judge0API.getBatchSubmissions(tokens);
+  
+          if (res) {
+            const completedResults = res.filter(sub => sub.status_id >= 3); // ✅ Status 3+ means finished
+  
+            if (completedResults.length === testCases.length) {
+              // ✅ Ensure correct result mapping
+              setResults(testCases.map((testCase, index) => ({
+                testCase,
+                result: completedResults.find(r => r.token === tokens[index]) || {
+                  status: { description: "Failed" },
+                },
+              })));
+              return;
+            }
+          }
+  
+          retries++;
+          await new Promise((resolve) => setTimeout(resolve, 2000)); // ✅ Wait 2 sec before retrying
+        }
+  
+        setError("Some test cases timed out");
+      };
+  
+      await fetchBatchResults();
     } catch (err) {
       setError("Error running tests on Judge0");
     } finally {
       setLoading(false);
     }
-  };
+  };  
   
   const fetchProblemId = async (problemTitle) => {
     try {
@@ -243,7 +244,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
                     </pre>
                   </Typography>
 
-                  {result.status.description === "Running..." ? (
+                  {result?.status?.id === 1 ? (
                     <Typography variant="body2" color="gray"><em>Running...</em></Typography>
                   ) : (
                     <>
