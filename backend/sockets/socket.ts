@@ -59,14 +59,6 @@ io.on("connection", (socket: any) => {
     socket.broadcast.emit("startRound");
   });
 
-  socket.on("activateImmunity", (id: string) => {
-    activateImmunity(id).then((res) => {
-      if (res.success && res.powerup){
-        socket.emit("newBuff", [res.powerup]);
-      }
-    });
-  })
-
   socket.on("buyBuff", async (data: any) => {
     let powerUp = data.powerUp;
     let userTeam = data.userTeam;
@@ -130,7 +122,7 @@ io.on("connection", (socket: any) => {
           });
 
           // for toast notif
-          socket.emit("newBuff", [powerUp, debuffToDispel]);
+          socket.emit("newBuff", powerUp);
           console.log("Team " + userTeam + " has bought a buff.");
         } else { // Other buffs aside from dispel
           socket.emit("scenarioCheckerBuff", 'success');
@@ -164,6 +156,7 @@ io.on("connection", (socket: any) => {
               },
             });
             console.log(`${powerUp.code} has been applied to user ${userTeam._id}.`);
+            io.to(users[userTeam._id??""]).emit("newBuff", powerUp);
             setTimeout(() => {  // notify the team that their buff has ended after the specified duration
               console.log(`${powerUp.code} has ended for user ${userTeam._id}.`);
               io.to(users[userTeam._id??""]).emit("buffEnded", powerUp);

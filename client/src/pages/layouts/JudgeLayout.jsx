@@ -106,15 +106,10 @@ const JudgeLayout = ({
 		socketClient.on('updateScoreOnBuyDebuff', () => {
 			fetchData();
 		});
-		
-		socketClient.on('newBuff', () => {
-			fetchData();
-		})
 
 		return () => {
 			socketClient.off('evalupdate');
 			socketClient.off('updateScoreOnBuyDebuff');
-			socketClient.off('newBuff');
 		};
 	});
 
