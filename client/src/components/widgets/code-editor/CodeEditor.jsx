@@ -15,6 +15,7 @@ import "prismjs/components/prism-javascript";
 import { Button, Typography } from "@mui/material";
 import { postFetch, getFetch } from "utils/apiRequest";
 import { CustomModal } from "components";
+import judge0 from "utils/judge0";
 
 const programmingLanguages = [
   { name: "Python", value: "python", extension: ".py", id: 71 },
@@ -141,28 +142,31 @@ function CodeEditor() {
     try {
       setIsRunning(true);
       setRunResult(null);
-      
-      // Fetch question details to get problem ID and test cases
+  
+      // Fetch question details to get test cases
       const { question } = await postFetch(`${baseURL}/viewquestioncontent`, { 
         problemId: id, 
         teamId: user._id 
       });
   
-      // Fetch test cases for this problem
+      // Fetch test cases
       const testCasesResponse = await getFetch(`${baseURL}/testcases/${question.display_id}`);
       
       if (!testCasesResponse.success) {
         throw new Error('Failed to fetch test cases');
       }
+
+      const questionDisplayId = question.display_id;
   
-      // Find the first test case (display_id: 1)
-      const firstTestCase = testCasesResponse.testCases.find(tc => tc.display_id === 1);
+      const expectedTestCaseId = parseInt(`${questionDisplayId}01`, 10); // Append "01" to the ID
+
+      const firstTestCase = testCasesResponse.testCases.find(tc => tc.display_id === expectedTestCaseId);
   
       if (!firstTestCase) {
-        throw new Error('No first test case found');
+        throw new Error('No test case with display_id 1 found');
       }
   
-      // Get the language configuration
+      // Get language configuration
       const languageConfig = programmingLanguages.find(
         (lang) => lang.value === language.value
       );
@@ -171,39 +175,47 @@ function CodeEditor() {
         throw new Error('Unsupported language');
       }
   
-      // Prepare the payload for backend
-      const runPayload = {
+      // Prepare the submission payload for Judge0
+      const submissionPayload = {
         source_code: code,
         language_id: languageConfig.id,
         stdin: firstTestCase.input.replace(/\\n/g, "\n"),
-        problem_id: question.display_id
       };
   
-      // Run the code
-      const response = await fetch(`${baseURL}/testcases/runcode`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(runPayload)
-      });
+      // Submit the code to Judge0
+      const submissionResponse = await judge0.postSubmissions(submissionPayload);
   
-      const resultData = await response.json();
-  
-      if (!resultData.success) {
-        throw new Error(resultData.message || 'Code execution failed');
+      if (!submissionResponse || !submissionResponse.token) {
+        throw new Error("Failed to submit code to Judge0");
       }
   
-      // Determine if the test case passed
-      const isPassed = 
-        resultData.status === 'Accepted' && 
-        resultData.stdout?.trim() === firstTestCase.expected_output.trim();
+      const submissionToken = submissionResponse.token;
+  
+      // Poll for results
+      let result = null;
+      for (let i = 0; i < 10; i++) { // Poll up to 10 times
+        await new Promise(res => setTimeout(res, 2000)); // Wait 2 seconds
+  
+        const fetchedResult = await judge0.getSubmissions(submissionToken);
+  
+        if (fetchedResult && fetchedResult.status && fetchedResult.status.id >= 3) {
+          result = fetchedResult;
+          break;
+        }
+      }
+  
+      if (!result) {
+        throw new Error("Judge0 execution timeout or no response received.");
+      }
+  
+      // Compare output with expected result
+      const isPassed = result.stdout?.trim() === firstTestCase.expected_output.trim();
   
       setRunResult({
         status: isPassed ? 'Accepted' : 'Failed',
         testCaseResult: {
           testCase: firstTestCase,
-          result: resultData,
+          result,
           passed: isPassed
         }
       });
@@ -219,7 +231,7 @@ function CodeEditor() {
     } finally {
       setIsRunning(false);
     }
-  };
+  };  
 
   const CODE_EDITOR_HEIGHT = 550;
   return (
