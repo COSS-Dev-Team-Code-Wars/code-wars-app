@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { startRoundTimer } from '../sockets/socket';
 
+const Team = mongoose.model("Team");
+
 var command = "normal";
 var buyImmunity = "disabled";
 var round = "start";
@@ -44,7 +46,7 @@ const commandChannel = (req: Request, res: Response) => {
       });
 }
 
-const setAdminCommand = (req: Request, res: Response) => {
+const setAdminCommand = async (req: Request, res: Response) => {
     const newcommand = req.body.command;
     const newround: string = req.body.round;
 
@@ -54,9 +56,11 @@ const setAdminCommand = (req: Request, res: Response) => {
 
       if (newround == 'EASY') {
         duration = 60 * 30;
+        await freePowerups();
       }
       else if (newround == 'MEDIUM') {
         duration = 60 * 45;
+        await removePowerups();
       }
       else if (newround == 'WAGER') {
         duration = 60 * 15;
@@ -101,4 +105,22 @@ const setEndTimer = (bool: boolean) => {
   endTimer = bool;
 }
 
-export { commandChannel, setAdminCommand, setAnnouncement, setBuyImmunity, messages, round, endTimer, buyImmunity, setEndTimer };
+const freePowerups = async () => {
+  try {
+    await Team.updateMany({}, { $inc: { score: 100 } });
+    console.log("All teams received 100 bonus points.");
+  } catch (error) {
+    console.error("Error giving free powerups:", error);
+  }
+};
+
+const removePowerups = async () => {
+  try {
+    await Team.updateMany({}, { $inc: { score: -100 } });
+    console.log("Bonus points removed for all teams.");
+  } catch (error) {
+    console.error("Error removing powerups:", error);
+  }
+};
+
+export { commandChannel, setAdminCommand, setAnnouncement, setBuyImmunity, messages, round, endTimer, buyImmunity, setEndTimer, freePowerups, removePowerups };

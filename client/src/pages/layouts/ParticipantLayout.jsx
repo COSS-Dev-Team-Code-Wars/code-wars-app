@@ -115,7 +115,7 @@ const ParticipantLayout = ({
 	let params = new URLSearchParams(location.search);
   
 	// array for round where buy power-ups button should be disabled
-	const roundsDisablePowerUps = ['start', 'easy', 'wager'];
+	const roundsDisablePowerUps = ['start', 'wager'];
 
 	const [showBuffs, setShowBuffs] = useState(false);
 	const [showDebuffs, setShowDebuffs] = useState(false);
