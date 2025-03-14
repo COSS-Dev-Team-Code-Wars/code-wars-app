@@ -239,9 +239,6 @@ function CodeEditor() {
       <div className="container_editor_area" style={{ height: `${CODE_EDITOR_HEIGHT - 200}px` }}>
         <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className="container__editor" />
       </div>
-      <Button style={{ alignSelf: "end" }} variant="contained" color="primary" size="large" onClick={handleSubmitCode} disabled={!code}>
-        Submit
-      </Button>
       <CustomModal isOpen={isSubmissionError} windowTitle="Submission Error">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
           <p>
@@ -260,8 +257,9 @@ function CodeEditor() {
           </Button>
         </div>
       </CustomModal>
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
         <Button 
+          style={{ alignSelf: "flex-start" }}
           variant="contained" 
           color="secondary" 
           size="large" 
@@ -269,6 +267,10 @@ function CodeEditor() {
           disabled={!code || isRunning || !(['easy', 'medium'].includes(problemDifficulty))} 
         >
           {isRunning ? 'Running...' : 'Run'}
+        </Button>
+        
+        <Button style={{ alignSelf: "flex-start" }} variant="contained" color="primary" size="large" onClick={handleSubmitCode} disabled={!code}>
+          Submit
         </Button>
       </div>
 

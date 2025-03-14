@@ -191,10 +191,7 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
       return normalizedStdout;
     }
   
-    // If the stdout is longer than expected, trim the last part of the actual output
-    const actualTrimmed = stdout.slice(-expected.length);
-  
-    return actualTrimmed;
+    return stdout;
   };  
 
   return (
