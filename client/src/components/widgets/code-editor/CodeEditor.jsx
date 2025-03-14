@@ -42,6 +42,9 @@ function CodeEditor() {
   const [isRunModalOpen, setIsRunModalOpen] = useState(false);
   const [problemDifficulty, setProblemDifficulty] = useState(null);
 
+  const [testAgainstCustomInput, setTestAgainstCustomInput] = useState(false);
+  const [customInput, setCustomInput] = useState('');
+
   // Handles applying debuffs and buffs
   const processDebuff = (debuff, activate) => {
     if (debuff.code === "stun") setIsStunned(activate);
@@ -138,6 +141,78 @@ function CodeEditor() {
     }
   };
 
+  // Handles running code with custom input
+  const handleRunCustomInput = async () => {
+    try {
+      setIsRunning(true);
+      setRunResult(null);
+
+      if (testAgainstCustomInput) {
+        const languageConfig = programmingLanguages.find(
+          (lang) => lang.value === language.value
+        );
+    
+        if (!languageConfig) {
+          throw new Error('Unsupported language');
+        }
+  
+        // Prepare submission payload
+        const submissionPayload = {
+          source_code: code,
+          language_id: languageConfig.id,
+          stdin: customInput,
+        };
+    
+        // Submit the code to Judge0
+        const submissionResponse = await judge0.postSubmissions(submissionPayload);
+    
+        if (!submissionResponse || !submissionResponse.token) {
+          throw new Error("Failed to submit code to Judge0");
+        }
+    
+        const submissionToken = submissionResponse.token;
+    
+        // Poll for results
+        let result = null;
+        for (let i = 0; i < 10; i++) { // Poll up to 10 times
+          await new Promise(res => setTimeout(res, 2000)); // Wait 2 seconds
+    
+          const fetchedResult = await judge0.getSubmissions(submissionToken);
+    
+          if (fetchedResult && fetchedResult.status && fetchedResult.status.id >= 3) {
+            result = fetchedResult;
+            break;
+          }
+        }
+    
+        if (!result) {
+          throw new Error("Judge0 execution timeout or no response received.");
+        }
+    
+        setRunResult({
+          status: 'Completed',
+          testCaseResult: {
+            result,
+          }
+        });
+    
+        setIsRunModalOpen(true);
+      } else {
+        await handleRunCode();
+      }
+    } catch (error) {
+      console.error("Error running code:", error);
+      setRunResult({
+        status: 'Error',
+        error: error.message || 'Failed to run code'
+      });
+      setIsRunModalOpen(true);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  // Handles running code with sample test cases
   const handleRunCode = async () => {
     try {
       setIsRunning(true);
@@ -275,67 +350,82 @@ function CodeEditor() {
           variant="contained" 
           color="secondary" 
           size="large" 
-          onClick={handleRunCode} 
+          onClick={handleRunCustomInput} 
           disabled={!code || isRunning || !(['easy', 'medium'].includes(problemDifficulty))} 
         >
           {isRunning ? 'Running...' : 'Run'}
         </Button>
-        
+
         <Button style={{ alignSelf: "flex-start" }} variant="contained" color="primary" size="large" onClick={handleSubmitCode} disabled={!code}>
           Submit
         </Button>
+        
+        {/* Ray was here, again... - 3/14/25 */}
+
+        <label style={{ color: "white", marginTop: "5px" }}>
+          <input
+            type="checkbox"
+            checked={testAgainstCustomInput}
+            onChange={() => {setTestAgainstCustomInput(!testAgainstCustomInput); setCustomInput("");}}
+            disabled={!(['easy', 'medium'].includes(problemDifficulty))}
+          />
+          Test against custom input
+        </label>
+
+        {testAgainstCustomInput && (
+          <textarea
+            value={customInput}
+            onChange={(e) => setCustomInput(e.target.value)}
+            placeholder="Enter custom input here"
+            rows={5}
+            style={{ width: '40%', marginTop: '5px' }}
+          />
+        )}
       </div>
 
       {/* Run Result Modal */}
-<CustomModal 
-  isOpen={isRunModalOpen} 
-  windowTitle={runResult?.status === 'Accepted' ? 'Run Successful' : 'Run Result'}
-  setOpen={setIsRunModalOpen}
->
-  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
-    {runResult?.status === 'Accepted' ? (
-      <>
-        <p>Test Case #1 check</p>
-        <p>Code ran successfully!</p>
-      </>
-    ) : (
-      <>
-        <p>Code execution failed.</p>
-        <p><strong>Status:</strong> {runResult?.status}</p>
-      </>
-    )}
-    
-    {runResult?.testCaseResult && (
-      <div>
-        <Typography variant="body2">
-          <strong>Input:</strong> {runResult.testCaseResult.testCase.input}
-        </Typography>
-        <Typography variant="body2">
-          <strong>Expected Output:</strong> {runResult.testCaseResult.testCase.expected_output}
-        </Typography>
-        <Typography variant="body2">
-          <strong>Actual Output:</strong> {runResult.testCaseResult.result.stdout?.trim()}
-        </Typography>
-      </div>
-    )}
+      <CustomModal 
+        isOpen={isRunModalOpen} 
+        windowTitle={runResult?.status === 'Accepted' ? 'Run Successful' : 'Run Result'}
+        setOpen={setIsRunModalOpen}
+      >
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
+          {runResult?.status === 'Accepted' ? (
+            <>
+              {!testAgainstCustomInput && <p>Test Case #1 Passed!</p>}
+              <p>Congrats, your code ran successfully ^-^</p>
+            </>
+          ) : (
+            <>
+              {!testAgainstCustomInput && <p>Test Case #1 Not Passed!</p>}
+              <p><strong>Status:</strong> {runResult?.status}</p>
+            </>
+          )}
+          
+          {runResult?.testCaseResult && (
+            <div>
+              <Typography variant="body2">
+                <strong>Input:</strong> {testAgainstCustomInput ? customInput : runResult.testCaseResult.testCase ? runResult.testCaseResult.testCase.input : ""}
+              </Typography>
+              {!testAgainstCustomInput && (
+                <Typography variant="body2">
+                  <strong>Expected Output:</strong> {runResult.testCaseResult.testCase ? runResult.testCaseResult.testCase.expected_output : ""}
+                </Typography>
+              )}
+              <Typography variant="body2">
+                <strong>Actual Output:</strong> {runResult.testCaseResult.result.stdout?.trim() || (runResult.testCaseResult.result.stderr ? "Error: " + runResult.testCaseResult.result.stderr : "Error")}
+              </Typography>
+            </div>
+          )}
 
-    {runResult?.error && (
-      <Typography variant="body2" color="error">
-        <strong>Error:</strong> {runResult.error}
-      </Typography>
-    )}
+          {runResult?.error && (
+            <Typography variant="body2" color="error">
+              <strong>Error:</strong> {runResult.error}
+            </Typography>
+          )}
 
-    <Button 
-      style={{ alignSelf: "center", marginTop: "10px" }} 
-      variant="contained" 
-      color="primary" 
-      size="large" 
-      onClick={() => setIsRunModalOpen(false)}
-    >
-      Close
-    </Button>
-  </div>
-</CustomModal>
+        </div>
+      </CustomModal>
     </div>
   );
 }
