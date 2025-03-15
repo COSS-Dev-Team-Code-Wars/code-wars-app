@@ -83,9 +83,9 @@ function App() {
 	// 	})()
 	// }, []);
 
-	useEffect(() => {
-		setEnvironmentTitle();
-	}, []);
+	// useEffect(() => {
+	// 	setEnvironmentTitle();
+	// }, []);
 
 	useEffect(() => {
 		const eventSource = new EventSource(`${baseURL}/admincommand`);
