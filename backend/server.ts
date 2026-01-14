@@ -7,6 +7,7 @@ import "./models/submission";
 import "./models/testcase";
 
 import express from 'express';
+import http from 'http';
 import bodyParser from 'body-parser';
 import { connectDB, handleDisconnectDB } from './config/db';
 import sampleRoutes from './routes/sampleRoute';
@@ -23,11 +24,11 @@ import leaderboardRoutes from './routes/leaderboardRoutes';
 import testCaseRoutes from './routes/testCaseRoutes';
 import { checkTokenMiddleware } from "./controllers/authController";
 
-import './sockets/socket';
 import { baseURL } from "./constants";
 
 const cors = require("cors");
 const app = express();
+const server = http.createServer(app);
 
 app.use(cors({
   origin : ["http://localhost:3000", 
@@ -73,8 +74,12 @@ app.use(testCaseRoutes);
 
 //app.use('/api', sampleRoutes);
 
+// Initialize Socket.IO after all routes
+import { initializeSocket } from './sockets/socket';
+initializeSocket(server);
+
 // Start the server
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 

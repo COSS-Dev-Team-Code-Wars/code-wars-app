@@ -4,18 +4,22 @@ import { checkSubmission } from './submissionSocket'
 import { endTimer, setEndTimer } from '../controllers/adminController';
 import { PowerupInfo } from '../models/powerup';
 import { activateImmunity } from './powerupSocket';
+import { Server as SocketIOServer } from 'socket.io';
+import { Server as HTTPServer } from 'http';
 
 var roundStartTime: any;
 
-let io = require("socket.io")(8000, {
-  cors: {
-    origin: ["http://localhost:3000", process.env.FRONTEND_URL || "", process.env.DEV_FRONTEND_URL || "", process.env.PROD_FRONTEND_URL || ""],
-  }
-  // if ever there will be cors errors from the web-sockets, create .env files to store the frontend urls that you're using to connect to this socket server. (populate the FRONTEND_URL, DEV_FRONTEND_URL, PROD_FRONTEND_URL with the urls of the frontend that you're using.)
-});
-
 // store user data with their unique ID as the key and socket ID as the value
 let users: {[key:string]: string} = {}
+let io: SocketIOServer;
+
+export function initializeSocket(server: HTTPServer) {
+  io = new SocketIOServer(server, {
+    cors: {
+      origin: ["http://localhost:3000", process.env.FRONTEND_URL || "", process.env.DEV_FRONTEND_URL || "", process.env.PROD_FRONTEND_URL || ""],
+      credentials: true
+    }
+  });
 
 io.on("connection", (socket: any) => {
   //ADD SOCKET EVENTS HERE
@@ -319,6 +323,9 @@ io.on("connection", (socket: any) => {
   //   }
   // })
 });
+
+  console.log('Socket.IO server initialized');
+}
 
 const startRoundTimer = (seconds: number) => {
   console.log("Started round timer");
