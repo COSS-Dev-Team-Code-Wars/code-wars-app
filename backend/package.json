@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev:server": "tsnd server.ts",
-    "build:server": "tsc"
+    "build:server": "tsc",
+    "seed": "ts-node seeders/TeamSeeder.ts"
   },
   "keywords": [],
   "author": "",
