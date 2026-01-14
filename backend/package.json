@@ -6,7 +6,8 @@
   "scripts": {
     "dev:server": "tsnd server.ts",
     "build:server": "tsc",
-    "seed": "ts-node seeders/TeamSeeder.ts"
+    "seed": "ts-node seeders/TeamSeeder.ts",
+    "seed:judge": "ts-node seeders/JudgeSeeder.ts"
   },
   "keywords": [],
   "author": "",

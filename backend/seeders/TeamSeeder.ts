@@ -6,7 +6,7 @@ import TeamModel from '../models/team';
 
 // ito edit niyo pag magsseed kayo ng team
 const TEAM_DATA = {
-    team_name: 'Coss Team1',
+    team_name: 'pspspsp',
     password: 'coss123',
     members: 'Ron, Kyro, Cody'
 };
