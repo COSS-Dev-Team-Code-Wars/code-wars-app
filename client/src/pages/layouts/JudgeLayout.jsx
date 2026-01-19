@@ -48,12 +48,12 @@ const JudgeLayout = ({
 	currAnnouncements
 }) => {
 	/**
-     * State handler for overall leaderboard modal window
-     */
+	 * State handler for overall leaderboard modal window
+	 */
 	const [open, setOpen] = useState(false);
 	/**
-     * State handler for rows of overall leaderboard
-     */
+	 * State handler for rows of overall leaderboard
+	 */
 	const [leaderboardRows, setLeaderboardRows] = useState([]);
 	/**
 	 * State handler for announcement modal.
@@ -72,7 +72,7 @@ const JudgeLayout = ({
 		setLeaderboardRows(currLeaderboard);
 	}
 
-  useEffect(() => { 
+	useEffect(() => {
 		let usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
 		if (usertype == 'participant') {
 			navigate('/participant/view-all-problems');
@@ -87,17 +87,17 @@ const JudgeLayout = ({
 			setIsLoggedIn(false);
 		}
 
-		
+
 
 		fetchData();
-    
+
 	}, []);
-	
+
 	/**
 	 * Web sockets for real time update of leaderboard
 	 */
-	useEffect(() => { 
-		if(!socketClient) return;
+	useEffect(() => {
+		if (!socketClient) return;
 
 		socketClient.on('evalupdate', () => {
 			fetchData();
@@ -111,7 +111,7 @@ const JudgeLayout = ({
 			socketClient.off('evalupdate');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
-	});
+	}, [socketClient]);
 
 	useEffect(() => {
 		if (currAnnouncements.length > lastSeenCount) {
@@ -127,15 +127,15 @@ const JudgeLayout = ({
 	};
 
 	/**
-     * Handles opening of modal window for announcements.
-     */
+	 * Handles opening of modal window for announcements.
+	 */
 	const handleOpenAnnouncement = () => {
 		setOpenAnnouncement(!openAnnouncement);
 		setHasNewUpdate(false);
 		setLastSeenCount(currAnnouncements.length);
 	};
-  
-  
+
+
 	return (
 		<Box
 			sx={{
@@ -148,12 +148,12 @@ const JudgeLayout = ({
 			}}
 			id="commonBox"
 		>
-			{ freezeOverlay ?
+			{freezeOverlay ?
 				<div className='fOverlayScreen' style={{ zIndex: '10000' }}>
 					<FreezeOverlay />
 				</div>
 
-			// if user is logged in as judge
+				// if user is logged in as judge
 				: isLoggedIn ?
 					<Box
 						sx={{
@@ -173,7 +173,7 @@ const JudgeLayout = ({
 							handleClick={handleOpenAnnouncement}
 							hasNewUpdate={hasNewUpdate}
 						/>
-  
+
 						{/* Children */}
 						<Outlet />
 
@@ -206,20 +206,21 @@ const JudgeLayout = ({
 								<Table
 									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
 									columns={[{
-											field: "message", headerName: "Message", flex: 1.2, minWidth: 150,
-											renderCell: (params) => (
+										field: "message", headerName: "Message", flex: 1.2, minWidth: 150,
+										renderCell: (params) => (
 											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", paddingTop: "10px" }}>
 												{params.value}
 											</div>
-											),
-										},
-										{ field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
-											renderCell: (params) => (
-												<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
-													{params.value}
-												</div>
-												),
-										}
+										),
+									},
+									{
+										field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
+										renderCell: (params) => (
+											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
+												{params.value}
+											</div>
+										),
+									}
 									]}
 									hideFields={[]}
 									additionalStyles={additionalStyles}
@@ -230,7 +231,7 @@ const JudgeLayout = ({
 									}}
 									getRowHeight={() => "auto"}
 									sx={{
-										height: 400, 
+										height: 400,
 										width: 600,
 										overflow: "auto",
 										'& .MuiDataGrid-columnHeader': {
@@ -249,7 +250,7 @@ const JudgeLayout = ({
 						</CustomModal>
 					</Box>
 
-				// replace with protected page sana
+					// replace with protected page sana
 					: <LoadingOverlay />
 			}
 		</Box>

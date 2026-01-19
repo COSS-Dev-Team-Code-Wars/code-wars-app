@@ -20,7 +20,7 @@ import { Bounce, toast } from 'react-toastify';
 
 import GeneralBackground from 'assets/GeneralBG.png';
 import seal from 'assets/UPLB COSS.png';
-import { 
+import {
 	BuyPowerUpsPopover,
 	CustomModal,
 	FreezeOverlay,
@@ -75,9 +75,9 @@ const ParticipantLayout = ({
    * State handler for the opening and closing of submit modal window 
    */
 	const [openModal, setOpenModal] = useState(false);
-		/**
-	 * State handler for currrent round.
-	 */
+	/**
+ * State handler for currrent round.
+ */
 	const [currQuestions, setCurrQuestions] = useState([]);
 	/**
 	 * State handler for rows of overall leaderboard.
@@ -113,7 +113,7 @@ const ParticipantLayout = ({
 
 	// used to retrieve values of datagrid row
 	let params = new URLSearchParams(location.search);
-  
+
 	// array for round where buy power-ups button should be disabled
 	const roundsDisablePowerUps = ['start', 'wager'];
 
@@ -121,7 +121,7 @@ const ParticipantLayout = ({
 	const [showDebuffs, setShowDebuffs] = useState(false);
 	const [seeDetails, setSeeDetails] = useState(false);
 	const [selectedPowerUp, setSelectedPowerUp] = useState(null);
-  
+
 	// states to be passed to view specific problem page
 	const [evaluation, setEvaluation] = useState();
 	const [problem, setProblem] = useState();
@@ -135,7 +135,7 @@ const ParticipantLayout = ({
 	const problemSubtitle = 'UPLB Computer Science Society';
 
 
-	useEffect(() => { 
+	useEffect(() => {
 		let usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
 		if (usertype == 'judge') {
 			navigate('/judge/submissions');
@@ -144,18 +144,18 @@ const ParticipantLayout = ({
 			navigate('/admin/general');
 		}
 		else if (usertype == 'team' || usertype == 'participant') {
-			checkIfLoggedIn();	
+			checkIfLoggedIn();
 		}
 		else {
 			setIsLoggedIn(false);
 		}
-    
+
 
 		// fetch and set team details
 		// team score is updated when:
-				// a submission entry of the team is checked
-				// points are used to buy power-ups
-				// for wager round
+		// a submission entry of the team is checked
+		// points are used to buy power-ups
+		// for wager round
 
 		// setTeamDetails({
 		// 	teamName: 'Team1',
@@ -187,9 +187,9 @@ const ParticipantLayout = ({
 			socketClient.emit('activateImmunity', user._id);
 		});
 
-		socketClient.on('fetchActivePowerups', async() => {
+		socketClient.on('fetchActivePowerups', async () => {
 			const res = await getFetch(`${baseURL}/teams/${user._id}`);
-      
+
 			const active_buffs = res.team.active_buffs;
 			const active_debuffs = res.team.debuffs_received;
 
@@ -197,9 +197,9 @@ const ParticipantLayout = ({
 				const startTime = new Date(buff.startTime);
 				const endTime = new Date(buff.endTime);
 
-				if(new Date(startTime.getTime() + buff.duration).getTime() == endTime.getTime()){
+				if (new Date(startTime.getTime() + buff.duration).getTime() == endTime.getTime()) {
 					const duration = new Date(buff.endTime) - new Date();
-          
+
 					toast.info('🚀 New buff ' + buff.name + ' applied on your team!', {
 						toastId: buff.name,
 						position: 'bottom-right',
@@ -214,9 +214,9 @@ const ParticipantLayout = ({
 					});
 				}
 			});
-      
+
 			active_debuffs.map((debuff) => {
-				if(debuff.endTime){
+				if (debuff.endTime) {
 					const duration = new Date(debuff.endTime) - new Date();
 
 					toast.warn('New debuff ' + debuff.name + ' has been applied to your team!', {
@@ -241,8 +241,8 @@ const ParticipantLayout = ({
 		socketClient.on('newBuff', (powerUp) => {
 			let duration = powerUp.duration;
 			const powerUpName = powerUp.name;
-      
-			if(duration === undefined){
+
+			if (duration === undefined) {
 				const tierKey = Object.keys(powerUp.tier)[0];
 				duration = powerUp.tier[tierKey].duration;
 			}
@@ -287,15 +287,16 @@ const ParticipantLayout = ({
 
 		socketClient.on('updateScoreOnBuyDebuff', () => {
 			getTeamScore();
+			fetchLeaderboardData();
 		})
 
 		socketClient.on('dismissToasts', () => {
 			console.log('dismiss');
 			toast.dismiss();
 		});
-		socketClient.on('evalupdate', (arg)=>{
+		socketClient.on('evalupdate', (arg) => {
 			var teamId = JSON.parse(localStorage?.getItem('user'))?._id;
-      
+
 			if (teamId == arg.team_id) {
 				getRoundQuestions();//
 
@@ -304,6 +305,7 @@ const ParticipantLayout = ({
 				}
 			}
 			getTeamScore();
+			fetchLeaderboardData();
 		});
 
 
@@ -313,26 +315,6 @@ const ParticipantLayout = ({
 			socketClient.off('dismissToasts');
 			socketClient.off('fetchActivePowerups');
 			socketClient.off('startRound');
-			socketClient.off('evalupdate');
-			socketClient.off('updateScoreOnBuyDebuff');
-		};
-	}, [socketClient]);
-  
-	/**
-	 * Web sockets for real time update of leaderboard
-	 */
-	useEffect(() => { 
-		if(!socketClient) return;
-
-		socketClient.on('evalupdate', () => {
-			fetchLeaderboardData();
-		});
-
-		socketClient.on('updateScoreOnBuyDebuff', () => {
-			fetchLeaderboardData();
-		});
-
-		return () => {
 			socketClient.off('evalupdate');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
@@ -369,22 +351,22 @@ const ParticipantLayout = ({
 		}
 
 		await Promise.all(
-			qResponse.questions?.map( async (question)=>{
+			qResponse.questions?.map(async (question) => {
 				let formattedQuestion = {};
 				formattedQuestion.problemTitle = `(SET ${question.set.toUpperCase()}) ${question.title}`;
 				formattedQuestion.id = question.display_id;
 				counter += 1;
 				formattedQuestion.dbId = question._id;
-	
+
 				const qeResponse = await postFetch(`${baseURL}/getlastsubmissionbyteam`, {
 					problemId: question._id,
 					teamId: user._id
 				});
-	
+
 				formattedQuestion.status = qeResponse.evaluation;
 				formattedQuestion.score = qeResponse.score;
 				formattedQuestion.checkedBy = qeResponse.checkedby;
-	
+
 				console.log(set, question.set);
 				if (set == 'c' || set == question.set) {
 					questionsList.push(formattedQuestion);
@@ -431,7 +413,7 @@ const ParticipantLayout = ({
 	const handleSubmissionLog = () => {
 		navigate('/participant/view-submission-log');
 	};
-  
+
 	/**
 	 * Handles opening of power-up popover.
 	 */
@@ -439,7 +421,7 @@ const ParticipantLayout = ({
 		e.stopPropagation();
 		setOpenPopover(!openPopover);
 	};
-  
+
 	/**
 	 * Closes Buy Power-up Modal if user clicked outside the component.
 	 */
@@ -453,14 +435,14 @@ const ParticipantLayout = ({
 
 	/**
    * Handles on click event of return button and navigates to View All Problems Page.
-   */ 
+   */
 	const handleReturn = () => {
 		navigate('/participant/view-all-problems');
 	};
 
 	/**
    * Handles opening of the submit modal window.
-   */ 
+   */
 	const handleButton = () => {
 		setOpenModal(true);
 		//console.log(openModal)
@@ -474,8 +456,8 @@ const ParticipantLayout = ({
 	};
 
 	/**
-     * Handles opening of modal window for announcements.
-     */
+	 * Handles opening of modal window for announcements.
+	 */
 	const handleOpenAnnouncement = () => {
 		setOpenAnnouncement(!openAnnouncement);
 		setHasNewUpdate(false);
@@ -490,7 +472,7 @@ const ParticipantLayout = ({
 		try {
 			const res = await postFetch(`${baseURL}/viewteamscore`, { teamId: user?._id });
 			const uname = user?.username;
-			if(res.success === true){
+			if (res.success === true) {
 				setTeamDetails({
 					teamName: uname,
 					score: res.score.score,
@@ -498,11 +480,11 @@ const ParticipantLayout = ({
 			} else {
 				console.log(res.message);
 			}
-		} catch (err){
+		} catch (err) {
 			console.log(err);
 		}
 	}
-	
+
 
 	return (
 		<Box
@@ -516,23 +498,23 @@ const ParticipantLayout = ({
 			}}
 			id="commonBox"
 		>
-			{ freezeOverlay ?
+			{freezeOverlay ?
 				<div className='fOverlayScreen' style={{ zIndex: '10000' }}>
 					<FreezeOverlay />
 				</div>
 
-			  // if user is logged in as participant
+				// if user is logged in as participant
 				: isLoggedIn ?
-          
+
 					<>
-						<Stack style={{height: "100%"}}>
-							{ location.pathname === '/participant/view-all-problems' ?
+						<Stack style={{ height: "100%" }}>
+							{location.pathname === '/participant/view-all-problems' ?
 								<TopBar
 									isImg={true}
 									icon={seal}
 									title="Code Wars"
 									subtitle="UPLB Computer Science Society"
-									additionalButtonIcon={<ListIcon/>}
+									additionalButtonIcon={<ListIcon />}
 									additionalButtonText="Submission Log"
 									handleAdditionalButton={handleSubmissionLog}
 									startIcon={<ShoppingBasketIcon />}
@@ -541,48 +523,48 @@ const ParticipantLayout = ({
 									handleButton={handleViewPowerUps}
 									handleClick={handleOpenAnnouncement}
 									hasNewUpdate={hasNewUpdate}
-								/> 
-								: location.pathname === '/participant/view-submission-log' ?
-								<TopBar
-                  isImg={true}
-                  icon={seal}
-                  title="Code Wars"
-                  subtitle="UPLB Computer Science Society"
-									buttonText="back"
-									handleButton={handleReturn}
-                />
-								:
-								<TopBar
-									isImg={false}
-									icon={
-										<IconButton sx={{ color: '#fff' }} onClick={handleReturn}>
-											<ArrowBackIcon
-												sx={{
-													fontSize: '2rem',
-													cursor: 'pointer',
-													padding: 1.5,
-													borderRadius: 2,
-													'&:hover': {
-														backgroundColor: 'rgba(201, 209, 231, 0.1)',
-														color: 'major.main',
-													}
-												}}
-											/>
-										</IconButton>
-									}
-									title={problemTitle}
-									subtitle={problemSubtitle}
-									buttonText="UPLOAD SUBMISSION"
-									startIcon={<FileUploadIcon />}
-									handleButton={handleButton}
-									handleClick={handleOpenAnnouncement}
-									hasNewUpdate={hasNewUpdate}
-									disabledState={
-										currRound.toLowerCase() == 'wager' ?
-										evaluation != 'No Submission' :
-										['Pending', 'Correct'].includes(evaluation)
-									}
 								/>
+								: location.pathname === '/participant/view-submission-log' ?
+									<TopBar
+										isImg={true}
+										icon={seal}
+										title="Code Wars"
+										subtitle="UPLB Computer Science Society"
+										buttonText="back"
+										handleButton={handleReturn}
+									/>
+									:
+									<TopBar
+										isImg={false}
+										icon={
+											<IconButton sx={{ color: '#fff' }} onClick={handleReturn}>
+												<ArrowBackIcon
+													sx={{
+														fontSize: '2rem',
+														cursor: 'pointer',
+														padding: 1.5,
+														borderRadius: 2,
+														'&:hover': {
+															backgroundColor: 'rgba(201, 209, 231, 0.1)',
+															color: 'major.main',
+														}
+													}}
+												/>
+											</IconButton>
+										}
+										title={problemTitle}
+										subtitle={problemSubtitle}
+										buttonText="UPLOAD SUBMISSION"
+										startIcon={<FileUploadIcon />}
+										handleButton={handleButton}
+										handleClick={handleOpenAnnouncement}
+										hasNewUpdate={hasNewUpdate}
+										disabledState={
+											currRound.toLowerCase() == 'wager' ?
+												evaluation != 'No Submission' :
+												['Pending', 'Correct'].includes(evaluation)
+										}
+									/>
 							}
 
 							<Box
@@ -628,7 +610,7 @@ const ParticipantLayout = ({
 											},
 										}}
 									>
-										<RoundTimer fontSize='1.4rem' minWidth='325px'/>
+										<RoundTimer fontSize='1.4rem' minWidth='325px' />
 										<Button
 											variant="contained"
 											color="major"
@@ -649,9 +631,9 @@ const ParticipantLayout = ({
 											Overall Leaderboard
 										</Button>
 									</Box>
-							
+
 									{/* Sponsors Carousel */}
-									<Box sx={{ width: '100%', display: { xs: 'none', md: 'initial' }}}>
+									<Box sx={{ width: '100%', display: { xs: 'none', md: 'initial' } }}>
 										<SponsorCarousel />
 									</Box>
 								</Box>
@@ -668,11 +650,11 @@ const ParticipantLayout = ({
 										}
 									}}
 								>
-									<RoundTimer fontSize='1.4rem' minWidth='325px'/>
+									<RoundTimer fontSize='1.4rem' minWidth='325px' />
 									<ParticipantsLeaderboard rows={rowsLeaderboard} columns={columnsLeaderboard} />
 									<SponsorCarousel />
 								</Stack>
-								
+
 								{/* Other components */}
 								<Outlet
 									context={{
@@ -685,13 +667,13 @@ const ParticipantLayout = ({
 										setCurrQuestions: setCurrQuestions,
 										getRoundQuestions: getRoundQuestions,
 										problem: problem
-									}}	
+									}}
 								/>
 							</Box>
 						</Stack>
 
 						{/* Buy Power-ups Popover */}
-						{ location.pathname === '/participant/view-all-problems' ?
+						{location.pathname === '/participant/view-all-problems' ?
 							<ClickAwayListener mouseEvent="onMouseUp" onClickAway={handleClickAway}>
 								{/* Wrapping button and popover in Box for clickaway ref */}
 								<Box>
@@ -731,27 +713,28 @@ const ParticipantLayout = ({
 								}}
 							/>
 						</CustomModal>
-						
+
 						{/* Announcement Modal Window */}
 						<CustomModal isOpen={openAnnouncement} setOpen={setOpenAnnouncement} windowTitle="Announcement">
 							{currAnnouncements.length > 0 ? (
 								<Table
 									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
 									columns={[{
-											field: "message", headerName: "Message", flex: 1, minWidth: 150,
-											renderCell: (params) => (
+										field: "message", headerName: "Message", flex: 1, minWidth: 150,
+										renderCell: (params) => (
 											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", paddingTop: "10px" }}>
 												{params.value}
 											</div>
-											),
-										},
-										{ field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
-											renderCell: (params) => (
-												<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
-													{params.value}
-												</div>
-												),
-										}
+										),
+									},
+									{
+										field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
+										renderCell: (params) => (
+											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
+												{params.value}
+											</div>
+										),
+									}
 									]}
 									hideFields={[]}
 									additionalStyles={additionalStyles}
@@ -770,7 +753,7 @@ const ParticipantLayout = ({
 						</CustomModal>
 
 						{/* Submit Modal Window */}
-						{ location.pathname === '/participant/view-specific-problem' ?
+						{location.pathname === '/participant/view-specific-problem' ?
 							<>
 								{problem ?
 									<CustomModal isOpen={openModal} setOpen={setOpenModal} windowTitle="Upload your answer">
@@ -792,8 +775,8 @@ const ParticipantLayout = ({
 							: null
 						}
 					</>
-          
-				  // replace with protected page sana
+
+					// replace with protected page sana
 					: <LoadingOverlay />
 			}
 		</Box>

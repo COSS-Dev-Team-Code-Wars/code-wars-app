@@ -17,17 +17,17 @@ let io = require("socket.io")(8000, {
 console.log("Socket running");
 
 // store user data with their unique ID as the key and socket ID as the value
-let users: {[key:string]: string} = {}
+let users: { [key: string]: string } = {}
 
 io.on("connection", (socket: any) => {
   //ADD SOCKET EVENTS HERE
 
-  socket.on("socket-health", (data:any) => {
+  socket.on("socket-health", (data: any) => {
     console.log("Reading data here::", data);
-    socket.emit("socket-health-response", { message: data }); 
+    socket.emit("socket-health-response", { message: data });
   });
 
-  socket.on("join", (user:any) => {
+  socket.on("join", (user: any) => {
     socket.join("user:" + user._id);
     console.log("joined user:" + user._id);
     users[user._id] = socket.id;    // Store the mapping of user ID to socket ID to keep track of the connection
@@ -35,6 +35,18 @@ io.on("connection", (socket: any) => {
 
   socket.on("logout", () => {
     socket.emit("dismissToasts");
+  });
+
+  // Clean up user mapping when socket disconnects to prevent stale socket IDs
+  socket.on("disconnect", () => {
+    // Find and remove the user from the mapping
+    for (const [userId, socketId] of Object.entries(users)) {
+      if (socketId === socket.id) {
+        delete users[userId];
+        console.log("User disconnected and removed from mapping: " + userId);
+        break;
+      }
+    }
   });
 
   socket.on("getActivePowerups", () => {
@@ -64,32 +76,32 @@ io.on("connection", (socket: any) => {
     let userTeam = data.userTeam;
     let debuffToDispel = data.debuff_to_dispel;
 
-    const team : Team | null = await TeamModel.findById(userTeam._id);
-    const tier_no = Object.keys(powerUp.tier)[0]; 
+    const team: Team | null = await TeamModel.findById(userTeam._id);
+    const tier_no = Object.keys(powerUp.tier)[0];
 
-    if(team){
+    if (team) {
       // check if buff is existing to prevent stacking of buffs
-      if(team.active_buffs.some((buff: any) => buff._id == powerUp._id)) {
+      if (team.active_buffs.some((buff: any) => buff._id == powerUp._id)) {
         socket.emit("scenarioCheckerBuff", 'existing');
-      } else if ((powerUp.code === 'immune' && tier_no == '4' && team.score < 0.1*team.score + powerUp.tier[tier_no].cost)){ // check if it affords immunity tier 4
+      } else if ((powerUp.code === 'immune' && tier_no == '4' && team.score < 0.1 * team.score + powerUp.tier[tier_no].cost)) { // check if it affords immunity tier 4
         socket.emit("scenarioCheckerBuff", 'insufficient_funds');
       } else if (team.score < powerUp.tier[tier_no].cost) { // check if it affords other buffs
         socket.emit("scenarioCheckerBuff", 'insufficient_funds');
       } else {
         const startTime: Date = new Date();
         let endTime: Date = new Date(startTime.getTime() + powerUp.tier[tier_no].duration);
-        
+
         let cost = powerUp.tier[tier_no].cost;
-        
-        if(powerUp.code == 'dispel'){ // For Dispel
+
+        if (powerUp.code == 'dispel') { // For Dispel
           socket.emit("scenarioCheckerBuff", 'success');
-         
-          if(debuffToDispel === 'Stun'){
-            cost = 1.2*100;
-          } else if(debuffToDispel === 'Editor'){
-            cost = 1.2*150;
-          } else if(debuffToDispel === 'Frosty Hands'){
-            cost = 1.2*100;
+
+          if (debuffToDispel === 'Stun') {
+            cost = 1.2 * 100;
+          } else if (debuffToDispel === 'Editor') {
+            cost = 1.2 * 150;
+          } else if (debuffToDispel === 'Frosty Hands') {
+            cost = 1.2 * 100;
           }
 
           const info: PowerupInfo = {
@@ -105,16 +117,16 @@ io.on("connection", (socket: any) => {
           }
 
           // Update team, remove the dispelled debuff from debuffs received
-          await TeamModel.updateOne({ _id: userTeam._id }, { 
-            $inc: { 
-              score: -cost,    
+          await TeamModel.updateOne({ _id: userTeam._id }, {
+            $inc: {
+              score: -cost,
               total_points_used: cost
-            }, 
-            $push: { 
-              "activated_powerups": info, 
+            },
+            $push: {
+              "activated_powerups": info,
               "active_buffs": info
             },
-            $pull: { 
+            $pull: {
               "debuffs_received": {
                 "name": debuffToDispel
               }
@@ -127,12 +139,12 @@ io.on("connection", (socket: any) => {
         } else { // Other buffs aside from dispel
           socket.emit("scenarioCheckerBuff", 'success');
           // change end time to null for immunity since it should not start right away 
-          if (powerUp.code === 'immune'){
+          if (powerUp.code === 'immune') {
             // cost of immunity tier 4
-            if(tier_no === '4'){
-              cost = 0.1*team.score + powerUp.tier[tier_no].cost;
+            if (tier_no === '4') {
+              cost = 0.1 * team.score + powerUp.tier[tier_no].cost;
             }
-          
+
             const info: PowerupInfo = {
               _id: powerUp._id,
               name: powerUp.name,
@@ -145,26 +157,26 @@ io.on("connection", (socket: any) => {
               endTime: endTime
             }
             // Add the debuff 
-            await TeamModel.updateOne({ _id: userTeam._id }, { 
-              $inc: { 
-                score: -cost,    
+            await TeamModel.updateOne({ _id: userTeam._id }, {
+              $inc: {
+                score: -cost,
                 total_points_used: cost
-              }, 
-              $push: { 
-                "activated_powerups": info, 
+              },
+              $push: {
+                "activated_powerups": info,
                 "active_buffs": info,
               },
             });
             console.log(`${powerUp.code} has been applied to user ${userTeam._id}.`);
-            io.to(users[userTeam._id??""]).emit("newBuff", powerUp);
+            io.to(users[userTeam._id ?? ""]).emit("newBuff", powerUp);
             setTimeout(() => {  // notify the team that their buff has ended after the specified duration
               console.log(`${powerUp.code} has ended for user ${userTeam._id}.`);
-              io.to(users[userTeam._id??""]).emit("buffEnded", powerUp);
+              io.to(users[userTeam._id ?? ""]).emit("buffEnded", powerUp);
             }, powerUp.tier[tier_no].duration);
-          } else{
+          } else {
 
             socket.emit("scenarioCheckerBuff", 'success');
-            
+
             const info: PowerupInfo = {
               _id: powerUp._id,
               name: powerUp.name,
@@ -177,17 +189,17 @@ io.on("connection", (socket: any) => {
               endTime: endTime
             }
             // Add the debuff 
-            await TeamModel.updateOne({ _id: userTeam._id }, { 
-              $inc: { 
-                score: -cost,    
+            await TeamModel.updateOne({ _id: userTeam._id }, {
+              $inc: {
+                score: -cost,
                 total_points_used: cost
-              }, 
-              $push: { 
-                "activated_powerups": info, 
+              },
+              $push: {
+                "activated_powerups": info,
                 "active_buffs": info,
               },
             });
-  
+
             // Dont show toast notif right away if immunity is bought
             // Its toast must show when the medium/hard timer starts
             // for toast notif
@@ -205,59 +217,36 @@ io.on("connection", (socket: any) => {
   })
 
   socket.on("applyDebuff", async (data: any) => {
-    try{
+    try {
       const powerUp = data.powerUp;
       const userTeam = data.userTeam;
       const recipientTeam = data.recipientTeam;
 
       // Check if recipient/target has the same debuff active
       if (
-        recipientTeam.debuffs_received.some((debuff:any) => debuff._id == powerUp._id)
+        recipientTeam.debuffs_received.some((debuff: any) => debuff._id == powerUp._id)
       ) {
         socket.emit("scenarioCheckerDebuff", 'existing');
       } else {
-        const team : Team | null = await TeamModel.findById(userTeam._id);
-        const tier_no = Object.keys(powerUp.tier)[0]; 
-        
-        if(team && team.score < powerUp.tier[tier_no].cost){
+        const team: Team | null = await TeamModel.findById(userTeam._id);
+        const tier_no = Object.keys(powerUp.tier)[0];
+
+        if (team && team.score < powerUp.tier[tier_no].cost) {
           socket.emit("scenarioCheckerDebuff", 'insufficient_funds');
         } else {
           socket.emit("scenarioCheckerDebuff", 'success');
           socket.emit("updateScoreOnBuyDebuff");
           const startTime: Date = new Date();
           const endTime: Date = new Date(startTime.getTime() + powerUp.tier[tier_no].duration);
-          
-          // Adjust total points used and score accordingly
-          await TeamModel.updateOne({ _id: userTeam._id }, { 
-            $inc: { 
-              score: -powerUp.tier[tier_no].cost, 
-              total_points_used: powerUp.tier[tier_no].cost 
-            }, 
-            $push: { "activated_powerups": {
-              _id: powerUp._id,
-              name: powerUp.name,
-              code: powerUp.code,
-              type: powerUp.type,
-              tier: tier_no,
-              duration: powerUp.tier[tier_no].duration,
-              cost: powerUp.tier[tier_no].cost,
-              target: recipientTeam.team_name,
-              startTime: startTime,
-              endTime: endTime
-            }}
-          });
-  
-          //  apply debuffs_received and show toast if there is no immunity active
-          if(!recipientTeam.active_buffs.find((buff: any) => buff.code === 'immune')){
-            console.log(`${powerUp.code} applied to team ${recipientTeam._id}.`);            
-            io.to(users[recipientTeam._id??""]).emit("newDebuff", powerUp);   // send the debuff to the recipient team
-            setTimeout(() => {    // notify the recipient team that their debuff has ended after the specified duration
-              console.log(`${powerUp.code}" has ended for team ${recipientTeam._id}.`);
-              io.to(users[recipientTeam._id??""]).emit('debuffEnded', powerUp);
-            }, powerUp.tier[tier_no].duration);
 
-            await TeamModel.updateOne({ _id: recipientTeam._id }, {
-              $push: { "debuffs_received": {
+          // Adjust total points used and score accordingly
+          await TeamModel.updateOne({ _id: userTeam._id }, {
+            $inc: {
+              score: -powerUp.tier[tier_no].cost,
+              total_points_used: powerUp.tier[tier_no].cost
+            },
+            $push: {
+              "activated_powerups": {
                 _id: powerUp._id,
                 name: powerUp.name,
                 code: powerUp.code,
@@ -265,31 +254,58 @@ io.on("connection", (socket: any) => {
                 tier: tier_no,
                 duration: powerUp.tier[tier_no].duration,
                 cost: powerUp.tier[tier_no].cost,
-                from: recipientTeam._id,
+                target: recipientTeam.team_name,
                 startTime: startTime,
                 endTime: endTime
-              }}
+              }
+            }
+          });
+
+          //  apply debuffs_received and show toast if there is no immunity active
+          if (!recipientTeam.active_buffs.find((buff: any) => buff.code === 'immune')) {
+            console.log(`${powerUp.code} applied to team ${recipientTeam._id}.`);
+            io.to(users[recipientTeam._id ?? ""]).emit("newDebuff", powerUp);   // send the debuff to the recipient team
+            setTimeout(() => {    // notify the recipient team that their debuff has ended after the specified duration
+              console.log(`${powerUp.code}" has ended for team ${recipientTeam._id}.`);
+              io.to(users[recipientTeam._id ?? ""]).emit('debuffEnded', powerUp);
+            }, powerUp.tier[tier_no].duration);
+
+            await TeamModel.updateOne({ _id: recipientTeam._id }, {
+              $push: {
+                "debuffs_received": {
+                  _id: powerUp._id,
+                  name: powerUp.name,
+                  code: powerUp.code,
+                  type: powerUp.type,
+                  tier: tier_no,
+                  duration: powerUp.tier[tier_no].duration,
+                  cost: powerUp.tier[tier_no].cost,
+                  from: recipientTeam._id,
+                  startTime: startTime,
+                  endTime: endTime
+                }
+              }
             });
           }
-  
+
           console.log(
             userTeam.username +
-              " has bought a debuff to be used against " +
-              recipientTeam.team_name
+            " has bought a debuff to be used against " +
+            recipientTeam.team_name
           );
         }
       }
-    } catch(err){
+    } catch (err) {
       console.log(err);
     }
   });
 
   // for judge evaluation
   // if evaluation values ay correct, error or incorrect:
-      // emit("submitEval") ay galing sa client/src/pages/judges/submission-entries/EvalEditInputCell.jsx 
-  
+  // emit("submitEval") ay galing sa client/src/pages/judges/submission-entries/EvalEditInputCell.jsx 
+
   // if evaluation value ay partially correct:
-      // emit("submitEval") ay galing sa client/src/pages/judges/modals/EvaluationModal.jsx
+  // emit("submitEval") ay galing sa client/src/pages/judges/modals/EvaluationModal.jsx
   // socket.on("submitEval", async (arg: any) => {
   //   try {
   //     let response = await checkSubmission(arg);
@@ -303,14 +319,14 @@ io.on("connection", (socket: any) => {
   //       // update details din na dinidisplay sa view all problems page na table.
   //           // 'status' column depends on latest submission entry
   //           // 'score' column initially depends sa prev_max_score. once checked na yung latest submission entry, iccheck ulit if score > prev_max_score para sa 'score' column
-        
+
   //       // need na may socket emit din siguro (?) na ipapasa yung evaluation value sa pages/judges/submission-entries/EvalViewInputCell
   //       // para maupdate yung displayed value since mahirap ipasa yung state na makukuha from EvalEditInputCell
 
   //       // check submission entry fields if score > prev_max_score.
   //           // if yes, then mag-emit ng "updateLeaderboard" para malaman ng client na updated yung overall team scores ng leaderboard
   //           // if no, then no need na mag-emit
-        
+
   //       // share to other judges
   //       socket.emit("evalUpdate", response.results); 
   //     }
