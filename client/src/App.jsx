@@ -12,6 +12,7 @@ import {
 	JudgeLayout,
 	LoginPage,
 	GeneralOptionsPage,
+	CreateTeamPage,
 	ParticipantLayout,
 	PowerUpLogs,
 	TopTeamsPage,
@@ -243,7 +244,8 @@ function App() {
 							}
 						/>
 						<Route path="admin/logs" element={ <PowerUpLogs /> } />
-						<Route path="admin/podium" element={<TopTeamsPage />} />
+								<Route path="admin/podium" element={<TopTeamsPage />} />
+								<Route path="admin/create-team" element={<CreateTeamPage />} />
 						<Route path="admin/timer" element={<TimerPage />} />
 					</Route>
 				</Routes>
