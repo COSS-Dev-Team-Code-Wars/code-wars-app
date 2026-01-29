@@ -5,6 +5,12 @@ import { PowerupInfo } from '../models/powerup';
 import { activateImmunity } from './powerupSocket';
 
 var roundStartTime: any;
+// timer control
+var timerInterval: any = null;
+var timerTimeout: any = null;
+var timerEndTime: number | null = null;
+var remainingSeconds: number | null = null;
+var isPaused: boolean = false;
 
 let io = require("socket.io")(8000, {
   cors: {
@@ -321,46 +327,94 @@ io.on("connection", (socket: any) => {
   // })
 });
 
-const startRoundTimer = (seconds: number) => {
-  console.log("Started round timer");
-  roundStartTime = new Date().getTime();
-  var doAfterDuration: any;
-  var interval: any;
-
-  function getRemainingTime() {
-    if (roundStartTime && !endTimer) {
-      const elapsedTime = (new Date().getTime() - roundStartTime) / 1000;
-      const remainingTime = Math.max(seconds - elapsedTime, 0);
-      return { remainingTime: Math.round(remainingTime) };
-    } else {
-      setEndTimer(false);
-      try {
-        clearTimeout(doAfterDuration);
-        clearInterval(interval);
-      } catch (error) {
-        console.log(error);
-      }
-      return { remainingTime: 0 };
-    }
+const clearExistingTimers = () => {
+  try {
+    if (timerInterval) clearInterval(timerInterval);
+    if (timerTimeout) clearTimeout(timerTimeout);
+  } catch (err) {
+    console.log(err);
   }
+  timerInterval = null;
+  timerTimeout = null;
+};
 
-  io.emit('update', getRemainingTime());
-  console.log(getRemainingTime());
+const emitRemaining = () => {
+  const now = Date.now();
+  let rem = 0;
+  if (timerEndTime) {
+    rem = Math.max(0, Math.round((timerEndTime - now) / 1000));
+  } else if (remainingSeconds !== null) {
+    rem = Math.max(0, Math.round(remainingSeconds));
+  }
+  io.emit('update', { remainingTime: rem });
+  return { remainingTime: rem };
+};
 
-  interval = setInterval(() => {
-    if (roundStartTime) {
-      io.emit('update', getRemainingTime());
-      console.log(getRemainingTime());
+const startRoundTimer = (seconds: number) => {
+  console.log('Started round timer');
+  // reset any previous timers
+  clearExistingTimers();
+  isPaused = false;
+  remainingSeconds = seconds;
+  timerEndTime = Date.now() + seconds * 1000;
+
+  // initial emit
+  emitRemaining();
+
+  // interval to emit every second
+  timerInterval = setInterval(() => {
+    if (!isPaused && timerEndTime) {
+      emitRemaining();
     }
   }, 1000);
 
-  // Set a timeout to end the round after the specified duration
-  doAfterDuration = setTimeout(() => {
-    roundStartTime = null;
-    io.emit('update', getRemainingTime());
-    console.log(getRemainingTime());
+  // timeout to finish the round
+  timerTimeout = setTimeout(() => {
+    // clear state
+    timerEndTime = null;
+    remainingSeconds = 0;
+    clearExistingTimers();
+    emitRemaining();
   }, seconds * 1000);
-}
+};
+
+const pauseRoundTimer = () => {
+  if (isPaused) return;
+  if (timerEndTime) {
+    remainingSeconds = Math.max(0, (timerEndTime - Date.now()) / 1000);
+  }
+  isPaused = true;
+  clearExistingTimers();
+  emitRemaining();
+  console.log('Round timer paused');
+};
+
+const resumeRoundTimer = () => {
+  if (!isPaused) return;
+  if (remainingSeconds === null || remainingSeconds <= 0) {
+    // nothing to resume
+    return;
+  }
+  isPaused = false;
+  timerEndTime = Date.now() + Math.round(remainingSeconds) * 1000;
+
+  // restart interval and timeout
+  timerInterval = setInterval(() => {
+    if (!isPaused && timerEndTime) {
+      emitRemaining();
+    }
+  }, 1000);
+
+  timerTimeout = setTimeout(() => {
+    timerEndTime = null;
+    remainingSeconds = 0;
+    clearExistingTimers();
+    emitRemaining();
+  }, Math.round(remainingSeconds) * 1000);
+
+  emitRemaining();
+  console.log('Round timer resumed');
+};
 
 const newUpload = (upload: any) => {
   console.log("Emit:NEWUPLOAD");
@@ -372,4 +426,4 @@ const evalUpdate = (update: any) => {
   io.emit('evalupdate', update);
 }
 
-export { startRoundTimer, newUpload, evalUpdate };
+export { startRoundTimer, pauseRoundTimer, resumeRoundTimer, newUpload, evalUpdate };
