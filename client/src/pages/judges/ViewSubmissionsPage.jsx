@@ -187,6 +187,7 @@ const ViewSubmissionsPage = () => {
           initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
           style={{ backgroundColor: "#FFFFFF", paddingX: 2 }}
           sx={commonStyles}
+          getRowClassName={(params) => (params.row.status === 'checked' ? 'submission-checked' : '')}
         />
       )}
       <TestCaseModal open={isRunTestModalOpen} setOpen={setIsRunTestModalOpen} submission={selectedSubmission} />
@@ -228,6 +229,20 @@ const commonStyles = {
   },
   backgroundColor: "#fff",
   paddingX: 2,
+  // style for checked submissions (more prominent green)
+  '& .submission-checked': {
+    backgroundColor: '#b7f0c7',
+    color: '#0b5a2e',
+    fontWeight: 600,
+  },
+  '& .submission-checked .MuiDataGrid-cell': {
+    backgroundColor: '#b7f0c7',
+    color: '#0b5a2e',
+    fontWeight: 600,
+  },
+  '& .submission-checked .MuiDataGrid-cell a': {
+    color: '#0b5a2e',
+  },
 };
 
 export default ViewSubmissionsPage;
