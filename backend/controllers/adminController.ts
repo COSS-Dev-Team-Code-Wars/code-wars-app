@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { startRoundTimer } from '../sockets/socket';
+import { startRoundTimer, pauseRoundTimer, resumeRoundTimer } from '../sockets/socket';
 
 const Team = mongoose.model("Team");
 
@@ -80,6 +80,12 @@ const setAdminCommand = async (req: Request, res: Response) => {
 
     command = newcommand;
     round = newround;
+    // handle freeze command: pause/resume the round timer when admin toggles freeze
+    if (newcommand === 'freeze') {
+      try { pauseRoundTimer(); } catch (err) { console.log(err); }
+    } else if (newcommand === 'normal') {
+      try { resumeRoundTimer(); } catch (err) { console.log(err); }
+    }
     return res.send(
       { ok: true }
     );
