@@ -73,7 +73,7 @@ const uploadSubmission = async (req: Request, res: Response) => {
   const prevSubmissions = await Submission.find({
     team_id: teamId,
     problem_id: problemId,
-  })?.sort({ timestamp: 1 });
+  }).sort({ timestamp: 1 });
   let prevMaxScore;
 
   if (prevSubmissions.length == 0) {
