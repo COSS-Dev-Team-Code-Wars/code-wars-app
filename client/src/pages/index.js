@@ -5,6 +5,7 @@ import ParticipantLayout from './layouts/ParticipantLayout';
 import GeneralOptionsPage from './admin/GeneralOptionsPage';
 import PowerUpLogs from './admin/PowerUpLogs';
 import TopTeamsPage from './admin/TopTeamsPage';
+import CreateTeamPage from './admin/CreateTeamPage';
 import LoginPage from './general/LoginPage';
 import ViewSubmissionsPage from './judges/ViewSubmissionsPage';
 import ViewAllProblemsPage from './participants/ViewAllProblemsPage';
@@ -20,6 +21,7 @@ export {
 	GeneralOptionsPage,
 	PowerUpLogs,
 	TopTeamsPage,
+	 CreateTeamPage,
 	ViewAllProblemsPage,
 	ViewSpecificProblemPage,
 	ViewSubmissionLogPage,
