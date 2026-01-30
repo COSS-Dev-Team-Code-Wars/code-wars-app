@@ -6,6 +6,7 @@ import GeneralOptionsPage from './admin/GeneralOptionsPage';
 import PowerUpLogs from './admin/PowerUpLogs';
 import TopTeamsPage from './admin/TopTeamsPage';
 import CreateTeamPage from './admin/CreateTeamPage';
+import CreateQuestionPage from './admin/CreateQuestionPage';
 import LoginPage from './general/LoginPage';
 import ViewSubmissionsPage from './judges/ViewSubmissionsPage';
 import ViewAllProblemsPage from './participants/ViewAllProblemsPage';
@@ -21,7 +22,8 @@ export {
 	GeneralOptionsPage,
 	PowerUpLogs,
 	TopTeamsPage,
-	 CreateTeamPage,
+	CreateTeamPage,
+	CreateQuestionPage,
 	ViewAllProblemsPage,
 	ViewSpecificProblemPage,
 	ViewSubmissionLogPage,
