@@ -98,7 +98,8 @@ const generateQuestion = async (req : any, res : any) => {
         results = await newQuestion.save();
 
         return res.send({
-            success: true
+            success: true,
+            results: results
         });
     } catch (error) {
         return res.send({

@@ -170,3 +170,75 @@ export const getTestCasesByProblem = async (req: Request, res: Response) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+export const createTestCase = async (req: Request, res: Response) => {
+  try {
+    const { problem_id, input, expected_output, output_type } = req.body;
+
+    if (!problem_id || !input || !expected_output || !output_type) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Problem ID, input, expected output, and output type are required" 
+      });
+    }
+
+    // Get the next display_id for this problem
+    const existingTestCases = await TestCase.find({ problem_id });
+    const nextDisplayId = existingTestCases.length;
+
+    const newTestCase = new TestCase({
+      problem_id,
+      display_id: nextDisplayId,
+      input,
+      expected_output,
+      output_type
+    });
+
+    const savedTestCase = await newTestCase.save();
+
+    res.status(201).json({ 
+      success: true, 
+      message: "Test case created successfully",
+      testCase: savedTestCase 
+    });
+  } catch (error) {
+    console.error("Error creating test case:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+export const createMultipleTestCases = async (req: Request, res: Response) => {
+  try {
+    const { problem_id, testCases } = req.body;
+
+    if (!problem_id || !testCases || !Array.isArray(testCases) || testCases.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Problem ID and an array of test cases are required" 
+      });
+    }
+
+    // Get the current count of test cases for this problem
+    const existingCount = await TestCase.countDocuments({ problem_id });
+
+    // Prepare test cases with display_id
+    const testCasesToCreate = testCases.map((tc, index) => ({
+      problem_id,
+      display_id: existingCount + index,
+      input: tc.input,
+      expected_output: tc.expected_output,
+      output_type: tc.output_type
+    }));
+
+    const savedTestCases = await TestCase.insertMany(testCasesToCreate);
+
+    res.status(201).json({ 
+      success: true, 
+      message: `${savedTestCases.length} test cases created successfully`,
+      testCases: savedTestCases 
+    });
+  } catch (error) {
+    console.error("Error creating test cases:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
