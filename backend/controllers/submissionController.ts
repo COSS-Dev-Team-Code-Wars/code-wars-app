@@ -320,10 +320,16 @@ const getAllSubmissions = async (req: Request, res: Response) => {
 
     // Aggregate submissions joined with questions and filter by difficulty
     const results = await Submission.aggregate([
+      // Convert problem_id string to ObjectId for join
+      {
+        $addFields: {
+          problem_obj_id: { $toObjectId: "$problem_id" }
+        }
+      },
       {
         $lookup: {
           from: "questions",
-          localField: "problem_id",
+          localField: "problem_obj_id",
           foreignField: "_id",
           as: "question",
         },

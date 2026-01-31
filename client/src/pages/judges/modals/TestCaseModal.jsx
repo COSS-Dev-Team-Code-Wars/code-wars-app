@@ -36,27 +36,47 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
     return lang ? lang.id : null;
   };  
 
+  // Improved: fetch problemId, then fetch test cases and run Judge0 tests in sequence
   const handleOpen = async () => {
     if (submission?.problem_title) {
-      await fetchProblemId(submission.problem_title);
-    }
-    if (problemId) {
-      await fetchTestCases();
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await getFetch(`${baseURL}/viewquestions`);
+        if (response.success) {
+          const matchedProblem = response.questions.find(
+            (q) => q.title === submission.problem_title
+          );
+          if (matchedProblem) {
+            const probId = matchedProblem._id; // Use ObjectId
+            setProblemId(probId);
+            // Fetch test cases directly using the found problemId (ObjectId)
+            const tcResponse = await getFetch(`${baseURL}/testcases/${probId}`);
+            if (tcResponse.success) {
+              setTestCases(tcResponse.testCases);
+              runJudge0Tests(tcResponse.testCases);
+            } else {
+              setError(tcResponse.message || "Failed to fetch test cases");
+            }
+          } else {
+            setError("Problem not found");
+          }
+        } else {
+          setError("Failed to fetch problems");
+        }
+      } catch (err) {
+        setError("Error fetching problems or test cases");
+      } finally {
+        setLoading(false);
+      }
     }
   };
-  
+
   useEffect(() => {
     if (open) {
       handleOpen();
     }
   }, [open]);
-  
-
-  useEffect(() => {
-    if (problemId) {
-      fetchTestCases();
-    }
-  }, [problemId]);
 
   const runJudge0Tests = async (testCases) => {
     try {
