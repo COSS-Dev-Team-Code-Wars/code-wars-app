@@ -1,10 +1,9 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://judge0-ce.p.rapidapi.com';
+const BASE_URL = 'https://ce.judge0.com';
 const JUDGE_HEADERS = {
-	//@ TO DO: Set as environment variables
-	'x-rapidapi-key': 'b56512c026msh584397cf9af4f24p1a674cjsn62478e5e9a79',
-	'x-rapidapi-host': 'judge0-ce.p.rapidapi.com'
+  'X-Judge0-Client-Id': '71d31de9-f23c-4c16-8267-174c33c8f94a',
+  'X-Judge0-Client-Secret': 'd724bbb0-6441-4f15-9831-b1ac7a2ecf59'
 };
 
 async function fetchData(options) {
