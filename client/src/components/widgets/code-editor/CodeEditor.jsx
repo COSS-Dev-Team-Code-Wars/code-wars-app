@@ -225,20 +225,15 @@ function CodeEditor() {
       });
   
       // Fetch test cases
-      const testCasesResponse = await getFetch(`${baseURL}/testcases/${question.display_id}`);
+      const testCasesResponse = await getFetch(`${baseURL}/testcases/${question._id}`);
       
       if (!testCasesResponse.success) {
         throw new Error('Failed to fetch test cases');
       }
 
-      const questionDisplayId = question.display_id;
-  
-      const expectedTestCaseId = parseInt(`${questionDisplayId}01`, 10); // Append "01" to the ID
-
-      const firstTestCase = testCasesResponse.testCases.find(tc => tc.display_id === expectedTestCaseId);
-  
+      const firstTestCase = testCasesResponse.testCases[0];
       if (!firstTestCase) {
-        throw new Error('No test case with display_id 1 found');
+        throw new Error('No test cases found');
       }
   
       // Get language configuration
