@@ -18,7 +18,7 @@ import SubmitModal from 'pages/participants/modals/SubmitModal';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bounce, toast } from 'react-toastify';
 
-import GeneralBackground from 'assets/GeneralBG.png';
+import GeneralBackground from 'assets/GenBackground.png';
 import seal from 'assets/UPLB COSS.png';
 import { 
 	BuyPowerUpsPopover,
