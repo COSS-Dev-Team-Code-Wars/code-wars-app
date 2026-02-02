@@ -246,552 +246,756 @@ const CreateQuestionPage = () => {
   return (
     <Box
       sx={{
-        p: { xs: 2, md: 4 },
-        maxWidth: 1200,
-        mx: 'auto',
-        height: 'calc(100vh - 64px)', // adjust if you have a topbar, else use 100vh
-        overflowY: 'auto',
-        scrollbarWidth: 'thin',
-        scrollbarColor: '#b3b3b3 #f5f5f5',
-        background: 'transparent',
+        height: '100vh',          // full viewport height
+        overflowY: 'auto',        // enable vertical scrolling
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '400px',
+          background: 'linear-gradient(135deg, rgba(0, 159, 172, 0.08) 0%, rgba(57, 83, 149, 0.08) 100%)',
+          zIndex: 0,
+        },
       }}
     >
-      {/* Header Section */}
-      <Paper
-        elevation={0}
+      <Box
         sx={{
-          p: 3,
-          mb: 4,
-          borderRadius: 3,
-          background: `linear-gradient(135deg, ${alpha('#009fac', 0.1)} 0%, ${alpha('#395395', 0.1)} 100%)`,
-          border: '1px solid',
-          borderColor: alpha('#009fac', 0.2),
+          p: { xs: 2, md: 4 },
+          maxWidth: 2000,
+          mx: 'auto',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Box
-            sx={{
-              p: 1.5,
-              borderRadius: 2,
-              backgroundColor: alpha('#009fac', 0.15),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <CodeIcon sx={{ fontSize: 32, color: '#009fac' }} />
-          </Box>
-          <Box>
-            <Typography variant="h4" fontWeight={600} color="text.primary">
-              Create New Question
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              Add a new coding challenge to the competition
-            </Typography>
-          </Box>
-        </Stack>
-      </Paper>
+        {/* Header Section */}
+        <Paper
+          elevation={3}
+          sx={{
+            p: 4,
+            mb: 4,
+            borderRadius: 4,
+            background: 'linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)',
+            border: '2px solid',
+            borderColor: alpha('#009fac', 0.3),
+            boxShadow: `0 8px 32px ${alpha('#009fac', 0.15)}`,
+          }}
+        >
+          <Stack direction="row" alignItems="center" spacing={2.5}>
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 3,
+                background: 'linear-gradient(135deg, #009fac 0%, #395395 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: `0 4px 20px ${alpha('#009fac', 0.4)}`,
+              }}
+            >
+              <CodeIcon sx={{ fontSize: 40, color: '#fff' }} />
+            </Box>
+            <Box>
+              <Typography variant="h4" fontWeight={700} color="text.primary" sx={{ mb: 0.5 }}>
+                Create New Question
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Add a new coding challenge to the competition
+              </Typography>
+            </Box>
+          </Stack>
+        </Paper>
 
-      <Grid container spacing={3}>
-        {/* Main Form Section */}
-        <Grid item xs={12} lg={8}>
-          <Card 
-            elevation={0} 
-            sx={{ 
-              borderRadius: 3,
-              border: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              {/* Title Input */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <AssignmentIcon fontSize="small" color="primary" />
-                  Question Title
-                </Typography>
-                <TextField
-                  fullWidth
-                  placeholder="Enter a descriptive title for the question..."
-                  value={formData.title}
-                  onChange={handleChange('title')}
-                  variant="outlined"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                    },
-                  }}
-                />
-              </Box>
-
-              {/* Question Body */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
-                  Question Description
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={8}
-                  placeholder="Write the complete problem statement here. Include:
-• Problem description
-• Input format
-• Output format
-• Constraints
-• Examples with explanations"
-                  value={formData.body}
-                  onChange={handleChange('body')}
-                  variant="outlined"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      fontFamily: 'monospace',
-                    },
-                  }}
-                />
-              </Box>
-
-              {/* Samples */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
-                  Sample Input/Output
-                </Typography>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={5}
-                  placeholder="*insert Gdocs Link*"
-                  value={formData.samples}
-                  onChange={handleChange('samples')}
-                  variant="outlined"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: 2,
-                      fontFamily: 'monospace',
-                      backgroundColor: alpha('#000', 0.02),
-                    },
-                  }}
-                />
-              </Box>
-
-              <Divider sx={{ my: 3 }} />
-
-              {/* Configuration Row */}
-              <Grid container spacing={2}>
-                {/* Difficulty */}
-                <Grid item xs={12} sm={6} md={3}>
-                  <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <SpeedIcon fontSize="small" sx={{ color: getDifficultyColor(formData.difficulty) }} />
-                    Difficulty
-                  </Typography>
-                  <FormControl fullWidth size="small">
-                    <Select
-                      value={formData.difficulty}
-                      onChange={handleChange('difficulty')}
-                      displayEmpty
-                      sx={{ borderRadius: 2 }}
-                    >
-                      <MenuItem value="" disabled>
-                        <em>Select difficulty</em>
-                      </MenuItem>
-                      {DIFFICULTY_OPTIONS.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <Box
-                              sx={{
-                                width: 8,
-                                height: 8,
-                                borderRadius: '50%',
-                                backgroundColor: option.color,
-                              }}
-                            />
-                            <span>{option.label}</span>
-                          </Stack>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                {/* Points */}
-                <Grid item xs={12} sm={6} md={3}>
-                  <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <TrophyIcon fontSize="small" color="warning" />
-                    Points
+        <Grid container spacing={3}>
+          {/* Main Form Section */}
+          <Grid item xs={12} lg={8}>
+            <Card 
+              elevation={2} 
+              sx={{ 
+                borderRadius: 4,
+                border: '1px solid',
+                borderColor: alpha('#009fac', 0.2),
+                overflow: 'hidden',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, #f8fafb 0%, #e8eef3 100%)',
+                '&:hover': {
+                  boxShadow: `0 8px 24px ${alpha('#009fac', 0.15)}`,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                {/* Title Input */}
+                <Box sx={{ mb: 3.5 }}>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1, color: '#009fac' }}>
+                    <AssignmentIcon fontSize="small" />
+                    Question Title
                   </Typography>
                   <TextField
                     fullWidth
-                    type="number"
-                    placeholder="100"
-                    value={formData.points}
-                    onChange={handleChange('points')}
-                    size="small"
-                    inputProps={{ min: 1 }}
+                    placeholder="Enter a descriptive title for the question..."
+                    value={formData.title}
+                    onChange={handleChange('title')}
+                    variant="outlined"
                     sx={{
                       '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
+                        borderRadius: 2.5,
+                        backgroundColor: '#fff',
+                        transition: 'all 0.3s',
+                        '&:hover': {
+                          backgroundColor: alpha('#009fac', 0.03),
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: '#fff',
+                          boxShadow: `0 0 0 3px ${alpha('#009fac', 0.1)}`,
+                        },
                       },
                     }}
                   />
-                </Grid>
+                </Box>
 
-                {/* Test Cases Count (Auto-calculated) */}
-                <Grid item xs={12} sm={6} md={3}>
-                  <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CheckIcon fontSize="small" color="success" />
-                    Test Cases
+                {/* Question Body */}
+                <Box sx={{ mb: 3.5 }}>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, color: '#395395' }}>
+                    Question Description
                   </Typography>
-                  <Box
-                    sx={{
-                      height: 40,
-                      display: 'flex',
-                      alignItems: 'center',
-                      px: 2,
-                      borderRadius: 2,
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      backgroundColor: alpha('#4caf50', 0.05),
-                    }}
-                  >
-                    <Typography variant="body2" color="text.secondary">
-                      {testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length} test case(s)
-                    </Typography>
-                  </Box>
-                </Grid>
-
-                {/* Set */}
-                <Grid item xs={12} sm={6} md={3}>
-                  <Typography variant="subtitle2" fontWeight={600} sx={{ mb: 1 }}>
-                    Question Set
-                  </Typography>
-                  <FormControl fullWidth size="small">
-                    <Select
-                      value={formData.set}
-                      onChange={handleChange('set')}
-                      sx={{ borderRadius: 2 }}
-                    >
-                      {SET_OPTIONS.map((option) => (
-                        <MenuItem key={option.value} value={option.value}>
-                          {option.label}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-
-          {/* Test Cases Section */}
-          <Card 
-            elevation={0} 
-            sx={{ 
-              mt: 3,
-              borderRadius: 3,
-              border: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              {/* Test Cases Header */}
-              <Stack 
-                direction="row" 
-                alignItems="center" 
-                justifyContent="space-between"
-                sx={{ mb: 2, cursor: 'pointer' }}
-                onClick={() => setTestCasesExpanded(!testCasesExpanded)}
-              >
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <ScienceIcon color="primary" />
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Test Cases
-                  </Typography>
-                  <Chip 
-                    size="small" 
-                    label={testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length}
-                    color="primary"
-                    sx={{ fontWeight: 600 }}
-                  />
-                </Stack>
-                <IconButton size="small">
-                  {testCasesExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                </IconButton>
-              </Stack>
-
-              <Collapse in={testCasesExpanded}>
-                <Stack spacing={2}>
-                  {testCases.map((testCase, index) => (
-                    <Paper
-                      key={index}
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        backgroundColor: alpha('#000', 0.01),
-                        position: 'relative',
-                      }}
-                    >
-                      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-                        <Typography variant="subtitle2" fontWeight={600} color="text.secondary">
-                          Test Case #{index + 1}
-                        </Typography>
-                        <Tooltip title={testCases.length > 1 ? "Remove test case" : "At least one test case required"}>
-                          <span>
-                            <IconButton 
-                              size="small" 
-                              onClick={() => removeTestCase(index)}
-                              disabled={testCases.length <= 1}
-                              sx={{ 
-                                color: 'error.main',
-                                '&:hover': { backgroundColor: alpha('#f44336', 0.1) },
-                              }}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </span>
-                        </Tooltip>
-                      </Stack>
-
-                      <Grid container spacing={2}>
-                        {/* Input */}
-                        <Grid item xs={12} md={5}>
-                          <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                            Input
-                          </Typography>
-                          <TextField
-                            fullWidth
-                            multiline
-                            rows={3}
-                            placeholder="Enter test input..."
-                            value={testCase.input}
-                            onChange={handleTestCaseChange(index, 'input')}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                              mt: 0.5,
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 1.5,
-                                fontFamily: 'monospace',
-                                fontSize: '0.875rem',
-                                backgroundColor: '#fff',
-                              },
-                            }}
-                          />
-                        </Grid>
-
-                        {/* Expected Output */}
-                        <Grid item xs={12} md={5}>
-                          <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                            Expected Output
-                          </Typography>
-                          <TextField
-                            fullWidth
-                            multiline
-                            rows={3}
-                            placeholder="Enter expected output..."
-                            value={testCase.expected_output}
-                            onChange={handleTestCaseChange(index, 'expected_output')}
-                            variant="outlined"
-                            size="small"
-                            sx={{
-                              mt: 0.5,
-                              '& .MuiOutlinedInput-root': {
-                                borderRadius: 1.5,
-                                fontFamily: 'monospace',
-                                fontSize: '0.875rem',
-                                backgroundColor: '#fff',
-                              },
-                            }}
-                          />
-                        </Grid>
-
-                        {/* Output Type */}
-                        <Grid item xs={12} md={2}>
-                          <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                            Match Type
-                          </Typography>
-                          <FormControl fullWidth size="small" sx={{ mt: 0.5 }}>
-                            <Select
-                              value={testCase.output_type}
-                              onChange={handleTestCaseChange(index, 'output_type')}
-                              sx={{ 
-                                borderRadius: 1.5,
-                                backgroundColor: '#fff',
-                                fontSize: '0.875rem',
-                              }}
-                            >
-                              {OUTPUT_TYPE_OPTIONS.map((option) => (
-                                <MenuItem key={option.value} value={option.value}>
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                      </Grid>
-                    </Paper>
-                  ))}
-
-                  {/* Add Test Case Button */}
-                  <Button
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={8}
+                    placeholder="Write the complete problem statement here. Include:
+- Problem description
+- Input format
+- Output format
+- Constraints
+- Examples with explanations"
+                    value={formData.body}
+                    onChange={handleChange('body')}
                     variant="outlined"
-                    color="primary"
-                    startIcon={<PlaylistAddIcon />}
-                    onClick={addTestCase}
                     sx={{
-                      py: 1.5,
-                      borderRadius: 2,
-                      borderStyle: 'dashed',
-                      fontWeight: 500,
-                      textTransform: 'none',
-                      '&:hover': {
-                        borderStyle: 'dashed',
-                        backgroundColor: alpha('#395395', 0.05),
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2.5,
+                        fontFamily: 'monospace',
+                        backgroundColor: '#fff',
+                        transition: 'all 0.3s',
+                        '&:hover': {
+                          backgroundColor: alpha('#395395', 0.03),
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: '#fff',
+                          boxShadow: `0 0 0 3px ${alpha('#395395', 0.1)}`,
+                        },
                       },
                     }}
-                  >
-                    Add Another Test Case
-                  </Button>
-                </Stack>
-              </Collapse>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* Preview & Actions Panel */}
-        <Grid item xs={12} lg={4}>
-          {/* Preview Card */}
-          <Card 
-            elevation={0} 
-            sx={{ 
-              mb: 3,
-              borderRadius: 3,
-              border: '1px solid',
-              borderColor: 'divider',
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-                Question Preview
-              </Typography>
-              
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="caption" color="text.secondary">Title</Typography>
-                  <Typography variant="body1" fontWeight={500}>
-                    {formData.title || '—'}
-                  </Typography>
+                  />
                 </Box>
-                
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                  {formData.difficulty && (
-                    <Chip
+
+                {/* Samples */}
+                <Box sx={{ mb: 3.5 }}>
+                  <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, color: '#009fac' }}>
+                    Sample Input/Output
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={5}
+                    placeholder="*insert Gdocs Link*"
+                    value={formData.samples}
+                    onChange={handleChange('samples')}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2.5,
+                        fontFamily: 'monospace',
+                        backgroundColor: '#fff',
+                        transition: 'all 0.3s',
+                        '&:hover': {
+                          backgroundColor: alpha('#000', 0.03),
+                        },
+                        '&.Mui-focused': {
+                          backgroundColor: '#fff',
+                          boxShadow: `0 0 0 3px ${alpha('#009fac', 0.1)}`,
+                        },
+                      },
+                    }}
+                  />
+                </Box>
+
+                <Divider sx={{ my: 4 }} />
+
+                {/* Configuration Row */}
+                <Grid container spacing={2.5}>
+                  {/* Difficulty */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <SpeedIcon fontSize="small" sx={{ color: getDifficultyColor(formData.difficulty) }} />
+                      Difficulty
+                    </Typography>
+                    <FormControl fullWidth size="small">
+                      <Select
+                        value={formData.difficulty}
+                        onChange={handleChange('difficulty')}
+                        displayEmpty
+                        sx={{ 
+                          borderRadius: 2.5,
+                          backgroundColor: '#fff',
+                          '&:hover': {
+                            backgroundColor: alpha('#000', 0.02),
+                          },
+                        }}
+                      >
+                        <MenuItem value="" disabled>
+                          <em>Select difficulty</em>
+                        </MenuItem>
+                        {DIFFICULTY_OPTIONS.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                              <Box
+                                sx={{
+                                  width: 10,
+                                  height: 10,
+                                  borderRadius: '50%',
+                                  backgroundColor: option.color,
+                                }}
+                              />
+                              <span>{option.label}</span>
+                            </Stack>
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  {/* Points */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <TrophyIcon fontSize="small" color="warning" />
+                      Points
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      type="number"
+                      placeholder="100"
+                      value={formData.points}
+                      onChange={handleChange('points')}
                       size="small"
-                      label={formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1)}
+                      inputProps={{ min: 1 }}
                       sx={{
-                        backgroundColor: alpha(getDifficultyColor(formData.difficulty), 0.15),
-                        color: getDifficultyColor(formData.difficulty),
-                        fontWeight: 600,
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: 2.5,
+                          backgroundColor: '#fff',
+                          '&:hover': {
+                            backgroundColor: alpha('#000', 0.02),
+                          },
+                        },
                       }}
                     />
-                  )}
-                  {formData.points && (
-                    <Chip
-                      size="small"
-                      icon={<TrophyIcon sx={{ fontSize: 16 }} />}
-                      label={`${formData.points} pts`}
-                      color="warning"
-                      variant="outlined"
-                    />
-                  )}
-                  {testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length > 0 && (
-                    <Chip
-                      size="small"
-                      icon={<ScienceIcon sx={{ fontSize: 16 }} />}
-                      label={`${testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length} test cases`}
-                      color="success"
-                      variant="outlined"
-                    />
-                  )}
-                </Stack>
+                  </Grid>
 
-                <Box>
-                  <Typography variant="caption" color="text.secondary">Set</Typography>
-                  <Typography variant="body2">
-                    {SET_OPTIONS.find(s => s.value === formData.set)?.label || 'Set A'}
-                  </Typography>
-                </Box>
-              </Stack>
-            </CardContent>
-          </Card>
+                  {/* Test Cases Count (Auto-calculated) */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }} color="text.primary">
+                      <CheckIcon fontSize="small" color="success" />
+                      Test Cases
+                    </Typography>
+                    <Box
+                      sx={{
+                        height: 40,
+                        display: 'flex',
+                        alignItems: 'center',
+                        px: 2,
+                        borderRadius: 2.5,
+                        border: '1px solid',
+                        borderColor: alpha('#4caf50', 0.3),
+                        backgroundColor: alpha('#4caf50', 0.08),
+                      }}
+                    >
+                      <Typography variant="body2" fontWeight={600} color="success.dark">
+                        {testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length} test case(s)
+                      </Typography>
+                    </Box>
+                  </Grid>
 
-          {/* Actions Card */}
-          <Card 
-            elevation={0} 
-            sx={{ 
-              borderRadius: 3,
-              border: '1px solid',
-              borderColor: 'divider',
-              background: alpha('#009fac', 0.02),
-            }}
-          >
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 2 }}>
-                Actions
-              </Typography>
-              
-              <Stack spacing={2}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="major"
-                  size="large"
-                  startIcon={<AddIcon />}
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  sx={{
-                    py: 1.5,
+                  {/* Set */}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" fontWeight={700} sx={{ mb: 1.5 }}>
+                      Question Set
+                    </Typography>
+                    <FormControl fullWidth size="small">
+                      <Select
+                        value={formData.set}
+                        onChange={handleChange('set')}
+                        sx={{ 
+                          borderRadius: 2.5,
+                          backgroundColor: '#fff',
+                          '&:hover': {
+                            backgroundColor: alpha('#000', 0.02),
+                          },
+                        }}
+                      >
+                        {SET_OPTIONS.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+
+            {/* Test Cases Section */}
+            <Card 
+              elevation={2} 
+              sx={{ 
+                mt: 3,
+                borderRadius: 4,
+                border: '1px solid',
+                borderColor: alpha('#395395', 0.2),
+                overflow: 'hidden',
+                transition: 'all 0.3s',
+                background: 'linear-gradient(135deg, #f6f8fa 0%, #e6ecf0 100%)',
+                '&:hover': {
+                  boxShadow: `0 8px 24px ${alpha('#395395', 0.15)}`,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 4 }}>
+                {/* Test Cases Header */}
+                <Stack 
+                  direction="row" 
+                  alignItems="center" 
+                  justifyContent="space-between"
+                  sx={{ 
+                    mb: 3, 
+                    cursor: 'pointer',
+                    p: 2,
                     borderRadius: 2,
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    boxShadow: `0 4px 14px ${alpha('#009fac', 0.4)}`,
+                    transition: 'all 0.2s',
                     '&:hover': {
-                      boxShadow: `0 6px 20px ${alpha('#009fac', 0.5)}`,
+                      backgroundColor: alpha('#395395', 0.05),
                     },
                   }}
+                  onClick={() => setTestCasesExpanded(!testCasesExpanded)}
                 >
-                  {isSubmitting ? 'Creating...' : 'Create Question'}
-                </Button>
-                
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  color="inherit"
-                  size="large"
-                  onClick={handleClear}
-                  disabled={isSubmitting}
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <Box
+                      sx={{
+                        p: 1,
+                        borderRadius: 2,
+                        backgroundColor: alpha('#395395', 0.1),
+                      }}
+                    >
+                      <ScienceIcon sx={{ color: '#395395' }} />
+                    </Box>
+                    <Typography variant="h6" fontWeight={700} color="text.primary">
+                      Test Cases
+                    </Typography>
+                    <Chip 
+                      size="small" 
+                      label={testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length}
+                      sx={{
+                        fontWeight: 700,
+                        backgroundColor: alpha('#395395', 0.15),
+                        color: '#395395',
+                      }}
+                    />
+                  </Stack>
+                  <IconButton 
+                    size="small"
+                    sx={{
+                      backgroundColor: alpha('#395395', 0.1),
+                      '&:hover': {
+                        backgroundColor: alpha('#395395', 0.2),
+                      },
+                    }}
+                  >
+                    {testCasesExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                  </IconButton>
+                </Stack>
+
+                <Collapse in={testCasesExpanded}>
+                  <Stack spacing={3}>
+                    {testCases.map((testCase, index) => (
+                      <Paper
+                        key={index}
+                        elevation={1}
+                        sx={{
+                          p: 3,
+                          borderRadius: 3,
+                          border: '1px solid',
+                          borderColor: alpha('#395395', 0.15),
+                          backgroundColor: '#fff',
+                          position: 'relative',
+                          transition: 'all 0.3s',
+                          '&:hover': {
+                            borderColor: alpha('#395395', 0.3),
+                            boxShadow: `0 4px 16px ${alpha('#395395', 0.1)}`,
+                          },
+                        }}
+                      >
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2.5 }}>
+                          <Chip
+                            label={`Test Case #${index + 1}`}
+                            size="small"
+                            sx={{
+                              fontWeight: 700,
+                              backgroundColor: alpha('#395395', 0.15),
+                              color: '#395395',
+                            }}
+                          />
+                          <Tooltip title={testCases.length > 1 ? "Remove test case" : "At least one test case required"}>
+                            <span>
+                              <IconButton 
+                                size="small" 
+                                onClick={() => removeTestCase(index)}
+                                disabled={testCases.length <= 1}
+                                sx={{ 
+                                  color: 'error.main',
+                                  backgroundColor: alpha('#f44336', 0.1),
+                                  '&:hover': { 
+                                    backgroundColor: alpha('#f44336', 0.2),
+                                  },
+                                  '&:disabled': {
+                                    backgroundColor: alpha('#000', 0.05),
+                                  },
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </Stack>
+
+                        <Grid container spacing={2.5}>
+                          {/* Input */}
+                          <Grid item xs={12} md={5}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ mb: 1, display: 'block' }}>
+                              Input
+                            </Typography>
+                            <TextField
+                              fullWidth
+                              multiline
+                              rows={3}
+                              placeholder="Enter test input..."
+                              value={testCase.input}
+                              onChange={handleTestCaseChange(index, 'input')}
+                              variant="outlined"
+                              size="small"
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: 2,
+                                  fontFamily: 'monospace',
+                                  fontSize: '0.875rem',
+                                  backgroundColor: alpha('#009fac', 0.02),
+                                  transition: 'all 0.3s',
+                                  '&:hover': {
+                                    boxShadow: `0 0 0 2px ${alpha('#009fac', 0.1)}`,
+                                  },
+                                  '&.Mui-focused': {
+                                    backgroundColor: '#fff',
+                                    boxShadow: `0 0 0 3px ${alpha('#009fac', 0.15)}`,
+                                  },
+                                },
+                              }}
+                            />
+                          </Grid>
+
+                          {/* Expected Output */}
+                          <Grid item xs={12} md={5}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ mb: 1, display: 'block' }}>
+                              Expected Output
+                            </Typography>
+                            <TextField
+                              fullWidth
+                              multiline
+                              rows={3}
+                              placeholder="Enter expected output..."
+                              value={testCase.expected_output}
+                              onChange={handleTestCaseChange(index, 'expected_output')}
+                              variant="outlined"
+                              size="small"
+                              sx={{
+                                '& .MuiOutlinedInput-root': {
+                                  borderRadius: 2,
+                                  fontFamily: 'monospace',
+                                  fontSize: '0.875rem',
+                                  backgroundColor: alpha('#009fac', 0.02),
+                                  transition: 'all 0.3s',
+                                  '&:hover': {
+                                    boxShadow: `0 0 0 2px ${alpha('#009fac', 0.1)}`,
+                                  },
+                                  '&.Mui-focused': {
+                                    backgroundColor: '#fff',
+                                    boxShadow: `0 0 0 3px ${alpha('#009fac', 0.15)}`,
+                                  },
+                                },
+                              }}
+                            />
+                          </Grid>
+
+                          {/* Output Type */}
+                          <Grid item xs={12} md={2}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ mb: 1, display: 'block' }}>
+                              Match Type
+                            </Typography>
+                            <FormControl fullWidth size="small">
+                              <Select
+                                value={testCase.output_type}
+                                onChange={handleTestCaseChange(index, 'output_type')}
+                                sx={{ 
+                                  borderRadius: 2,
+                                  backgroundColor: '#fff',
+                                  fontSize: '0.875rem',
+                                }}
+                              >
+                                {OUTPUT_TYPE_OPTIONS.map((option) => (
+                                  <MenuItem key={option.value} value={option.value}>
+                                    {option.label}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Grid>
+                        </Grid>
+                      </Paper>
+                    ))}
+
+                    {/* Add Test Case Button */}
+                    <Button
+                      variant="outlined"
+                      startIcon={<PlaylistAddIcon />}
+                      onClick={addTestCase}
+                      sx={{
+                        py: 2,
+                        borderRadius: 3,
+                        borderWidth: 2,
+                        borderStyle: 'dashed',
+                        borderColor: alpha('#395395', 0.3),
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        color: '#395395',
+                        backgroundColor: '#fff',
+                        transition: 'all 0.3s',
+                        '&:hover': {
+                          borderWidth: 2,
+                          borderStyle: 'dashed',
+                          borderColor: '#395395',
+                          backgroundColor: alpha('#395395', 0.08),
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      Add Another Test Case
+                    </Button>
+                  </Stack>
+                </Collapse>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Preview & Actions Panel */}
+          <Grid item xs={12} lg={4}>
+            {/* Preview Card */}
+            <Card 
+              elevation={2} 
+              sx={{ 
+                mb: 3,
+                borderRadius: 4,
+                border: '1px solid',
+                borderColor: alpha('#009fac', 0.2),
+                overflow: 'hidden',
+                background: 'linear-gradient(135deg, #f0f8f9 0%, #d9eef1 100%)',
+              }}
+            >
+              <Box
+                sx={{
+                  p: 2.5,
+                  background: `linear-gradient(135deg, ${alpha('#009fac', 0.1)} 0%, ${alpha('#395395', 0.1)} 100%)`,
+                  borderBottom: '1px solid',
+                  borderColor: alpha('#009fac', 0.2),
+                }}
+              >
+                <Typography variant="h6" fontWeight={700} sx={{ color: '#009fac' }}>
+                  Question Preview
+                </Typography>
+              </Box>
+              <CardContent sx={{ p: 3 }}>
+                <Stack spacing={2.5}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 0.5, display: 'block' }}>
+                      Title
+                    </Typography>
+                    <Typography variant="body1" fontWeight={600} sx={{ color: formData.title ? 'text.primary' : 'text.disabled' }}>
+                      {formData.title || 'No title yet'}
+                    </Typography>
+                  </Box>
+                  
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {formData.difficulty && (
+                      <Chip
+                        size="small"
+                        label={formData.difficulty.charAt(0).toUpperCase() + formData.difficulty.slice(1)}
+                        sx={{
+                          backgroundColor: alpha(getDifficultyColor(formData.difficulty), 0.2),
+                          color: getDifficultyColor(formData.difficulty),
+                          fontWeight: 700,
+                          borderWidth: 2,
+                          borderStyle: 'solid',
+                          borderColor: getDifficultyColor(formData.difficulty),
+                        }}
+                      />
+                    )}
+                    {formData.points && (
+                      <Chip
+                        size="small"
+                        icon={<TrophyIcon sx={{ fontSize: 16 }} />}
+                        label={`${formData.points} pts`}
+                        sx={{
+                          backgroundColor: alpha('#ff9800', 0.2),
+                          color: '#ff9800',
+                          fontWeight: 700,
+                          borderWidth: 2,
+                          borderStyle: 'solid',
+                          borderColor: '#ff9800',
+                        }}
+                      />
+                    )}
+                    {testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length > 0 && (
+                      <Chip
+                        size="small"
+                        icon={<ScienceIcon sx={{ fontSize: 16 }} />}
+                        label={`${testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length} test cases`}
+                        sx={{
+                          backgroundColor: alpha('#4caf50', 0.2),
+                          color: '#4caf50',
+                          fontWeight: 700,
+                          borderWidth: 2,
+                          borderStyle: 'solid',
+                          borderColor: '#4caf50',
+                        }}
+                      />
+                    )}
+                  </Stack>
+
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ mb: 0.5, display: 'block' }}>
+                      Set
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {SET_OPTIONS.find(s => s.value === formData.set)?.label || 'Set A'}
+                    </Typography>
+                  </Box>
+                </Stack>
+              </CardContent>
+            </Card>
+
+            {/* Actions Card */}
+            <Card 
+              elevation={2} 
+              sx={{ 
+                borderRadius: 4,
+                border: '2px solid',
+                borderColor: alpha('#009fac', 0.3),
+                background: 'linear-gradient(135deg, #f0f8f9 0%, #d9eef1 100%)',
+                overflow: 'hidden',
+              }}
+            >
+              <Box
+                sx={{
+                  p: 2.5,
+                  background: `linear-gradient(135deg, ${alpha('#009fac', 0.15)} 0%, ${alpha('#395395', 0.15)} 100%)`,
+                  borderBottom: '1px solid',
+                  borderColor: alpha('#009fac', 0.2),
+                }}
+              >
+                <Typography variant="h6" fontWeight={700} sx={{ color: '#009fac' }}>
+                  Actions
+                </Typography>
+              </Box>
+              <CardContent sx={{ p: 3 }}>
+                <Stack spacing={2}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="major"
+                    size="large"
+                    startIcon={<AddIcon />}
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    sx={{
+                      py: 1.75,
+                      borderRadius: 3,
+                      fontWeight: 700,
+                      textTransform: 'none',
+                      fontSize: '1rem',
+                      background: 'linear-gradient(135deg, #009fac 0%, #395395 100%)',
+                      boxShadow: `0 6px 20px ${alpha('#009fac', 0.4)}`,
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        boxShadow: `0 8px 28px ${alpha('#009fac', 0.5)}`,
+                        transform: 'translateY(-2px)',
+                        background: 'linear-gradient(135deg, #395395 0%, #009fac 100%)',
+                      },
+                      '&:active': {
+                        transform: 'translateY(0)',
+                      },
+                    }}
+                  >
+                    {isSubmitting ? 'Creating...' : 'Create Question'}
+                  </Button>
+                  
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    color="inherit"
+                    size="large"
+                    onClick={handleClear}
+                    disabled={isSubmitting}
+                    sx={{
+                      py: 1.75,
+                      borderRadius: 3,
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '1rem',
+                      borderWidth: 2,
+                      transition: 'all 0.3s',
+                      '&:hover': {
+                        borderWidth: 2,
+                        backgroundColor: alpha('#000', 0.05),
+                        transform: 'translateY(-2px)',
+                      },
+                    }}
+                  >
+                    Clear Form
+                  </Button>
+                </Stack>
+
+                <Divider sx={{ my: 3 }} />
+
+                <Box
                   sx={{
-                    py: 1.5,
-                    borderRadius: 2,
-                    fontWeight: 500,
-                    textTransform: 'none',
+                    p: 2.5,
+                    borderRadius: 2.5,
+                    backgroundColor: alpha('#009fac', 0.08),
+                    border: '1px solid',
+                    borderColor: alpha('#009fac', 0.2),
                   }}
                 >
-                  Clear Form
-                </Button>
-              </Stack>
-
-              <Divider sx={{ my: 2 }} />
-
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.6 }}>
-                💡 <strong>Tip:</strong> Test cases will be created along with the question. Make sure each test case has both input and expected output filled in.
-              </Typography>
-            </CardContent>
-          </Card>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', lineHeight: 1.7, fontWeight: 500 }}>
+                    💡 <strong style={{ color: '#009fac' }}>Tip:</strong> Test cases will be created along with the question. Make sure each test case has both input and expected output filled in.
+                  </Typography>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
+
+        {/* Bottom padding for scroll */}
+        <Box sx={{ height: 60 }} />
+      </Box>
     </Box>
   );
 };
