@@ -1,4 +1,4 @@
-name: Deploy backend to ELB
+name: Deploy backend to STAGING
 
 on:
   push:
