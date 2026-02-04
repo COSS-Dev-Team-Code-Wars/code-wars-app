@@ -8,8 +8,7 @@ import "./models/testcase";
 
 import express from 'express';
 import bodyParser from 'body-parser';
-import { connectDB, handleDisconnectDB } from './config/db';
-import sampleRoutes from './routes/sampleRoute';
+import { connectDB } from './config/db';
 import loginRoute from './routes/loginRoute';
 import signupRoute from './routes/signupRoute';
 import checkIfLoggedInRoute from './routes/checkIfLoggedInRoute';
@@ -21,26 +20,23 @@ import questionRoutes from './routes/questionRoutes';
 import teamDetailsRoute from './routes/teamDetailsRoute';
 import leaderboardRoutes from './routes/leaderboardRoutes';
 import testCaseRoutes from './routes/testCaseRoutes';
-import { checkTokenMiddleware } from "./controllers/authController";
+import healthCheckRoute from "./routes/health-check";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 import './sockets/socket';
-import { baseURL } from "./constants";
 
 const cors = require("cors");
 const app = express();
 
-app.use(cors({
-  origin : ["http://localhost:3000", 
-            process.env.DEV_FRONTEND_URL || "",
-            process.env.PROD_FRONTEND_URL || ""],
-  credentials: true
-}));
+app.use(cors());
 
 // app.use((req, res, next) => {
 //   res.setHeader("Access-Control-Allow-Origin", "*");
 //   res.setHeader("Access-Control-Allow-Methods", ["POST","GET","PUT","DELETE"]);
 //   res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Authorization, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, X-Authorization");
-//   // res.setHeader("Access-Control-Allow-Authorization",true);
+
+//   if (req.method === "OPTIONS") res.sendStatus(200);
+  
 //   next();
 // });
 
@@ -52,16 +48,18 @@ connectDB();
 
 // Middleware
 app.use(bodyParser.json());
+app.use("/socket.io/*", createProxyMiddleware({
+  target: 'http://localhost:8000',
+  ws: true,
+  changeOrigin: true
+}));
 
-import healthCheckRoute from "./routes/health-check";
 // Routes
 app.use(healthCheckRoute);
 app.use(loginRoute);
 app.use(signupRoute);
 app.use(checkIfLoggedInRoute);
 app.use(adminRoutes);
-
-// app.use(checkTokenMiddleware);
 
 app.use(teamScoreRoutes);
 app.use(teamDetailsRoute);
@@ -74,6 +72,8 @@ app.use(testCaseRoutes);
 //app.use('/api', sampleRoutes);
 
 // Start the server
+//@ Increment this value everytime you restart nginx via commit
+//@ Nginx Restart Commits: 11
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });

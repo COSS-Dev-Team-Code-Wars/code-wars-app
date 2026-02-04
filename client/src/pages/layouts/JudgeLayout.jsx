@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import { Outlet } from 'react-router-dom';
 
-import GeneralBackground from 'assets/GeneralBG.png';
+import GeneralBackground from 'assets/GenBackground.png';
 import seal from 'assets/UPLB COSS.png';
 import {
 	CustomModal,
@@ -106,15 +106,10 @@ const JudgeLayout = ({
 		socketClient.on('updateScoreOnBuyDebuff', () => {
 			fetchData();
 		});
-		
-		socketClient.on('newBuff', () => {
-			fetchData();
-		})
 
 		return () => {
 			socketClient.off('evalupdate');
 			socketClient.off('updateScoreOnBuyDebuff');
-			socketClient.off('newBuff');
 		};
 	});
 

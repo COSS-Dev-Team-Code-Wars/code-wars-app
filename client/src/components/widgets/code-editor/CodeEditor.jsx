@@ -12,17 +12,18 @@ import "prismjs/components/prism-java";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-go";
 import "prismjs/components/prism-javascript";
-import { Button } from "@mui/material";
-import { postFetch } from "utils/apiRequest";
+import { Button, Typography } from "@mui/material";
+import { postFetch, getFetch } from "utils/apiRequest";
 import { CustomModal } from "components";
+import judge0 from "utils/judge0";
 
 const programmingLanguages = [
-  { name: "Python", value: "python", extension: ".py" },
-  { name: "C++", value: "cpp", extension: ".cpp" },
-  { name: "C", value: "c", extension: ".c" },
-  { name: "JavaScript", value: "javascript", extension: ".js" },
-  { name: "Java", value: "java", extension: ".java" },
-  { name: "Go", value: "go", extension: ".go" },
+  { name: "Python", value: "python", extension: ".py", id: 71 },
+  //{ name: "C++", value: "cpp", extension: ".cpp" },
+  { name: "C", value: "c", extension: ".c", id: 50 },
+  //{ name: "JavaScript", value: "javascript", extension: ".js" },
+  //{ name: "Java", value: "java", extension: ".java" },
+  //{ name: "Go", value: "go", extension: ".go" },
 ];
 
 function CodeEditor() {
@@ -35,6 +36,14 @@ function CodeEditor() {
   const [isImmune, setIsImmune] = useState(false);
   const [isSubmissionError, setIsSubmissionError] = useState(false);
   const [isSubmissionSuccess, setIsSubmissionSuccess] = useState(false);
+
+  const [isRunning, setIsRunning] = useState(false);
+  const [runResult, setRunResult] = useState(null);
+  const [isRunModalOpen, setIsRunModalOpen] = useState(false);
+  const [problemDifficulty, setProblemDifficulty] = useState(null);
+
+  const [testAgainstCustomInput, setTestAgainstCustomInput] = useState(false);
+  const [customInput, setCustomInput] = useState('');
 
   // Handles applying debuffs and buffs
   const processDebuff = (debuff, activate) => {
@@ -56,6 +65,16 @@ function CodeEditor() {
       }
     };
     loadActivePowerUps();
+    const fetchProblemDifficulty = async () => {
+
+      try {
+        const { question } = await postFetch(`${baseURL}/viewquestioncontent`, { problemId: id, teamId: user._id });
+        setProblemDifficulty(question.difficulty);
+      } catch (error) {
+        console.error("Error fetching problem difficulty:", error);
+      }
+    };
+    fetchProblemDifficulty();
 
     const hadnleStartBuffOrDebuff = (powerUp) => processDebuff(powerUp, true);
     const handleEndBuffOrDebuff = (powerUp) => processDebuff(powerUp, false);
@@ -68,7 +87,7 @@ function CodeEditor() {
       socketClient.off("debuffEnded", handleEndBuffOrDebuff);
       socketClient.off("newBuff", hadnleStartBuffOrDebuff);
     };
-  }, []);
+  }, [id, user._id]);
 
   // Highlights code based on the selected language and debuffs
   const highlightCode = (code) => {
@@ -122,6 +141,168 @@ function CodeEditor() {
     }
   };
 
+  // Handles running code with custom input
+  const handleRunCustomInput = async () => {
+    try {
+      setIsRunning(true);
+      setRunResult(null);
+
+      if (testAgainstCustomInput) {
+        const languageConfig = programmingLanguages.find(
+          (lang) => lang.value === language.value
+        );
+    
+        if (!languageConfig) {
+          throw new Error('Unsupported language');
+        }
+  
+        // Prepare submission payload
+        const submissionPayload = {
+          source_code: code,
+          language_id: languageConfig.id,
+          stdin: customInput,
+        };
+    
+        // Submit the code to Judge0
+        const submissionResponse = await judge0.postSubmissions(submissionPayload);
+    
+        if (!submissionResponse || !submissionResponse.token) {
+          throw new Error("Failed to submit code to Judge0");
+        }
+    
+        const submissionToken = submissionResponse.token;
+    
+        // Poll for results
+        let result = null;
+        for (let i = 0; i < 10; i++) { // Poll up to 10 times
+          await new Promise(res => setTimeout(res, 2000)); // Wait 2 seconds
+    
+          const fetchedResult = await judge0.getSubmissions(submissionToken);
+    
+          if (fetchedResult && fetchedResult.status && fetchedResult.status.id >= 3) {
+            result = fetchedResult;
+            break;
+          }
+        }
+    
+        if (!result) {
+          throw new Error("Judge0 execution timeout or no response received.");
+        }
+    
+        setRunResult({
+          status: 'Completed',
+          testCaseResult: {
+            result,
+          }
+        });
+    
+        setIsRunModalOpen(true);
+      } else {
+        await handleRunCode();
+      }
+    } catch (error) {
+      console.error("Error running code:", error);
+      setRunResult({
+        status: 'Error',
+        error: error.message || 'Failed to run code'
+      });
+      setIsRunModalOpen(true);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  // Handles running code with sample test cases
+  const handleRunCode = async () => {
+    try {
+      setIsRunning(true);
+      setRunResult(null);
+  
+      // Fetch question details to get test cases
+      const { question } = await postFetch(`${baseURL}/viewquestioncontent`, { 
+        problemId: id, 
+        teamId: user._id 
+      });
+  
+      // Fetch test cases
+      const testCasesResponse = await getFetch(`${baseURL}/testcases/${question._id}`);
+      
+      if (!testCasesResponse.success) {
+        throw new Error('Failed to fetch test cases');
+      }
+
+      const firstTestCase = testCasesResponse.testCases[0];
+      if (!firstTestCase) {
+        throw new Error('No test cases found');
+      }
+  
+      // Get language configuration
+      const languageConfig = programmingLanguages.find(
+        (lang) => lang.value === language.value
+      );
+  
+      if (!languageConfig) {
+        throw new Error('Unsupported language');
+      }
+  
+      // Prepare the submission payload for Judge0
+      const submissionPayload = {
+        source_code: code,
+        language_id: languageConfig.id,
+        stdin: firstTestCase.input.replace(/\\n/g, "\n"),
+      };
+  
+      // Submit the code to Judge0
+      const submissionResponse = await judge0.postSubmissions(submissionPayload);
+  
+      if (!submissionResponse || !submissionResponse.token) {
+        throw new Error("Failed to submit code to Judge0");
+      }
+  
+      const submissionToken = submissionResponse.token;
+  
+      // Poll for results
+      let result = null;
+      for (let i = 0; i < 10; i++) { // Poll up to 10 times
+        await new Promise(res => setTimeout(res, 2000)); // Wait 2 seconds
+  
+        const fetchedResult = await judge0.getSubmissions(submissionToken);
+  
+        if (fetchedResult && fetchedResult.status && fetchedResult.status.id >= 3) {
+          result = fetchedResult;
+          break;
+        }
+      }
+  
+      if (!result) {
+        throw new Error("Judge0 execution timeout or no response received.");
+      }
+  
+      // Compare output with expected result
+      const isPassed = result.stdout?.trim() === firstTestCase.expected_output.trim();
+  
+      setRunResult({
+        status: isPassed ? 'Accepted' : 'Failed',
+        testCaseResult: {
+          testCase: firstTestCase,
+          result,
+          passed: isPassed
+        }
+      });
+  
+      setIsRunModalOpen(true);
+    } catch (error) {
+      console.error("Error running code:", error);
+      setRunResult({
+        status: 'Error',
+        error: error.message || 'Failed to run code'
+      });
+      setIsRunModalOpen(true);
+    } finally {
+      setIsRunning(false);
+    }
+  };  
+
   const CODE_EDITOR_HEIGHT = 550;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%", minHeight: `${CODE_EDITOR_HEIGHT}px` }}>
@@ -140,9 +321,6 @@ function CodeEditor() {
       <div className="container_editor_area" style={{ height: `${CODE_EDITOR_HEIGHT - 200}px` }}>
         <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className="container__editor" />
       </div>
-      <Button style={{ alignSelf: "end" }} variant="contained" color="primary" size="large" onClick={handleSubmitCode} disabled={!code}>
-        Submit
-      </Button>
       <CustomModal isOpen={isSubmissionError} windowTitle="Submission Error">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
           <p>
@@ -159,6 +337,88 @@ function CodeEditor() {
           <Button style={{ alignSelf: "center" }} variant="contained" color="primary" size="large" onClick={() => setIsSubmissionSuccess(false)}>
             OK
           </Button>
+        </div>
+      </CustomModal>
+      <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
+        <Button 
+          style={{ alignSelf: "flex-start" }}
+          variant="contained" 
+          color="secondary" 
+          size="large" 
+          onClick={handleRunCustomInput} 
+          disabled={!code || isRunning || !(['easy', 'medium'].includes(problemDifficulty))} 
+        >
+          {isRunning ? 'Running...' : 'Run'}
+        </Button>
+
+        <Button style={{ alignSelf: "flex-start" }} variant="contained" color="primary" size="large" onClick={handleSubmitCode} disabled={!code}>
+          Submit
+        </Button>
+        
+        {/* Ray was here, again... - 3/14/25 */}
+
+        <label style={{ color: "white", marginTop: "5px" }}>
+          <input
+            type="checkbox"
+            checked={testAgainstCustomInput}
+            onChange={() => {setTestAgainstCustomInput(!testAgainstCustomInput); setCustomInput("");}}
+            disabled={!(['easy', 'medium'].includes(problemDifficulty))}
+          />
+          Test against custom input
+        </label>
+
+        {testAgainstCustomInput && (
+          <textarea
+            value={customInput}
+            onChange={(e) => setCustomInput(e.target.value)}
+            placeholder="Enter custom input here"
+            rows={5}
+            style={{ width: '40%', marginTop: '5px' }}
+          />
+        )}
+      </div>
+
+      {/* Run Result Modal */}
+      <CustomModal 
+        isOpen={isRunModalOpen} 
+        windowTitle={runResult?.status === 'Accepted' ? 'Run Successful' : 'Run Result'}
+        setOpen={setIsRunModalOpen}
+      >
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
+          {runResult?.status === 'Accepted' ? (
+            <>
+              {!testAgainstCustomInput && <p>Test Case #1 Passed!</p>}
+              <p>Congrats, your code ran successfully ^-^</p>
+            </>
+          ) : (
+            <>
+              {!testAgainstCustomInput && <p>Test Case #1 Not Passed!</p>}
+              <p><strong>Status:</strong> {runResult?.status}</p>
+            </>
+          )}
+          
+          {runResult?.testCaseResult && (
+            <div>
+              <Typography variant="body2">
+                <strong>Input:</strong> {testAgainstCustomInput ? customInput : runResult.testCaseResult.testCase ? runResult.testCaseResult.testCase.input : ""}
+              </Typography>
+              {!testAgainstCustomInput && (
+                <Typography variant="body2">
+                  <strong>Expected Output:</strong> {runResult.testCaseResult.testCase ? runResult.testCaseResult.testCase.expected_output : ""}
+                </Typography>
+              )}
+              <Typography variant="body2">
+                <strong>Actual Output:</strong> {runResult.testCaseResult.result.stdout?.trim() || (runResult.testCaseResult.result.stderr ? "Error: " + runResult.testCaseResult.result.stderr : "Error")}
+              </Typography>
+            </div>
+          )}
+
+          {runResult?.error && (
+            <Typography variant="body2" color="error">
+              <strong>Error:</strong> {runResult.error}
+            </Typography>
+          )}
+
         </div>
       </CustomModal>
     </div>

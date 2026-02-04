@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { evalUpdate, newUpload } from "../sockets/socket";
+import { round as currentRound } from "./adminController";
 
 // get user model registered in Mongoose
 const Submission = mongoose.model("Submission");
@@ -73,7 +74,7 @@ const uploadSubmission = async (req: Request, res: Response) => {
   const prevSubmissions = await Submission.find({
     team_id: teamId,
     problem_id: problemId,
-  })?.sort({ timestamp: 1 });
+  }).sort({ timestamp: 1 });
   let prevMaxScore;
 
   if (prevSubmissions.length == 0) {
@@ -308,11 +309,40 @@ const getLastSubmissionByTeamOfProblem = async (
 };
 
 const getAllSubmissions = async (req: Request, res: Response) => {
-  const results = await Submission.find().sort({ timestamp: 1 });
+  try {
+    // Map admin round to question difficulty (assumes question.difficulty stored lowercase)
+    const desiredDifficulty = (currentRound || "").toLowerCase();
 
-  return res.send({
-    results: results,
-  });
+    // If round is not a difficulty (e.g., 'start'), return empty list
+    if (!["easy", "medium", "hard", "wager"].includes(desiredDifficulty)) {
+      return res.send({ results: [] });
+    }
+
+    // Aggregate submissions joined with questions and filter by difficulty
+    const results = await Submission.aggregate([
+      // Convert problem_id string to ObjectId for join
+      {
+        $addFields: {
+          problem_obj_id: { $toObjectId: "$problem_id" }
+        }
+      },
+      {
+        $lookup: {
+          from: "questions",
+          localField: "problem_obj_id",
+          foreignField: "_id",
+          as: "question",
+        },
+      },
+      { $unwind: "$question" },
+      { $match: { "question.difficulty": desiredDifficulty } },
+      { $sort: { timestamp: -1 } },
+    ]);
+
+    return res.send({ results });
+  } catch (error) {
+    return res.send({ results: [], error });
+  }
 };
 
 /*

@@ -13,7 +13,7 @@ import dbd from 'assets/Company Logos/DBD.gif';
 import offshorly from 'assets/Company Logos/Offshorly.jpg';
 import openit from 'assets/Company Logos/OpenIT.png';
 import sevenseven from 'assets/Company Logos/SevenSeven.png';
-import tenxdev from 'assets/Company Logos/TenXDev.jpeg';
+import tenxdev from 'assets/Company Logos/TenXDev.jpg';
 
 // Partner logos
 // import cynthia from 'assets/Partner Logos/Cynthia.jpg';
@@ -27,11 +27,11 @@ import gss from 'assets/Org Logos/GSS.png';
 import socomsci from 'assets/Org Logos/SoComSci.png';
 import unreal from 'assets/Org Logos/Unreal.png';
 import uplbcaps from 'assets/Org Logos/UPLBCAPS.png';
-import uplbcasfc from 'assets/Org Logos/UPLBCASFC.PNG';
+import uplbcasfc from 'assets/Org Logos/UPLBCASFC.jpg';
 import yses from 'assets/Org Logos/YSES.png';
 
 // Media Logos
-import cebu from 'assets/Media Logos/CebuDaily.jpeg';
+import cebu from 'assets/Media Logos/CebuDaily.jpg';
 import inquirer from 'assets/Media Logos/Inquirer.jpg';
 import pop from 'assets/Media Logos/Pop.png';
 
@@ -60,7 +60,7 @@ var logos = [
 	},
 	{
 		id: '5',
-		title: 'Company 3',
+		title: 'Company 2',
 		image: `${tenxdev}`,
 	},
 	{

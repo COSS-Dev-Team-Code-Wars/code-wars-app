@@ -130,6 +130,42 @@ const Sidebar = () => {
 					>
 							Round Timer
 					</Button>
+
+					{/* Create Team */}
+					<Button
+						variant="contained"
+						color="major"
+						size="large"
+						onClick={() => { navigate('/admin/create-team'); }}
+						sx={{
+							marginTop: '2em',
+							width: '85%',
+							'&:hover': {
+								bgcolor: 'major.light',
+								color: 'general.main',
+							}
+						}}
+					>
+						Create Team
+					</Button>
+
+					{/* Create Question */}
+					<Button
+						variant="contained"
+						color="major"
+						size="large"
+						onClick={() => { navigate('/admin/create-question'); }}
+						sx={{
+							marginTop: '2em',
+							width: '85%',
+							'&:hover': {
+								bgcolor: 'major.light',
+								color: 'general.main',
+							}
+						}}
+					>
+						Create Question
+					</Button>
 					
 				</Box>
 

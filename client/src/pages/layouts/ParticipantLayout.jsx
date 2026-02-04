@@ -18,7 +18,7 @@ import SubmitModal from 'pages/participants/modals/SubmitModal';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Bounce, toast } from 'react-toastify';
 
-import GeneralBackground from 'assets/GeneralBG.png';
+import GeneralBackground from 'assets/GenBackground.png';
 import seal from 'assets/UPLB COSS.png';
 import { 
 	BuyPowerUpsPopover,
@@ -115,7 +115,7 @@ const ParticipantLayout = ({
 	let params = new URLSearchParams(location.search);
   
 	// array for round where buy power-ups button should be disabled
-	const roundsDisablePowerUps = ['start', 'easy', 'wager'];
+	const roundsDisablePowerUps = ['start', 'wager'];
 
 	const [showBuffs, setShowBuffs] = useState(false);
 	const [showDebuffs, setShowDebuffs] = useState(false);
@@ -238,18 +238,13 @@ const ParticipantLayout = ({
 		});
 
 		// listener for buffs
-		socketClient.on('newBuff', (arr) => {
-			const powerUp = arr[0];
+		socketClient.on('newBuff', (powerUp) => {
 			let duration = powerUp.duration;
 			const powerUpName = powerUp.name;
       
 			if(duration === undefined){
 				const tierKey = Object.keys(powerUp.tier)[0];
 				duration = powerUp.tier[tierKey].duration;
-			}
-
-			if(arr.length > 1){
-				toast.dismiss(arr[1]);
 			}
 
 			toast.info('🚀 New buff ' + powerUpName + ' applied on your team!', {
@@ -336,15 +331,10 @@ const ParticipantLayout = ({
 		socketClient.on('updateScoreOnBuyDebuff', () => {
 			fetchLeaderboardData();
 		});
-		
-		socketClient.on('newBuff', () => {
-			fetchLeaderboardData();
-		})
 
 		return () => {
 			socketClient.off('evalupdate');
 			socketClient.off('updateScoreOnBuyDebuff');
-			socketClient.off('newBuff');
 		};
 	}, [socketClient]);
 

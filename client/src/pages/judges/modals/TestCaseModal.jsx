@@ -10,16 +10,17 @@ import {
   ListItemText,
 } from "@mui/material";
 import { CustomModal } from "components";
-import { postFetch, getFetch } from "utils/apiRequest";
+import { getFetch } from "utils/apiRequest";
 import { baseURL } from "utils/constants";
+import judge0API from "utils/judge0";
 
 const programmingLanguages = [
     { name: "Python", value: "python", extension: ".py", id: 71 },
-    { name: "C++", value: "cpp", extension: ".cpp", id: 54 },
+    //{ name: "C++", value: "cpp", extension: ".cpp", id: 54 },
     { name: "C", value: "c", extension: ".c", id: 50 },
-    { name: "JavaScript", value: "javascript", extension: ".js", id: 63 },
-    { name: "Java", value: "java", extension: ".java", id: 62 },
-    { name: "Go", value: "go", extension: ".go", id: 60 },
+    //{ name: "JavaScript", value: "javascript", extension: ".js", id: 63 },
+    //{ name: "Java", value: "java", extension: ".java", id: 62 },
+    //{ name: "Go", value: "go", extension: ".go", id: 60 },
 ];  
 
 const TestCaseModal = ({ open, setOpen, submission }) => {
@@ -35,80 +36,105 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
     return lang ? lang.id : null;
   };  
 
+  // Improved: fetch problemId, then fetch test cases and run Judge0 tests in sequence
   const handleOpen = async () => {
-    if (submission?.problemTitle) {
-      await fetchProblemId(submission.problemTitle);
-    }
-    if (problemId) {
-      await fetchTestCases();
+    if (submission?.problem_title) {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await getFetch(`${baseURL}/viewquestions`);
+        if (response.success) {
+          const matchedProblem = response.questions.find(
+            (q) => q.title === submission.problem_title
+          );
+          if (matchedProblem) {
+            const probId = matchedProblem._id; // Use ObjectId
+            setProblemId(probId);
+            // Fetch test cases directly using the found problemId (ObjectId)
+            const tcResponse = await getFetch(`${baseURL}/testcases/${probId}`);
+            if (tcResponse.success) {
+              setTestCases(tcResponse.testCases);
+              runJudge0Tests(tcResponse.testCases);
+            } else {
+              setError(tcResponse.message || "Failed to fetch test cases");
+            }
+          } else {
+            setError("Problem not found");
+          }
+        } else {
+          setError("Failed to fetch problems");
+        }
+      } catch (err) {
+        setError("Error fetching problems or test cases");
+      } finally {
+        setLoading(false);
+      }
     }
   };
-  
+
   useEffect(() => {
     if (open) {
       handleOpen();
     }
   }, [open]);
-  
-
-  useEffect(() => {
-    if (problemId) {
-      fetchTestCases();
-    }
-  }, [problemId]);
 
   const runJudge0Tests = async (testCases) => {
-    const language = getLanguage(submission.uploadedFile);
-    if (!language) {
-      setError("Unsupported language");
-      return;
-    }
-  
     try {
       setLoading(true);
       setError(null);
   
-      // Initialize test case results with a "Running..." status
+      // ✅ Show "Running..." before execution
       setResults(testCases.map(testCase => ({
         testCase,
-        result: { status: { description: "Running..." } } // Placeholder until result arrives
+        result: { status: { description: "Running..." } },
       })));
   
-      // Submit each test case separately and update results immediately
-      for (const testCase of testCases) {  
-        const response = await postFetch(`http://localhost:2358/submissions?base64_encoded=false`, {
-          source_code: submission.content,
-          language_id: language,
-          stdin: testCase.input.replace(/\\n/g, "\n"),
-          expected_output: testCase.expected_output,
-        });
-    
-        if (response.token) {
-          // Poll Judge0 for this specific test case
-          const fetchResult = async () => {
-            while (true) {
-              const res = await fetch(`http://localhost:2358/submissions/${response.token}`);
-              const data = await res.json();
+      const batchSubmissions = testCases.map(testCase => ({
+        source_code: submission.content,
+        language_id: getLanguage(submission.uploadedFile),
+        stdin: testCase.input.replace(/\\n/g, "\n"),
+        expected_output: testCase.expected_output.replace(/\\n/g, "\n"),
+      }));
   
-              if (data.status && data.status.id >= 3) { // Status 3+ means completed
-                // Update results **immediately** for this test case
-                setResults((prevResults) =>
-                  prevResults.map((r) =>
-                    r.testCase.display_id === testCase.display_id
-                      ? { testCase, result: data }
-                      : r
-                  )
-                );
-                break; // Exit loop when result is ready
-              }
+      // ✅ Submit batch and extract tokens correctly
+      const tokens = await judge0API.postBatchSubmissions(batchSubmissions);
   
-              await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait before retrying
-            }
-          };
-  
-          fetchResult(); // Start polling for this test case result immediately
-        }
+      if (!tokens) {
+        setError("Failed to submit test cases");
+        return;
       }
+  
+      // ✅ Polling for results
+      const fetchBatchResults = async () => {
+        const maxRetries = 20;
+        let retries = 0;
+  
+        while (retries < maxRetries) {
+          const res = await judge0API.getBatchSubmissions(tokens);
+  
+          if (res) {
+            const completedResults = res.filter(sub => sub.status_id >= 3); // ✅ Status 3+ means finished
+  
+            if (completedResults.length === testCases.length) {
+              // ✅ Ensure correct result mapping
+              setResults(testCases.map((testCase, index) => ({
+                testCase,
+                result: completedResults.find(r => r.token === tokens[index]) || {
+                  status: { description: "Failed" },
+                },
+              })));
+              return;
+            }
+          }
+  
+          retries++;
+          await new Promise((resolve) => setTimeout(resolve, 2000)); // ✅ Wait 2 sec before retrying
+        }
+  
+        setError("Some test cases timed out");
+      };
+  
+      await fetchBatchResults();
     } catch (err) {
       setError("Error running tests on Judge0");
     } finally {
@@ -163,6 +189,32 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
     }
   };
 
+  const cleanOutput = (stdout, expected) => {
+    if (!stdout) return ""; // Handle empty output
+  
+    stdout = stdout.trimEnd();
+    expected = expected.trimEnd();
+  
+    // Normalize line breaks and spaces before comparing
+    const normalize = (str) => {
+      return str
+        .split("\n")  // Split by lines
+        .map(line => line)
+        .join("\n");  // Rejoin with line breaks
+    };
+  
+    // Normalize both the stdout and expected output
+    const normalizedStdout = normalize(stdout);
+    const normalizedExpected = normalize(expected);
+  
+    // If the normalized output is equal to the expected, return the output
+    if (normalizedStdout === normalizedExpected) {
+      return normalizedStdout;
+    }
+  
+    return stdout;
+  };  
+
   return (
     <CustomModal isOpen={open} setOpen={setOpen} windowTitle="Test Case Results">
       {loading ? (
@@ -182,9 +234,9 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
                 display: "flex",
                 justifyContent: "space-between",
                 backgroundColor:
-                result.stdout?.trim() === testCase.expected_output?.trim()
+                  cleanOutput(result.stdout, testCase.expected_output) === testCase.expected_output
                     ? "#d4edda"
-                    : result.stdout
+                    : cleanOutput(result.stdout, testCase.expected_output) || result.stderr
                     ? "#f8d7da"
                     : "white",
                 marginBottom: "5px",
@@ -193,18 +245,40 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
             }}
             >
             <ListItemText
-                primary={`Test Case #${testCase.display_id}`}
-                secondary={
+              primary={<Typography variant="body2" sx={{ fontWeight: "bold" }}>Test Case #{index + 1}</Typography>}
+              secondary={
                 <>
-                    <Typography variant="body2"><strong>Input:</strong> {testCase.input.replace(/\\n$/g, "").replace(/\\n/g, ", ")}</Typography>
-                    <Typography variant="body2"><strong>Expected Output:</strong> {testCase.expected_output}</Typography>
-                    {result.status.description === "Running..." ? (
+                  <Typography variant="body2" sx={{ marginTop: "15px", fontWeight: "bold" }}>Input:</Typography>
+                  
+                  <Typography variant="body2">
+                    <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+                      {testCase.input.replace(/\\n$/g, "").replace(/\\n/g, ", ")}
+                    </pre>
+                  </Typography>
+
+                  <Typography variant="body2" sx={{ fontWeight: "bold" }}>Expected Output:</Typography>
+                  
+                  <Typography variant="body2">
+                    <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+                      {cleanOutput(testCase.expected_output, testCase.expected_output)}
+                    </pre>
+                  </Typography>
+
+                  {result?.status?.id === 1 ? (
                     <Typography variant="body2" color="gray"><em>Running...</em></Typography>
-                    ) : (
-                    <Typography variant="body2"><strong>Actual Output:</strong> {result.stdout?.trim() || "Error"}</Typography>
-                    )}
+                  ) : (
+                    <>
+                      <Typography variant="body2" sx={{ fontWeight: "bold" }}>Actual Output:</Typography>
+                      
+                      <Typography variant="body2">
+                        <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+                          {cleanOutput(result.stdout, testCase.expected_output) || (result.stderr ? "Error: " + result.stderr : "Error")}
+                        </pre>
+                      </Typography>
+                    </>
+                  )}
                 </>
-                }
+              }
             />
             </ListItem>
         ))}

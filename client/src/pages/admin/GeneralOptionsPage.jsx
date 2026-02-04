@@ -7,8 +7,26 @@ import {
 	Stack,
 	Switch,
 	TextField,
-	Typography
+	Typography,
+	Paper,
+	Card,
+	CardContent,
+	Divider,
+	alpha,
+	Chip,
+	Grid,
 } from '@mui/material';
+
+import {
+	LockOpen as LockOpenIcon,
+	Lock as LockIcon,
+	Campaign as CampaignIcon,
+	Logout as LogoutIcon,
+	NavigateNext as NavigateNextIcon,
+	Leaderboard as LeaderboardIcon,
+	Security as SecurityIcon,
+	Settings as SettingIcon,
+} from '@mui/icons-material';
 
 import {
 	DropdownSelect,
@@ -32,6 +50,7 @@ import { enterAdminPassword } from 'utils/enterAdminPassword';
 // styling for leaderboard table
 const additionalStyles = {
 	backgroundColor: '#fff',
+	borderRadius: '12px',
 };
 
 
@@ -293,127 +312,473 @@ const GeneralOptionsPage = ({
 
 
 	return (
-		<Stack spacing={7} sx={{ margin:'4em', width:'100%' }}>
-
-			{/* General Options */}
-			<Box>
-				<Typography variant="h4">GENERAL</Typography>  
-				<Typography
-					variant="h6"
-					sx={{
-						display: 'flex',
-						flexDirection: 'row',
-						marginLeft: '4em',
-						marginTop: '2em',
-					}}
-				>
-					{/* Labels */}
-					<Stack spacing={5} sx={{ marginRight: '2em' }}>
-						<span>Freeze all screens</span>
-						<span>Allow buy immunity</span>
-						<span>Announcement</span>
-						<span>Logout all sessions</span>
-						<span>Move Round</span>
-					</Stack>
-
-					{/* Buttons */}
-					<Stack spacing={3} sx={{ width: '25%' }}>
-
-						{/* Toggle Switch */}
-						<Switch checked={freezeRef.current} onChange={(e) => handleFreeze(e)} />
-						
-						{/* Toggle Switch */}
-						<Switch checked={immunityRef.current} onChange={(e) => handleBuyImmunity(e)} />
-						
-						{/* Announcement Input Field and Post Button */}
-						<Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-							<TextField
-								variant="outlined"
-								multiline
-								value={newMessage}
-								onChange={(e) => setNewMessage(e.target.value)}
-								sx={{
-									bgcolor: 'major.light',
-									color: 'general.main',
-									borderRadius: '5px',
-								}}
-							/>
-							<Button
-								variant="contained"
-								color="major"
-								onClick={handleAnnounce}
-								sx={{
-									width: '30%',
-									'&:hover': {
-										bgcolor: 'major.light',
-										color: 'general.main',
-									}
-								}}
-							>
-								Post
-							</Button>
-						</Box>
-
-						{/* Apply Button */}
-						<Button
-							variant="contained"
-							color="major"
-							onClick={handleAllLogout}
+		<Box
+			sx={{
+				minHeight: '100vh',
+				py: 5,
+			}}
+		>
+			<Box
+				sx={{
+					maxWidth: 1800,
+					mx: 'auto',
+					px: { xs: 2, md: 4 },
+				}}
+			>
+				<Grid container spacing={4}>
+					{/* General Options */}
+					<Grid item xs={12} lg={5}>
+						<Card
+							elevation={3}
 							sx={{
-								width: '55%',
-								'&:hover': {
-									bgcolor: 'major.light',
-									color: 'general.main',
-								}
+								borderRadius: 4,
+								border: '2px solid',
+								borderColor: alpha('#009fac', 0.3),
+								overflow: 'hidden',
+								background: 'linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%)',
+								height: '100%',
 							}}
 						>
-							Apply
-						</Button>
+							{/* Header */}
+							<Box
+								sx={{
+									p: 3,
+									background: `linear-gradient(135deg, ${alpha('#009fac', 0.15)} 0%, ${alpha('#395395', 0.15)} 100%)`,
+									borderBottom: '2px solid',
+									borderColor: alpha('#009fac', 0.3),
+								}}
+							>
+								<Stack direction="row" alignItems="center" spacing={2}>
+									<Box
+										sx={{
+											p: 1.5,
+											borderRadius: 3,
+											background: 'linear-gradient(135deg, #009fac 0%, #395395 100%)',
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											boxShadow: `0 4px 20px ${alpha('#009fac', 0.4)}`,
+										}}
+									>
+										<SettingIcon sx={{ fontSize: 32, color: '#fff' }} />
+									</Box>
+									<Typography variant="h4" fontWeight={700} color="#009fac">
+										GENERAL OPTIONS
+									</Typography>
+								</Stack>
+							</Box>
 
-						{/* Dropdown Select */}
-						<DropdownSelect
-							isDisabled={false}
-							variant="filled"
-							label="Select Round"
-							minWidth="100px"
-							options={optionsRounds}
-							handleChange={(e) => handleRounds(e.target.value)}
-							value={roundRef.current}
-							sx={{ width: '55%' }}
-						/>
-					</Stack>
-				</Typography>
-			</Box>
+							<CardContent sx={{ p: 4 }}>
+								<Stack spacing={3}>
+									{/* Freeze Screens */}
+									<Paper
+										elevation={1}
+										sx={{
+											p: 3,
+											borderRadius: 3,
+											border: '1px solid',
+											borderColor: alpha('#009fac', 0.2),
+											transition: 'all 0.3s',
+											backgroundColor: '#fff',
+											'&:hover': {
+												boxShadow: `0 4px 16px ${alpha('#009fac', 0.15)}`,
+											},
+										}}
+									>
+										<Stack direction="row" alignItems="center" justifyContent="space-between">
+											<Stack direction="row" alignItems="center" spacing={2}>
+												<Box
+													sx={{
+														p: 1.5,
+														borderRadius: 2,
+														backgroundColor: freezeRef.current ? alpha('#f44336', 0.1) : alpha('#4caf50', 0.1),
+													}}
+												>
+													{freezeRef.current ? (
+														<LockIcon sx={{ color: '#f44336', fontSize: 28 }} />
+													) : (
+														<LockOpenIcon sx={{ color: '#4caf50', fontSize: 28 }} />
+													)}
+												</Box>
+												<Box>
+													<Typography variant="h6" fontWeight={700} color="text.primary">
+														Freeze All Screens
+													</Typography>
+													<Typography variant="body2" color="text.secondary">
+														{freezeRef.current ? 'Sessions are currently frozen' : 'Sessions are active'}
+													</Typography>
+												</Box>
+											</Stack>
+											<Switch
+												checked={freezeRef.current}
+												onChange={(e) => handleFreeze(e)}
+												sx={{
+													'& .MuiSwitch-track': {
+													border: '1.5px solid #999',
+													backgroundColor: '#e0e0e0',
+													opacity: 1,
+													},
+													'& .MuiSwitch-thumb': {
+													boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+													},
+													'& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+													backgroundColor: '#f44336',
+													borderColor: '#f44336',
+													},
+												}}
+											/>
+										</Stack>
+									</Paper>
 
-			{/* Overall Leaderboard Table */}
-			<Box>
-				<Typography variant="h4">LEADERBOARD</Typography>
-				<Box sx={{ display: 'flex', justifyContent: 'center' }}>
-					<Box sx={{ width: '65%'}}>
-						<Table
-							rows={leaderboardRows}
-							columns={columnsLeaderboard}
-							hideFields={['id']}
-							additionalStyles={additionalStyles}
-							pageSizeOptions={[5]}
-							pageSize={5}
-							autoHeight
-							initialState={{
-								pagination: { paginationModel: { pageSize: 5 } },
+									{/* Buy Immunity */}
+									<Paper
+										elevation={1}
+										sx={{
+											p: 3,
+											borderRadius: 3,
+											border: '1px solid',
+											borderColor: alpha('#395395', 0.2),
+											transition: 'all 0.3s',
+											backgroundColor: '#fff',
+											'&:hover': {
+												boxShadow: `0 4px 16px ${alpha('#395395', 0.15)}`,
+											},
+										}}
+									>
+										<Stack direction="row" alignItems="center" justifyContent="space-between">
+											<Stack direction="row" alignItems="center" spacing={2}>
+												<Box
+													sx={{
+														p: 1.5,
+														borderRadius: 2,
+														backgroundColor: alpha('#395395', 0.1),
+													}}
+												>
+													<SecurityIcon sx={{ color: '#395395', fontSize: 28 }} />
+												</Box>
+												<Box>
+													<Typography variant="h6" fontWeight={700} color="text.primary">
+														Allow Buy Immunity
+													</Typography>
+													<Typography variant="body2" color="text.secondary">
+														{immunityRef.current ? 'Teams can buy immunity' : 'Immunity purchasing disabled'}
+													</Typography>
+												</Box>
+											</Stack>
+											<Switch
+												checked={immunityRef.current}
+												onChange={(e) => handleBuyImmunity(e)}
+												sx={{
+											'& .MuiSwitch-track': {
+											border: '1.5px solid #999',
+											backgroundColor: '#e0e0e0',
+											opacity: 1,
+											},
+											'& .MuiSwitch-thumb': {
+											boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+											},
+											'& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+											backgroundColor: '#f44336',
+											borderColor: '#f44336',
+											},
+										}}
+											/>
+										</Stack>
+									</Paper>
+
+									{/* Announcement */}
+									<Paper
+										elevation={1}
+										sx={{
+											p: 3,
+											borderRadius: 3,
+											border: '1px solid',
+											borderColor: alpha('#ff9800', 0.2),
+											transition: 'all 0.3s',
+											backgroundColor: '#fff',
+											'&:hover': {
+												boxShadow: `0 4px 16px ${alpha('#ff9800', 0.15)}`,
+											},
+										}}
+									>
+										<Stack spacing={2}>
+											<Stack direction="row" alignItems="center" spacing={2}>
+												<Box
+													sx={{
+														p: 1.5,
+														borderRadius: 2,
+														backgroundColor: alpha('#ff9800', 0.1),
+													}}
+												>
+													<CampaignIcon sx={{ color: '#ff9800', fontSize: 28 }} />
+												</Box>
+												<Box>
+													<Typography variant="h6" fontWeight={700} color="text.primary">
+														Announcement
+													</Typography>
+													<Typography variant="body2" color="text.secondary">
+														Broadcast a message to all active sessions
+													</Typography>
+												</Box>
+											</Stack>
+											<Stack direction="row" spacing={2}>
+												<TextField
+													fullWidth
+													variant="outlined"
+													multiline
+													rows={3}
+													placeholder="Type your announcement message here..."
+													value={newMessage}
+													onChange={(e) => setNewMessage(e.target.value)}
+													sx={{
+														'& .MuiOutlinedInput-root': {
+															borderRadius: 2.5,
+															backgroundColor: alpha('#ff9800', 0.03),
+															transition: 'all 0.3s',
+															'&:hover': {
+																backgroundColor: alpha('#ff9800', 0.05),
+															},
+															'&.Mui-focused': {
+																backgroundColor: '#fff',
+																boxShadow: `0 0 0 3px ${alpha('#ff9800', 0.1)}`,
+															},
+														},
+													}}
+												/>
+												<Button
+													variant="contained"
+													onClick={handleAnnounce}
+													sx={{
+														minWidth: '140px',
+														borderRadius: 2.5,
+														fontWeight: 700,
+														textTransform: 'none',
+														background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+														boxShadow: `0 4px 14px ${alpha('#ff9800', 0.4)}`,
+														transition: 'all 0.3s',
+														'&:hover': {
+															transform: 'translateY(-2px)',
+															boxShadow: `0 6px 20px ${alpha('#ff9800', 0.5)}`,
+														},
+													}}
+												>
+													Post
+												</Button>
+											</Stack>
+										</Stack>
+									</Paper>
+
+									{/* Logout All Sessions */}
+									<Paper
+										elevation={1}
+										sx={{
+											p: 3,
+											borderRadius: 3,
+											border: '1px solid',
+											borderColor: alpha('#f44336', 0.2),
+											transition: 'all 0.3s',
+											backgroundColor: '#fff',
+											'&:hover': {
+												boxShadow: `0 4px 16px ${alpha('#f44336', 0.15)}`,
+											},
+										}}
+									>
+										<Stack direction="row" alignItems="center" justifyContent="space-between">
+											<Stack direction="row" alignItems="center" spacing={2}>
+												<Box
+													sx={{
+														p: 1.5,
+														borderRadius: 2,
+														backgroundColor: alpha('#f44336', 0.1),
+													}}
+												>
+													<LogoutIcon sx={{ color: '#f44336', fontSize: 28 }} />
+												</Box>
+												<Box>
+													<Typography variant="h6" fontWeight={700} color="text.primary">
+														Logout All Sessions
+													</Typography>
+													<Typography variant="body2" color="text.secondary">
+														Terminate all active user sessions immediately
+													</Typography>
+												</Box>
+											</Stack>
+											<Button
+												variant="contained"
+												onClick={handleAllLogout}
+												sx={{
+													minWidth: '140px',
+													borderRadius: 2.5,
+													fontWeight: 700,
+													textTransform: 'none',
+													background: 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)',
+													boxShadow: `0 4px 14px ${alpha('#f44336', 0.4)}`,
+													transition: 'all 0.3s',
+													'&:hover': {
+														transform: 'translateY(-2px)',
+														boxShadow: `0 6px 20px ${alpha('#f44336', 0.5)}`,
+													},
+												}}
+											>
+												Apply
+											</Button>
+										</Stack>
+									</Paper>
+
+									{/* Move Round */}
+									<Paper
+										elevation={1}
+										sx={{
+											p: 3,
+											borderRadius: 3,
+											border: '1px solid',
+											borderColor: alpha('#009fac', 0.2),
+											transition: 'all 0.3s',
+											backgroundColor: '#fff',
+											'&:hover': {
+												boxShadow: `0 4px 16px ${alpha('#009fac', 0.15)}`,
+											},
+										}}
+									>
+										<Stack direction="row" alignItems="center" justifyContent="space-between">
+											<Stack direction="row" alignItems="center" spacing={2}>
+												<Box
+													sx={{
+														p: 1.5,
+														borderRadius: 2,
+														backgroundColor: alpha('#009fac', 0.1),
+													}}
+												>
+													<NavigateNextIcon sx={{ color: '#009fac', fontSize: 28 }} />
+												</Box>
+												<Box>
+													<Typography variant="h6" fontWeight={700} color="text.primary">
+														Move Round
+													</Typography>
+													<Typography variant="body2" color="text.secondary">
+														Current round: <Chip label={roundRef.current} size="small" sx={{ fontWeight: 700, ml: 1 }} />
+													</Typography>
+												</Box>
+											</Stack>
+											<Box sx={{ minWidth: '200px' }}>
+												<DropdownSelect
+													isDisabled={false}
+													variant="filled"
+													label="Select Round"
+													minWidth="100px"
+													options={optionsRounds}
+													handleChange={(e) => handleRounds(e.target.value)}
+													value={roundRef.current}
+													sx={{
+														'& .MuiFilledInput-root': {
+															borderRadius: 2.5,
+															backgroundColor: alpha('#009fac', 0.1),
+															'&:hover': {
+																backgroundColor: alpha('#009fac', 0.15),
+															},
+															'&.Mui-focused': {
+																backgroundColor: alpha('#009fac', 0.1),
+															},
+														},
+													}}
+												/>
+											</Box>
+										</Stack>
+									</Paper>
+								</Stack>
+							</CardContent>
+						</Card>
+					</Grid>
+
+					{/* Leaderboard */}
+					<Grid item xs={12} lg={7}>
+						<Card
+							elevation={3}
+							sx={{
+								borderRadius: 4,
+								border: '2px solid',
+								borderColor: alpha('#395395', 0.3),
+								overflow: 'hidden',
+								background: 'linear-gradient(135deg, #eef2f7 0%, #d6e4f0 100%)',
+								height: '100%',
 							}}
-							// if there are no entries yet
-							slots={{
-								noRowsOverlay: () => (
-									<Stack height="100%" alignItems="center" justifyContent="center">
-										<Typography><em>No records to display.</em></Typography>
-									</Stack>
-								)
-							}}
-						/>
-					</Box>
-				</Box>
+						>
+							{/* Header */}
+							<Box
+								sx={{
+									p: 3,
+									background: `linear-gradient(135deg, ${alpha('#395395', 0.15)} 0%, ${alpha('#009fac', 0.15)} 100%)`,
+									borderBottom: '2px solid',
+									borderColor: alpha('#395395', 0.3),
+								}}
+							>
+								<Stack direction="row" alignItems="center" spacing={2}>
+									<Box
+										sx={{
+											p: 1.5,
+											borderRadius: 3,
+											background: 'linear-gradient(135deg, #395395 0%, #009fac 100%)',
+											display: 'flex',
+											alignItems: 'center',
+											justifyContent: 'center',
+											boxShadow: `0 4px 20px ${alpha('#395395', 0.4)}`,
+										}}
+									>
+										<LeaderboardIcon sx={{ fontSize: 32, color: '#fff' }} />
+									</Box>
+									<Typography variant="h4" fontWeight={700} color="#395395">
+										OVERALL LEADERBOARD
+									</Typography>
+								</Stack>
+							</Box>
+
+							<CardContent sx={{ p: 4 }}>
+								<Box
+									sx={{
+										width: '100%',
+										'& .MuiDataGrid-root': {
+											borderRadius: 3,
+											border: '1px solid',
+											borderColor: alpha('#395395', 0.2),
+											boxShadow: `0 2px 8px ${alpha('#395395', 0.08)}`,
+										},
+									}}
+								>
+									<Table
+										rows={leaderboardRows}
+										columns={columnsLeaderboard}
+										hideFields={['id']}
+										additionalStyles={additionalStyles}
+										pageSizeOptions={[5, 10]}
+										pageSize={10}
+										autoHeight
+										initialState={{
+											pagination: { paginationModel: { pageSize: 10 } },
+										}}
+										slots={{
+											noRowsOverlay: () => (
+												<Stack height="100%" alignItems="center" justifyContent="center" spacing={2} sx={{ py: 8 }}>
+													<LeaderboardIcon sx={{ fontSize: 64, color: alpha('#395395', 0.3) }} />
+													<Typography variant="h6" color="text.secondary">
+														No records to display
+													</Typography>
+													<Typography variant="body2" color="text.secondary">
+														Leaderboard data will appear here once available
+													</Typography>
+												</Stack>
+											)
+										}}
+									/>
+								</Box>
+							</CardContent>
+						</Card>
+					</Grid>
+				</Grid>
+
+				{/* Bottom padding */}
+				<Box sx={{ height: 60 }} />
 			</Box>
-		</Stack>
+		</Box>
 	);
 };
 

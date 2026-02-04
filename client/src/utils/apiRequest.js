@@ -2,6 +2,8 @@
 * This file is used to implement API calls.
 */
 
+import axios from 'axios';
+
 /* HOW TO USE:
 
 GET REQUESTS
@@ -28,8 +30,6 @@ function deleteUser() {
 }
 */
 
-
-
 /**
  * Function for fetching with GET requests.
  * @param {String} url contains the base URL.
@@ -52,19 +52,29 @@ export async function getFetch(url, params) {
 		newURL = url;
 	}
 
-	// using the fetch function
-	return await fetch(newURL, {
+	return axios({
+		url: newURL,
 		method: 'GET',
 		headers: {
-			'Content-Type': 'application/json',
-		},
-			
-	}).then((res) => {
-		return res.json();
+			'Content-Type': 'application/json'
+		}
+	})
+		.then(response => response.data)
+		.catch(error => console.log(error));
 
-	}).catch((err) => {
-		console.error(err);
-	});
+	// using the fetch function
+	// return await fetch(newURL, {
+	// 	method: 'GET',
+	// 	headers: {
+	// 		'Content-Type': 'application/json',
+	// 	},
+			
+	// }).then((res) => {
+	// 	return res.json();
+
+	// }).catch((err) => {
+	// 	console.error(err);
+	// });
 }
 
 
@@ -73,19 +83,15 @@ export async function getFetch(url, params) {
  * @param {Object} obj contains information about the data to be inserted into DB.
 */
 export async function postFetch(url, obj) {
-		
-	return fetch(url, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-		},
-		credentials: 'include',
-		body: JSON.stringify(obj),
-		credentials: "omit",
-
-	}).then((res) => {
-		return res.json();
-	});
+	try {
+		const response = await axios.post(url, obj, {
+			headers: { 'Content-Type': 'application/json' },
+		});
+		return response.data;
+	} catch (error) {
+		console.error(error);
+		throw error;
+	}
 }
 
 
@@ -95,16 +101,27 @@ export async function postFetch(url, obj) {
 */
 export async function putFetch(url, obj) {
 
-	return fetch(url, {
+	return axios({
+		url,
 		method: 'PUT',
 		headers: {
-			'Content-Type': 'application/json',
+			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify(obj)
+		body: JSON.stringify(obj),
+	})
+		.then(response => response.data)
+		.catch(error => console.log(error));
+
+	// return fetch(url, {
+	// 	method: 'PUT',
+	// 	headers: {
+	// 		'Content-Type': 'application/json',
+	// 	},
+	// 	body: JSON.stringify(obj)
 		
-	}).then((res) => {
-		return res.ok;
-	});
+	// }).then((res) => {
+	// 	return res.ok;
+	// });
 }
 
 
@@ -114,13 +131,23 @@ export async function putFetch(url, obj) {
 */
 export async function deleteFetch(url, id) {
 
-	return fetch(`${url}${id}`, {
-		method: 'DELETE',
+	return axios({
+		url: `${url}${id}`,
 		headers: {
-			'Content-Type': 'application/json',
-		}
+			'Content-Type': 'application/json'
+		},
+	})
+		.then(response => response.data)
+		.catch(error => console.log(error));
 
-	}).then((res) => {
-		return res.ok;
-	});
+
+	// return fetch(`${url}${id}`, {
+	// 	method: 'DELETE',
+	// 	headers: {
+	// 		'Content-Type': 'application/json',
+	// 	}
+
+	// }).then((res) => {
+	// 	return res.ok;
+	// });
 }

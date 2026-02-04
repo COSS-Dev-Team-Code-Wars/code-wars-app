@@ -12,6 +12,8 @@ import {
 	JudgeLayout,
 	LoginPage,
 	GeneralOptionsPage,
+	CreateTeamPage,
+	CreateQuestionPage,
 	ParticipantLayout,
 	PowerUpLogs,
 	TopTeamsPage,
@@ -24,6 +26,7 @@ import { theme } from 'theme.js';
 import { postFetch } from 'utils/apiRequest';
 import { baseURL } from 'utils/constants';
 import TimerPage from 'pages/admin/TimerPage';
+// import JUDGE_SERVICE from 'utils/judge0';
 
 
 
@@ -32,6 +35,14 @@ var immortalHTML = '<div class="MuiBox-root css-1ato3wx"><div class="MuiBox-root
 
 
 function App() {
+
+	const setEnvironmentTitle = () => {
+		const currentEnv = process.env.REACT_APP_ENVIRONMENT;
+		if (currentEnv !== 'production') {
+			document.title = `[${ currentEnv }] - Code Wars`;
+		}
+	};
+
 	const [freezeOverlay, setFreezeOverlay] = useState(false);
 
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -65,6 +76,18 @@ function App() {
 		setIsLoggedIn(response.isLoggedIn);
 	};
 
+	//@ Test judge0 healthcheck - uncomment to test
+	// useEffect(() => {
+	// 	(async () => {
+	// 		const response = await JUDGE_SERVICE.healthCheck();
+	// 		console.log("My response is here::", response.version);
+	// 		alert(`My judge0 version: ${response.version}`)
+	// 	})()
+	// }, []);
+
+	// useEffect(() => {
+	// 	setEnvironmentTitle();
+	// }, []);
 
 	useEffect(() => {
 		const eventSource = new EventSource(`${baseURL}/admincommand`);
@@ -222,7 +245,9 @@ function App() {
 							}
 						/>
 						<Route path="admin/logs" element={ <PowerUpLogs /> } />
-						<Route path="admin/podium" element={<TopTeamsPage />} />
+								<Route path="admin/podium" element={<TopTeamsPage />} />
+								<Route path="admin/create-team" element={<CreateTeamPage />} />
+								<Route path="admin/create-question" element={<CreateQuestionPage />} />
 						<Route path="admin/timer" element={<TimerPage />} />
 					</Route>
 				</Routes>

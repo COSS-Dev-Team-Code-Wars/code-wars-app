@@ -1,24 +1,38 @@
 // ADD YOUR FILE EXPORTS HERE
 import TeamModel, { Team } from '../models/team';
-import { checkSubmission } from './submissionSocket'
 import { endTimer, setEndTimer } from '../controllers/adminController';
 import { PowerupInfo } from '../models/powerup';
 import { activateImmunity } from './powerupSocket';
 
 var roundStartTime: any;
+// timer control
+var timerInterval: any = null;
+var timerTimeout: any = null;
+var timerEndTime: number | null = null;
+var remainingSeconds: number | null = null;
+var isPaused: boolean = false;
 
 let io = require("socket.io")(8000, {
   cors: {
-    origin: ["http://localhost:3000", process.env.FRONTEND_URL || "", process.env.DEV_FRONTEND_URL || "", process.env.PROD_FRONTEND_URL || ""],
+    origin: ["*"],
+    methods: ["*"],
   }
   // if ever there will be cors errors from the web-sockets, create .env files to store the frontend urls that you're using to connect to this socket server. (populate the FRONTEND_URL, DEV_FRONTEND_URL, PROD_FRONTEND_URL with the urls of the frontend that you're using.)
 });
+
+console.log("Socket running");
 
 // store user data with their unique ID as the key and socket ID as the value
 let users: {[key:string]: string} = {}
 
 io.on("connection", (socket: any) => {
   //ADD SOCKET EVENTS HERE
+
+  socket.on("socket-health", (data:any) => {
+    console.log("Reading data here::", data);
+    socket.emit("socket-health-response", { message: data }); 
+  });
+
   socket.on("join", (user:any) => {
     socket.join("user:" + user._id);
     console.log("joined user:" + user._id);
@@ -50,14 +64,6 @@ io.on("connection", (socket: any) => {
   socket.on("moveRound", () => {
     socket.broadcast.emit("startRound");
   });
-
-  socket.on("activateImmunity", (id: string) => {
-    activateImmunity(id).then((res) => {
-      if (res.success && res.powerup){
-        socket.emit("newBuff", [res.powerup]);
-      }
-    });
-  })
 
   socket.on("buyBuff", async (data: any) => {
     let powerUp = data.powerUp;
@@ -122,7 +128,7 @@ io.on("connection", (socket: any) => {
           });
 
           // for toast notif
-          socket.emit("newBuff", [powerUp, debuffToDispel]);
+          socket.emit("newBuff", powerUp);
           console.log("Team " + userTeam + " has bought a buff.");
         } else { // Other buffs aside from dispel
           socket.emit("scenarioCheckerBuff", 'success');
@@ -142,7 +148,7 @@ io.on("connection", (socket: any) => {
               duration: powerUp.tier[tier_no].duration,
               cost: cost,
               startTime: startTime,
-              endTime: new Date(startTime.getTime() + 1000000000000000)
+              endTime: endTime
             }
             // Add the debuff 
             await TeamModel.updateOne({ _id: userTeam._id }, { 
@@ -156,6 +162,7 @@ io.on("connection", (socket: any) => {
               },
             });
             console.log(`${powerUp.code} has been applied to user ${userTeam._id}.`);
+            io.to(users[userTeam._id??""]).emit("newBuff", powerUp);
             setTimeout(() => {  // notify the team that their buff has ended after the specified duration
               console.log(`${powerUp.code} has ended for user ${userTeam._id}.`);
               io.to(users[userTeam._id??""]).emit("buffEnded", powerUp);
@@ -320,46 +327,94 @@ io.on("connection", (socket: any) => {
   // })
 });
 
-const startRoundTimer = (seconds: number) => {
-  console.log("Started round timer");
-  roundStartTime = new Date().getTime();
-  var doAfterDuration: any;
-  var interval: any;
-
-  function getRemainingTime() {
-    if (roundStartTime && !endTimer) {
-      const elapsedTime = (new Date().getTime() - roundStartTime) / 1000;
-      const remainingTime = Math.max(seconds - elapsedTime, 0);
-      return { remainingTime: Math.round(remainingTime) };
-    } else {
-      setEndTimer(false);
-      try {
-        clearTimeout(doAfterDuration);
-        clearInterval(interval);
-      } catch (error) {
-        console.log(error);
-      }
-      return { remainingTime: 0 };
-    }
+const clearExistingTimers = () => {
+  try {
+    if (timerInterval) clearInterval(timerInterval);
+    if (timerTimeout) clearTimeout(timerTimeout);
+  } catch (err) {
+    console.log(err);
   }
+  timerInterval = null;
+  timerTimeout = null;
+};
 
-  io.emit('update', getRemainingTime());
-  console.log(getRemainingTime());
+const emitRemaining = () => {
+  const now = Date.now();
+  let rem = 0;
+  if (timerEndTime) {
+    rem = Math.max(0, Math.round((timerEndTime - now) / 1000));
+  } else if (remainingSeconds !== null) {
+    rem = Math.max(0, Math.round(remainingSeconds));
+  }
+  io.emit('update', { remainingTime: rem });
+  return { remainingTime: rem };
+};
 
-  interval = setInterval(() => {
-    if (roundStartTime) {
-      io.emit('update', getRemainingTime());
-      console.log(getRemainingTime());
+const startRoundTimer = (seconds: number) => {
+  console.log('Started round timer');
+  // reset any previous timers
+  clearExistingTimers();
+  isPaused = false;
+  remainingSeconds = seconds;
+  timerEndTime = Date.now() + seconds * 1000;
+
+  // initial emit
+  emitRemaining();
+
+  // interval to emit every second
+  timerInterval = setInterval(() => {
+    if (!isPaused && timerEndTime) {
+      emitRemaining();
     }
   }, 1000);
 
-  // Set a timeout to end the round after the specified duration
-  doAfterDuration = setTimeout(() => {
-    roundStartTime = null;
-    io.emit('update', getRemainingTime());
-    console.log(getRemainingTime());
+  // timeout to finish the round
+  timerTimeout = setTimeout(() => {
+    // clear state
+    timerEndTime = null;
+    remainingSeconds = 0;
+    clearExistingTimers();
+    emitRemaining();
   }, seconds * 1000);
-}
+};
+
+const pauseRoundTimer = () => {
+  if (isPaused) return;
+  if (timerEndTime) {
+    remainingSeconds = Math.max(0, (timerEndTime - Date.now()) / 1000);
+  }
+  isPaused = true;
+  clearExistingTimers();
+  emitRemaining();
+  console.log('Round timer paused');
+};
+
+const resumeRoundTimer = () => {
+  if (!isPaused) return;
+  if (remainingSeconds === null || remainingSeconds <= 0) {
+    // nothing to resume
+    return;
+  }
+  isPaused = false;
+  timerEndTime = Date.now() + Math.round(remainingSeconds) * 1000;
+
+  // restart interval and timeout
+  timerInterval = setInterval(() => {
+    if (!isPaused && timerEndTime) {
+      emitRemaining();
+    }
+  }, 1000);
+
+  timerTimeout = setTimeout(() => {
+    timerEndTime = null;
+    remainingSeconds = 0;
+    clearExistingTimers();
+    emitRemaining();
+  }, Math.round(remainingSeconds) * 1000);
+
+  emitRemaining();
+  console.log('Round timer resumed');
+};
 
 const newUpload = (upload: any) => {
   console.log("Emit:NEWUPLOAD");
@@ -371,4 +426,4 @@ const evalUpdate = (update: any) => {
   io.emit('evalupdate', update);
 }
 
-export { startRoundTimer, newUpload, evalUpdate };
+export { startRoundTimer, pauseRoundTimer, resumeRoundTimer, newUpload, evalUpdate };
