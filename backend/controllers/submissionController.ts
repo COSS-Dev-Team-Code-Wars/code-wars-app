@@ -202,8 +202,11 @@ const checkSubmission = async (req: Request, res: Response) => {
     );
     console.log("--", score);
 
-    let pointsToAdd = score - submission.prev_max_score;
-    if (pointsToAdd > 0) {
+    // When re-evaluating, calculate the difference from the current score, not prev_max_score
+    let oldScore = submission.score;
+    let pointsToAdd = score - oldScore;
+    
+    if (pointsToAdd !== 0) {
       let team = await Team.findById(submission.team_id);
       team.score = team.score + pointsToAdd;
 
