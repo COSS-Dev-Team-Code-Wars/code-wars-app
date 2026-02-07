@@ -57,7 +57,7 @@ const OUTPUT_TYPE_OPTIONS = [
   { value: 'ignore_case', label: 'Ignore Case' },
   { value: 'float', label: 'Float Comparison' },
 ];
-
+//test
 const EMPTY_TEST_CASE = {
   input: '',
   expected_output: '',
