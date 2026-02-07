@@ -34,7 +34,10 @@ const FreezeOverlay = () => {
 				variant="h4"
 				sx={{
 					whiteSpace: 'pre-wrap',
-					textAlign: 'center'
+					textAlign: 'center',
+					fontWeight: 'bold',
+					textShadow: '0px 0px 20px rgba(0, 0, 0, 0.9), 0px 0px 40px rgba(0, 0, 0, 0.7), 2px 2px 4px rgba(0, 0, 0, 1)',
+					letterSpacing: '0.5px'
 				}}
 				className="fOverlay"
 			>
