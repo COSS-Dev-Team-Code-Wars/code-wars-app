@@ -1,4 +1,4 @@
-/* eslint-disable */ 
+/* eslint-disable */
 import { useState, useEffect, Fragment } from 'react';
 
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
@@ -47,15 +47,15 @@ const ParticipantsLeaderboard = () => {
 	/**
 	 * Fetch overall leaderboard data
 	 */
-	useEffect(() => { 
+	useEffect(() => {
 		fetchData();
 	}, []);
-	
+
 	/**
 	 * Web sockets for real time update
 	 */
-	useEffect(() => { 
-		if(!socketClient) return;
+	useEffect(() => {
+		if (!socketClient) return;
 
 		socketClient.on('evalupdate', () => {
 			fetchData();
@@ -74,7 +74,7 @@ const ParticipantsLeaderboard = () => {
 			socketClient.off('updateScoreOnBuyBuff');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
-	});
+	}, [socketClient]);
 
 	/**
 	* Handles opening of modal window for overall leaderboard.
