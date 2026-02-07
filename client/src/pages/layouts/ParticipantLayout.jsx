@@ -305,6 +305,19 @@ const ParticipantLayout = ({
 			console.log('dismiss');
 			toast.dismiss();
 		});
+
+		// Listen for debuff being dispelled - dismiss the toast for that debuff
+		socketClient.on('debuffDispelled', (debuffName) => {
+			console.log('Debuff dispelled:', debuffName);
+			toast.dismiss(debuffName);
+		});
+
+		// Listen for debuff naturally ending - dismiss the toast for that debuff
+		socketClient.on('debuffEnded', (powerUp) => {
+			console.log('Debuff ended:', powerUp.name);
+			toast.dismiss(powerUp.name);
+		});
+
 		socketClient.on('evalupdate', (arg) => {
 			var teamId = JSON.parse(localStorage?.getItem('user'))?._id;
 
@@ -324,6 +337,8 @@ const ParticipantLayout = ({
 			socketClient.off('newBuff');
 			socketClient.off('newDebuff');
 			socketClient.off('dismissToasts');
+			socketClient.off('debuffDispelled');
+			socketClient.off('debuffEnded');
 			socketClient.off('fetchActivePowerups');
 			socketClient.off('startRound');
 			socketClient.off('evalupdate');
