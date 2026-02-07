@@ -103,12 +103,17 @@ const JudgeLayout = ({
 			fetchData();
 		});
 
+		socketClient.on('updateScoreOnBuyBuff', () => {
+			fetchData();
+		});
+
 		socketClient.on('updateScoreOnBuyDebuff', () => {
 			fetchData();
 		});
 
 		return () => {
 			socketClient.off('evalupdate');
+			socketClient.off('updateScoreOnBuyBuff');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
 	});

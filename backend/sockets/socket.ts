@@ -129,6 +129,9 @@ io.on("connection", (socket: any) => {
 
           // for toast notif
           socket.emit("newBuff", powerUp);
+          console.log(`Dispel purchased by ${userTeam._id}, emitting updateScoreOnBuyBuff`);
+          socket.emit("updateScoreOnBuyBuff");
+          io.to(users[userTeam._id??""])?.emit("updateScoreOnBuyBuff");
           console.log("Team " + userTeam + " has bought a buff.");
         } else { // Other buffs aside from dispel
           socket.emit("scenarioCheckerBuff", 'success');
@@ -163,6 +166,9 @@ io.on("connection", (socket: any) => {
             });
             console.log(`${powerUp.code} has been applied to user ${userTeam._id}.`);
             io.to(users[userTeam._id??""]).emit("newBuff", powerUp);
+            console.log(`Immunity purchased by ${userTeam._id}, emitting updateScoreOnBuyBuff`);
+            socket.emit("updateScoreOnBuyBuff");
+            io.to(users[userTeam._id??""])?.emit("updateScoreOnBuyBuff");
             setTimeout(() => {  // notify the team that their buff has ended after the specified duration
               console.log(`${powerUp.code} has ended for user ${userTeam._id}.`);
               io.to(users[userTeam._id??""]).emit("buffEnded", powerUp);
@@ -197,7 +203,10 @@ io.on("connection", (socket: any) => {
             // Dont show toast notif right away if immunity is bought
             // Its toast must show when the medium/hard timer starts
             // for toast notif
-            socket.emit("newBuff", [powerUp]);
+            socket.emit("newBuff", powerUp);
+            console.log(`Buff purchased by ${userTeam._id}, emitting updateScoreOnBuyBuff`);
+            socket.emit("updateScoreOnBuyBuff");
+            io.to(users[userTeam._id??""])?.emit("updateScoreOnBuyBuff");
             console.log("Team " + userTeam.username + " has bought a buff.");
           }
 
@@ -229,7 +238,6 @@ io.on("connection", (socket: any) => {
           socket.emit("scenarioCheckerDebuff", 'insufficient_funds');
         } else {
           socket.emit("scenarioCheckerDebuff", 'success');
-          socket.emit("updateScoreOnBuyDebuff");
           const startTime: Date = new Date();
           const endTime: Date = new Date(startTime.getTime() + powerUp.tier[tier_no].duration);
           
@@ -252,6 +260,13 @@ io.on("connection", (socket: any) => {
               endTime: endTime
             }}
           });
+
+          console.log(`Debuff purchased by ${userTeam._id}, emitting updateScoreOnBuyDebuff`);
+          // Emit score update AFTER database update completes
+          socket.emit("updateScoreOnBuyDebuff");
+          
+          // Also broadcast to user's room to ensure they receive it
+          io.to(users[userTeam._id??""]).emit("updateScoreOnBuyDebuff");
   
           //  apply debuffs_received and show toast if there is no immunity active
           if(!recipientTeam.active_buffs.find((buff: any) => buff.code === 'immune')){

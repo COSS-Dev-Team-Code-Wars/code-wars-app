@@ -1,10 +1,11 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Box, Button, Link, MenuItem, Select, Stack } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { DropdownSelect, ConfirmWindow } from "components";
 import { getFetch, postFetch } from "utils/apiRequest";
 import { baseURL } from "utils/constants";
 import { optionsEval } from "utils/dummyData";
+import { socketClient } from "socket/socket";
 import TestCaseModal from "./modals/TestCaseModal";
 import EvaluationModal from "./modals/PartiallyCorrectModal";
 
@@ -75,23 +76,46 @@ const ViewSubmissionsPage = () => {
     setSelectedSubmission(submission);
   };
 
-  useEffect(() => {
-    const loadSubmissions = async () => {
-      const submissions = await getFetch(`${baseURL}/getallsubmissions`);
-      const transformedData = submissions.results.map(({ _id, timestamp, filename, judge_name, ...rest }) => ({
-        id: _id,
-        uploadedFile: filename,
-        submitted_at: new Date(timestamp).toLocaleTimeString(),
-        judge: judge_name,
-        ...rest,
-      }));
-      console.log(transformedData);
-      setSubmissions(transformedData);
-      setTeamsList([...new Set(transformedData.map((e) => e.team_name))]);
-      setProblemsList([...new Set(transformedData.map((e) => e.problem_title))]);
-    };
-    loadSubmissions();
+  // Memoize loadSubmissions to avoid re-creating it on every render
+  const loadSubmissions = useCallback(async () => {
+    const submissions = await getFetch(`${baseURL}/getallsubmissions`);
+    const transformedData = submissions.results.map(({ _id, timestamp, filename, judge_name, ...rest }) => ({
+      id: _id,
+      uploadedFile: filename,
+      submitted_at: new Date(timestamp).toLocaleTimeString(),
+      judge: judge_name,
+      ...rest,
+    }));
+    console.log(transformedData);
+    setSubmissions(transformedData);
+    setTeamsList([...new Set(transformedData.map((e) => e.team_name))]);
+    setProblemsList([...new Set(transformedData.map((e) => e.problem_title))]);
   }, []);
+
+  // Initial load
+  useEffect(() => {
+    loadSubmissions();
+  }, [loadSubmissions]);
+
+  // Socket listeners for real-time updates
+  useEffect(() => {
+    if (!socketClient) return;
+
+    // Listen for new submissions
+    socketClient.on('newupload', () => {
+      loadSubmissions();
+    });
+
+    // Listen for evaluation updates from other judges
+    socketClient.on('evalupdate', () => {
+      loadSubmissions();
+    });
+
+    return () => {
+      socketClient.off('newupload');
+      socketClient.off('evalupdate');
+    };
+  }, [loadSubmissions]);
 
   const handleDownload = (cell) => {
     const blob = new Blob([cell.row.content]);

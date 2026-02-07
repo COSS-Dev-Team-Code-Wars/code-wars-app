@@ -210,10 +210,10 @@ const checkSubmission = async (req: Request, res: Response) => {
       try {
         team.save();
       } catch (error) {
-        return {
+        return res.send({
           success: false,
           results: "Failed updating team score",
-        };
+        });
       }
     }
     console.log(score);
@@ -225,23 +225,23 @@ const checkSubmission = async (req: Request, res: Response) => {
 
       evalUpdate(submission);
 
-      return {
+      return res.send({
         success: true,
         status: status,
         pointsToAdd: pointsToAdd,
         results: submission,
-      };
+      });
     } catch (error) {
-      return {
+      return res.send({
         success: false,
         results: "Failed checking submission",
-      };
+      });
     }
   } else {
-    return {
+    return res.send({
       success: false,
       results: "Submission not found",
-    };
+    });
   }
 };
 

@@ -238,7 +238,11 @@ const ParticipantLayout = ({
 		});
 
 		// listener for buffs
-		socketClient.on('newBuff', (powerUp) => {
+		socketClient.on('newBuff', (powerUpData) => {
+			// Handle both array and object formats from backend
+			const powerUp = Array.isArray(powerUpData) ? powerUpData[0] : powerUpData;
+			if (!powerUp) return;
+			
 			let duration = powerUp.duration;
 			const powerUpName = powerUp.name;
       
@@ -285,8 +289,14 @@ const ParticipantLayout = ({
 			getTeamScore();
 		});
 
+		socketClient.on('updateScoreOnBuyBuff', () => {
+			getTeamScore();
+			fetchLeaderboardData();
+		});
+
 		socketClient.on('updateScoreOnBuyDebuff', () => {
 			getTeamScore();
+			fetchLeaderboardData();
 		})
 
 		socketClient.on('dismissToasts', () => {
@@ -304,6 +314,7 @@ const ParticipantLayout = ({
 				}
 			}
 			getTeamScore();
+			fetchLeaderboardData();
 		});
 
 
@@ -314,26 +325,7 @@ const ParticipantLayout = ({
 			socketClient.off('fetchActivePowerups');
 			socketClient.off('startRound');
 			socketClient.off('evalupdate');
-			socketClient.off('updateScoreOnBuyDebuff');
-		};
-	}, [socketClient]);
-  
-	/**
-	 * Web sockets for real time update of leaderboard
-	 */
-	useEffect(() => { 
-		if(!socketClient) return;
-
-		socketClient.on('evalupdate', () => {
-			fetchLeaderboardData();
-		});
-
-		socketClient.on('updateScoreOnBuyDebuff', () => {
-			fetchLeaderboardData();
-		});
-
-		return () => {
-			socketClient.off('evalupdate');
+			socketClient.off('updateScoreOnBuyBuff');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
 	}, [socketClient]);
