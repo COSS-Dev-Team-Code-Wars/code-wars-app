@@ -128,6 +128,9 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 			
 		}).then((res) => {
 			if (res['isConfirmed']) {
+				// Remove any existing listeners first to prevent duplicates
+				socketClient.off("scenarioCheckerDebuff");
+				
 				// websocket for applying debuff
 				socketClient.emit("applyDebuff", {
 					"powerUp": powerUp,
@@ -135,7 +138,8 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 					"recipientTeam": enemyTeamDetails.find((team) => team.team_name === selectedTeam)
 				});
 
-				socketClient.on("scenarioCheckerDebuff", (scenario) => {
+				// Use 'once' instead of 'on' to auto-remove listener after firing
+				socketClient.once("scenarioCheckerDebuff", (scenario) => {
 					if(scenario === 'existing'){
 						ErrorWindow.fire({
 							text: `You have an active ${powerUp.name}. Stacking of buffs is not allowed!`
@@ -179,6 +183,9 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 			
 		}).then((res) => {
 			if (res['isConfirmed']) {
+				// Remove any existing listeners first to prevent duplicates
+				socketClient.off("scenarioCheckerBuff");
+				
 				// websocket for buying buff
 				socketClient.emit("buyBuff", {
 					"powerUp": powerUp,
@@ -187,7 +194,8 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 				});
 
 
-				socketClient.on("scenarioCheckerBuff", (scenario) => {
+				// Use 'once' instead of 'on' to auto-remove listener after firing
+				socketClient.once("scenarioCheckerBuff", (scenario) => {
 					if(scenario === 'existing'){
 						ErrorWindow.fire({
 							text: `You have an active buff ${powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}. Stacking of buffs is not allowed!`

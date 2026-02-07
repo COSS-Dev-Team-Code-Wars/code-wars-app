@@ -64,6 +64,10 @@ const TimerPage = () => {
 			fetchData();
 		});
 
+		socketClient.on('updateScoreOnBuyBuff', () => {
+			fetchData();
+		});
+
 		socketClient.on('updateScoreOnBuyDebuff', () => {
 			fetchData();
 		});
@@ -71,6 +75,7 @@ const TimerPage = () => {
 
 		return () => {
 			socketClient.off('evalupdate');
+			socketClient.off('updateScoreOnBuyBuff');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
 	});
