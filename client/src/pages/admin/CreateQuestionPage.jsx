@@ -41,7 +41,9 @@ import { SuccessWindow, ErrorWindow } from 'components/';
 const DIFFICULTY_OPTIONS = [
   { value: 'easy', label: 'Easy', color: '#4caf50' },
   { value: 'medium', label: 'Medium', color: '#ff9800' },
-  { value: 'hard', label: 'Hard', color: '#f44336' },
+  { value: 'wager', label: 'Wager', color: '#9c27b0' },
+  { value: 'hard', label: 'Hard', color: '#f44336' }
+  
 ];
 
 const SET_OPTIONS = [
@@ -64,7 +66,7 @@ const EMPTY_TEST_CASE = {
 
 const CreateQuestionPage = () => {
   const theme = useTheme();
-  
+
   const [formData, setFormData] = useState({
     title: '',
     body: '',
@@ -74,7 +76,7 @@ const CreateQuestionPage = () => {
     samples: '',
     set: 'a',
   });
-  
+
   const [testCases, setTestCases] = useState([{ ...EMPTY_TEST_CASE }]);
   const [testCasesExpanded, setTestCasesExpanded] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -108,7 +110,7 @@ const CreateQuestionPage = () => {
 
   const validateForm = () => {
     const { title, body, points, difficulty, samples } = formData;
-    
+
     if (!title.trim()) {
       ErrorWindow.fire({ title: 'Missing Field', text: 'Please enter a question title.' });
       return false;
@@ -136,7 +138,7 @@ const CreateQuestionPage = () => {
       ErrorWindow.fire({ title: 'Missing Test Cases', text: 'Please add at least one test case.' });
       return false;
     }
-    
+
     for (let i = 0; i < validTestCases.length; i++) {
       const tc = validTestCases[i];
       if (!tc.input.trim()) {
@@ -148,18 +150,18 @@ const CreateQuestionPage = () => {
         return false;
       }
     }
-    
+
     return true;
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
-    
+
     // Filter valid test cases
     const validTestCases = testCases.filter(tc => tc.input.trim() && tc.expected_output.trim());
-    
+
     try {
       // Create the question first
       const res = await postFetch(`${baseURL}/generatequestion`, {
@@ -174,7 +176,7 @@ const CreateQuestionPage = () => {
 
       if (res.success) {
         const questionId = res.results._id;
-        
+
         // Now create the test cases
         const testCaseRes = await postFetch(`${baseURL}/testcases/create-multiple`, {
           problem_id: questionId,
@@ -186,18 +188,18 @@ const CreateQuestionPage = () => {
         });
 
         if (testCaseRes.success) {
-          SuccessWindow.fire({ 
+          SuccessWindow.fire({
             title: 'Question Created!',
             text: `"${formData.title}" has been created with ${validTestCases.length} test case(s).`
           });
         } else {
           // Question created but test cases failed
-          SuccessWindow.fire({ 
+          SuccessWindow.fire({
             title: 'Partial Success',
             text: `Question created, but test cases failed: ${testCaseRes.message || 'Unknown error'}. Please add them manually.`
           });
         }
-        
+
         // Reset form
         setFormData({
           title: '',
@@ -210,15 +212,15 @@ const CreateQuestionPage = () => {
         });
         setTestCases([{ ...EMPTY_TEST_CASE }]);
       } else {
-        ErrorWindow.fire({ 
-          title: 'Creation Failed', 
-          text: res.error || res.results || 'An unknown error occurred.' 
+        ErrorWindow.fire({
+          title: 'Creation Failed',
+          text: res.error || res.results || 'An unknown error occurred.'
         });
       }
     } catch (err) {
-      ErrorWindow.fire({ 
-        title: 'Request Failed', 
-        text: err.message || String(err) 
+      ErrorWindow.fire({
+        title: 'Request Failed',
+        text: err.message || String(err)
       });
     } finally {
       setIsSubmitting(false);
@@ -311,9 +313,9 @@ const CreateQuestionPage = () => {
         <Grid container spacing={3}>
           {/* Main Form Section */}
           <Grid item xs={12} lg={8}>
-            <Card 
-              elevation={2} 
-              sx={{ 
+            <Card
+              elevation={2}
+              sx={{
                 borderRadius: 4,
                 border: '1px solid',
                 borderColor: alpha('#009fac', 0.2),
@@ -437,7 +439,7 @@ const CreateQuestionPage = () => {
                         value={formData.difficulty}
                         onChange={handleChange('difficulty')}
                         displayEmpty
-                        sx={{ 
+                        sx={{
                           borderRadius: 2.5,
                           backgroundColor: '#fff',
                           '&:hover': {
@@ -526,7 +528,7 @@ const CreateQuestionPage = () => {
                       <Select
                         value={formData.set}
                         onChange={handleChange('set')}
-                        sx={{ 
+                        sx={{
                           borderRadius: 2.5,
                           backgroundColor: '#fff',
                           '&:hover': {
@@ -547,9 +549,9 @@ const CreateQuestionPage = () => {
             </Card>
 
             {/* Test Cases Section */}
-            <Card 
-              elevation={2} 
-              sx={{ 
+            <Card
+              elevation={2}
+              sx={{
                 mt: 3,
                 borderRadius: 4,
                 border: '1px solid',
@@ -564,12 +566,12 @@ const CreateQuestionPage = () => {
             >
               <CardContent sx={{ p: 4 }}>
                 {/* Test Cases Header */}
-                <Stack 
-                  direction="row" 
-                  alignItems="center" 
+                <Stack
+                  direction="row"
+                  alignItems="center"
                   justifyContent="space-between"
-                  sx={{ 
-                    mb: 3, 
+                  sx={{
+                    mb: 3,
                     cursor: 'pointer',
                     p: 2,
                     borderRadius: 2,
@@ -593,8 +595,8 @@ const CreateQuestionPage = () => {
                     <Typography variant="h6" fontWeight={700} color="text.primary">
                       Test Cases
                     </Typography>
-                    <Chip 
-                      size="small" 
+                    <Chip
+                      size="small"
                       label={testCases.filter(tc => tc.input.trim() && tc.expected_output.trim()).length}
                       sx={{
                         fontWeight: 700,
@@ -603,7 +605,7 @@ const CreateQuestionPage = () => {
                       }}
                     />
                   </Stack>
-                  <IconButton 
+                  <IconButton
                     size="small"
                     sx={{
                       backgroundColor: alpha('#395395', 0.1),
@@ -648,14 +650,14 @@ const CreateQuestionPage = () => {
                           />
                           <Tooltip title={testCases.length > 1 ? "Remove test case" : "At least one test case required"}>
                             <span>
-                              <IconButton 
-                                size="small" 
+                              <IconButton
+                                size="small"
                                 onClick={() => removeTestCase(index)}
                                 disabled={testCases.length <= 1}
-                                sx={{ 
+                                sx={{
                                   color: 'error.main',
                                   backgroundColor: alpha('#f44336', 0.1),
-                                  '&:hover': { 
+                                  '&:hover': {
                                     backgroundColor: alpha('#f44336', 0.2),
                                   },
                                   '&:disabled': {
@@ -745,7 +747,7 @@ const CreateQuestionPage = () => {
                               <Select
                                 value={testCase.output_type}
                                 onChange={handleTestCaseChange(index, 'output_type')}
-                                sx={{ 
+                                sx={{
                                   borderRadius: 2,
                                   backgroundColor: '#fff',
                                   fontSize: '0.875rem',
@@ -799,9 +801,9 @@ const CreateQuestionPage = () => {
           {/* Preview & Actions Panel */}
           <Grid item xs={12} lg={4}>
             {/* Preview Card */}
-            <Card 
-              elevation={2} 
-              sx={{ 
+            <Card
+              elevation={2}
+              sx={{
                 mb: 3,
                 borderRadius: 4,
                 border: '1px solid',
@@ -832,7 +834,7 @@ const CreateQuestionPage = () => {
                       {formData.title || 'No title yet'}
                     </Typography>
                   </Box>
-                  
+
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                     {formData.difficulty && (
                       <Chip
@@ -893,9 +895,9 @@ const CreateQuestionPage = () => {
             </Card>
 
             {/* Actions Card */}
-            <Card 
-              elevation={2} 
-              sx={{ 
+            <Card
+              elevation={2}
+              sx={{
                 borderRadius: 4,
                 border: '2px solid',
                 borderColor: alpha('#009fac', 0.3),
@@ -946,7 +948,7 @@ const CreateQuestionPage = () => {
                   >
                     {isSubmitting ? 'Creating...' : 'Create Question'}
                   </Button>
-                  
+
                   <Button
                     fullWidth
                     variant="outlined"
