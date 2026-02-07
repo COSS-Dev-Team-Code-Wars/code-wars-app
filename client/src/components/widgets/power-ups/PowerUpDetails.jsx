@@ -1,5 +1,5 @@
 
-/* eslint-disable */ 
+/* eslint-disable */
 import { useEffect, useState } from 'react';
 
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
@@ -57,18 +57,18 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 
 	useEffect(() => {
 		// get user details of current session from localStorage
-		const user = JSON.parse(localStorage?.getItem("user")); 
+		const user = JSON.parse(localStorage?.getItem("user"));
 
 		getAllTeams(user);
 		setUserDetails(user);
-	}, []); 
+	}, []);
 
 
 	/**
 	 * Fire a GET request to get list of all teams
 	 */
 	const getAllTeams = async (user) => {
-		try{
+		try {
 			const res = await getFetch(`${baseURL}/teams`);
 			if (res.success) {
 				let userTeamInfo = {};
@@ -76,7 +76,7 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 
 				// filter user team from enemy teams
 				res.teams.forEach(team => {
-					if(team._id === user?._id){
+					if (team._id === user?._id) {
 						userTeamInfo = team;
 					} else {
 						enemyTeams.push(team);
@@ -125,12 +125,12 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 		// ask for confirmation of action
 		ConfirmWindow.fire({
 			text: 'Are you sure you want to use ' + `${powerUp.name}` + ' on ' + `${selectedTeam}` + '?',
-			
+
 		}).then((res) => {
 			if (res['isConfirmed']) {
 				// Remove any existing listeners first to prevent duplicates
 				socketClient.off("scenarioCheckerDebuff");
-				
+
 				// websocket for applying debuff
 				socketClient.emit("applyDebuff", {
 					"powerUp": powerUp,
@@ -138,9 +138,15 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 					"recipientTeam": enemyTeamDetails.find((team) => team.team_name === selectedTeam)
 				});
 
+				// Listen for the score update event that will be emitted after successful purchase
+				// Using 'once' to auto-remove listener and prevent duplicates
+				socketClient.once("updateScoreOnBuyDebuff", () => {
+					console.log("PowerUpDetails: Received updateScoreOnBuyDebuff, score should update via ParticipantLayout listener");
+				});
+
 				// Use 'once' instead of 'on' to auto-remove listener after firing
 				socketClient.once("scenarioCheckerDebuff", (scenario) => {
-					if(scenario === 'existing'){
+					if (scenario === 'existing') {
 						ErrorWindow.fire({
 							text: `You have an active ${powerUp.name}. Stacking of buffs is not allowed!`
 						});
@@ -150,7 +156,7 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 						});
 					} else {
 						SuccessWindow.fire({
-							text: 'Successfully used '+`${powerUp.name}`+' on '+`${selectedTeam}`+'!'
+							text: 'Successfully used ' + `${powerUp.name}` + ' on ' + `${selectedTeam}` + '!'
 						});
 					}
 				});
@@ -180,12 +186,12 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 		// ask for confirmation of action
 		ConfirmWindow.fire({
 			text: 'Are you sure you want to use ' + `${powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}` + ' on your team?',
-			
+
 		}).then((res) => {
 			if (res['isConfirmed']) {
 				// Remove any existing listeners first to prevent duplicates
 				socketClient.off("scenarioCheckerBuff");
-				
+
 				// websocket for buying buff
 				socketClient.emit("buyBuff", {
 					"powerUp": powerUp,
@@ -196,7 +202,7 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 
 				// Use 'once' instead of 'on' to auto-remove listener after firing
 				socketClient.once("scenarioCheckerBuff", (scenario) => {
-					if(scenario === 'existing'){
+					if (scenario === 'existing') {
 						ErrorWindow.fire({
 							text: `You have an active buff ${powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}. Stacking of buffs is not allowed!`
 						});
@@ -206,7 +212,7 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 						});
 					} else {
 						SuccessWindow.fire({
-							text: 'Successfully used '+`${powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}`+' on your team!'
+							text: 'Successfully used ' + `${powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}` + ' on your team!'
 						});
 					}
 				});
@@ -234,7 +240,7 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 		>
 			{/* Subcontainer */}
 			<Box sx={{ width: '80%', display: 'flex', flexDirection: 'column' }} >
-				
+
 				{/* Return button */}
 				<Button
 					onClick={handleBackDebuff}
@@ -284,7 +290,7 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 				>
 					{powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}
 				</Typography>
-				
+
 				{/* Power-up description */}
 				<Typography
 					sx={{
@@ -299,7 +305,7 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 				>
 					{powerUp.tier[Object.keys(powerUp.tier)[0]].description}
 				</Typography>
-				
+
 				{/* Power-up cost */}
 				<Typography
 					sx={{
@@ -312,9 +318,9 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 						marginBottom: '20px',
 					}}
 				>
-					Cost: { powerUp.code == "dispel" ? "120% of the cost of the dispelled debuff" : powerUp.code == "immune" && Object.keys(powerUp.tier)[0] == 4 ? "1000 + 10% of the team\’s current total points" : powerUp.tier[Object.keys(powerUp.tier)[0]].cost}
+					Cost: {powerUp.code == "dispel" ? "120% of the cost of the dispelled debuff" : powerUp.code == "immune" && Object.keys(powerUp.tier)[0] == 4 ? "1000 + 10% of the team\’s current total points" : powerUp.tier[Object.keys(powerUp.tier)[0]].cost}
 				</Typography>
-				
+
 				{type === 0 ?
 					// Debuffs should have ui elements that allow the participants to select an enemy team to inflict the power-up on.
 					<>
@@ -344,48 +350,48 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 						</Button>
 					</> :
 					type === 1 && powerUp.code === 'dispel' ?
-					<>
-						{/* Select debuff to dispel dropdown select */}
-						<DropdownSelect
-							isDisabled={false}
-							label="Active Debuffs"
-							minWidth="100%"
-							variant="filled"
-							options={activeDebuffs}
-							handleChange={handleDispel}
-							value={selectedDebuff}
-						/>
+						<>
+							{/* Select debuff to dispel dropdown select */}
+							<DropdownSelect
+								isDisabled={false}
+								label="Active Debuffs"
+								minWidth="100%"
+								variant="filled"
+								options={activeDebuffs}
+								handleChange={handleDispel}
+								value={selectedDebuff}
+							/>
 
-						{/* Button to Dispel the debuff */}
-						<Button
-							onClick={() => handleBuy(powerUp)}
-							variant="contained"
-							sx={{
-								marginBottom: '20px',
-								marginTop: '20px',
-								height: '40px',
-								fontSize: '14px',
-								'& disabled': {
-									bgcolor: 'primary.disabled'
-								}
-							}}
-							disabled={activeDebuffs[0] === 'No Active Debuffs'}
-						>
-							Dispel {selectedDebuff}
-						</Button>
-					</> :
-					// Buffs only have the buy button					
-					<>
-						{/* Buy button */}
-						<Button
-							variant="contained"
-							onClick={() => handleBuy(powerUp)}
-							sx={{ marginBottom: '20px' }}
-						>
-							<ShoppingCartIcon sx={{ margin: '5px' }} />
-							BUY
-						</Button>
-					</>
+							{/* Button to Dispel the debuff */}
+							<Button
+								onClick={() => handleBuy(powerUp)}
+								variant="contained"
+								sx={{
+									marginBottom: '20px',
+									marginTop: '20px',
+									height: '40px',
+									fontSize: '14px',
+									'& disabled': {
+										bgcolor: 'primary.disabled'
+									}
+								}}
+								disabled={activeDebuffs[0] === 'No Active Debuffs'}
+							>
+								Dispel {selectedDebuff}
+							</Button>
+						</> :
+						// Buffs only have the buy button					
+						<>
+							{/* Buy button */}
+							<Button
+								variant="contained"
+								onClick={() => handleBuy(powerUp)}
+								sx={{ marginBottom: '20px' }}
+							>
+								<ShoppingCartIcon sx={{ margin: '5px' }} />
+								BUY
+							</Button>
+						</>
 				}
 			</Box>
 		</Box>
