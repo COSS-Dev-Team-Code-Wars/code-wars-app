@@ -7,7 +7,7 @@ const TestCase = mongoose.model("TestCase");
 
 export const runCode = async (req: Request, res: Response) => {
   try {
-    // test
+    // testc
     const { 
       source_code, 
       language_id, 
