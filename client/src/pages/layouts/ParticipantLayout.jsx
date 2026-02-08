@@ -136,19 +136,21 @@ const ParticipantLayout = ({
 
 
 	useEffect(() => {
-		let usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
-		if (usertype == 'judge') {
-			navigate('/judge/submissions');
-		}
-		else if (usertype == 'admin') {
-			navigate('/admin/general');
-		}
-		else if (usertype == 'team' || usertype == 'participant') {
-			checkIfLoggedIn();
-		}
-		else {
-			setIsLoggedIn(false);
-		}
+		// Always check authentication status
+		const verifyAuth = async () => {
+			await checkIfLoggedIn();
+			
+			// After auth check, route based on usertype
+			const usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
+			if (usertype == 'judge') {
+				navigate('/judge/submissions');
+			}
+			else if (usertype == 'admin') {
+				navigate('/admin/general');
+			}
+		};
+		
+		verifyAuth();
 
 
 		// fetch and set team details
@@ -164,6 +166,16 @@ const ParticipantLayout = ({
 		getTeamScore();
 		fetchLeaderboardData();
 	}, []);
+
+	// Redirect to login if authentication fails
+	useEffect(() => {
+		if (isLoggedIn === false) {
+			const usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
+			if (!usertype || (usertype !== 'team' && usertype !== 'participant')) {
+				navigate('/');
+			}
+		}
+	}, [isLoggedIn]);
 
 
 	useEffect(() => {

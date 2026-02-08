@@ -8,9 +8,11 @@ import "./models/testcase";
 
 import express from 'express';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import { connectDB } from './config/db';
 import loginRoute from './routes/loginRoute';
 import signupRoute from './routes/signupRoute';
+import logoutRoute from './routes/logoutRoute';
 import checkIfLoggedInRoute from './routes/checkIfLoggedInRoute';
 import teamScoreRoutes from './routes/teamScoreRoutes';
 import powerupRoutes from './routes/powerupRoute'
@@ -28,7 +30,11 @@ import './sockets/socket';
 const cors = require("cors");
 const app = express();
 
-app.use(cors());
+// Configure CORS to allow credentials (cookies)
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
 
 // app.use((req, res, next) => {
 //   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -48,6 +54,7 @@ connectDB();
 
 // Middleware
 app.use(bodyParser.json());
+app.use(cookieParser());
 app.use("/socket.io/*", createProxyMiddleware({
   target: 'http://localhost:8000',
   ws: true,
@@ -58,6 +65,7 @@ app.use("/socket.io/*", createProxyMiddleware({
 app.use(healthCheckRoute);
 app.use(loginRoute);
 app.use(signupRoute);
+app.use(logoutRoute);
 app.use(checkIfLoggedInRoute);
 app.use(adminRoutes);
 

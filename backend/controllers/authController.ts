@@ -141,6 +141,14 @@ const login = async (req: Request, res: Response) => {
 
       const token = jwt.sign(tokenPayload, secret1!);
 
+      // Set HTTP-only cookie
+      res.cookie('authToken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // Only use secure (HTTPS) in production
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict', // 'none' allows cross-site cookies when secure
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+      });
+
       // create a new copy to properly remove the password in the response 
       let userCopy = ({...user}._doc);
       delete userCopy["password"];
@@ -156,7 +164,7 @@ const login = async (req: Request, res: Response) => {
       userCopy["usertype"] = userType;
       return res.send({
         success: true,
-        token: token,
+        token: token, // Keep for backward compatibility during transition
         results: userCopy
       });
     });
@@ -174,33 +182,24 @@ const login = async (req: Request, res: Response) => {
 
   /*
  * Purpose: Check if user is logged in 
- * Note: This particular endpoint may not be used, just copy relevant code blocks and paste in the appropriate endpoints
  * Params (in the Request): The "authToken" cookie will be checked
  * Returns (in the Response): 
  *      Object with field isLoggedIn
  */
 const checkIfLoggedIn = (req: Request, res: Response) => {
-  console.log(req.body);
+  console.log("Cookies:", req.cookies);
 
-  //JSON.parse
-  if (req.body.authToken) {
-    //console.log("Got in");
-    //JSON.parse
-    var cookies = req.body.authToken;
+  // Try to get token from cookies first, then fall back to request body for backward compatibility
+  const token = req.cookies?.authToken || req.body.authToken;
 
-    //console.log(cookieDict);
-    if (!cookies) {
-      // Scenario 1: FAIL - No cookies / no authToken cookie sent
-      return res.send({ isLoggedIn: false, scenario: 1 });
-    }
-  } else {
+  if (!token) {
     // Scenario 1: FAIL - No cookies / no authToken cookie sent
     return res.send({ isLoggedIn: false, scenario: 1 });
   }
 
   // Token is present. Validate it
   return jwt.verify(
-    cookies,
+    token,
     secret1!,
     async (err: any, tokenPayload: any) => {
       if (err) {
@@ -212,18 +211,47 @@ const checkIfLoggedIn = (req: Request, res: Response) => {
 
       // Check if user exists
       var user = await Team.findById(userId);
-      if (!user) {
+      var userType = "";
+      
+      if (user) {
+        userType = "team";
+      } else {
         user = await Judge.findById(userId);
+        if (user) {
+          userType = "judge";
+        }
       }
+      
       if (!user) {
         user = await Admin.findById(userId);
+        if (user) {
+          userType = "admin";
+        }
       }
+      
       if (!user) {
         // Scenario 3: FAIL - Failed to find user based on id inside token payload
         return res.send({ isLoggedIn: false, scenario: 3 });
       } else {
-        // Scenario 4: SUCCESS - token and user id are valid
-        return res.send({ isLoggedIn: true, scenario: 4 });
+        // Scenario 4: SUCCESS - token and user id are valid, return user data
+        let userCopy = ({...user}._doc);
+        delete userCopy["password"];
+        
+        if (userType == "team") {
+          delete userCopy["activated_powerups"];
+          delete userCopy["active_buffs"];
+          delete userCopy["debuffs_received"];
+          delete userCopy["score"];
+          delete userCopy["total_points_used"];
+        }
+        
+        userCopy["usertype"] = userType;
+        
+        return res.send({ 
+          isLoggedIn: true, 
+          scenario: 4,
+          user: userCopy 
+        });
       }
     });
 }

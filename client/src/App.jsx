@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 
 import { ThemeProvider } from '@emotion/react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Cookies from 'universal-cookie';
 
 import { ToastContainerConfig } from 'components';
 import {
@@ -71,9 +70,35 @@ function App() {
 
 
 	const checkIfLoggedIn = async () => {
-		let response = await postFetch(`${baseURL}/checkifloggedin`, { authToken: localStorage.getItem('authToken') });
+		// Token is now sent automatically via HTTP-only cookie
+		let response = await postFetch(`${baseURL}/checkifloggedin`, {});
 		
 		setIsLoggedIn(response.isLoggedIn);
+		
+		// If authentication succeeded and user data is returned, store it
+		if (response.isLoggedIn && response.user) {
+			let user = response.user;
+			
+			// Transform user data based on usertype
+			if (user.usertype == "team") {
+				user["username"] = user["team_name"];
+				delete user["team_name"];
+				user["usertype"] = "participant";
+			} 
+			else if (user.usertype == "judge") {
+				user["username"] = user["judge_name"];
+				delete user["judge_name"];
+			}
+			else if (user.usertype == "admin") {
+				user["username"] = user["admin_name"];
+				delete user["admin_name"];
+			}
+			
+			localStorage.setItem("user", JSON.stringify(user));
+		} else if (!response.isLoggedIn) {
+			// Clear localStorage if authentication failed
+			localStorage.removeItem("user");
+		}
 	};
 
 	//@ Test judge0 healthcheck - uncomment to test
@@ -89,9 +114,14 @@ function App() {
 	// 	setEnvironmentTitle();
 	// }, []);
 
+	// Check authentication status on app initialization
+	useEffect(() => {
+		checkIfLoggedIn();
+	}, []);
+
 	useEffect(() => {
 		const eventSource = new EventSource(`${baseURL}/admincommand`);
-		eventSource.onmessage = (e) => {
+		eventSource.onmessage = async (e) => {
 			// getting admin message
 			let adminMessage = JSON.parse(e.data);
 
@@ -133,14 +163,12 @@ function App() {
 				else if (adminMessage.command == 'logout') {
 					console.log('Should log out');
 
+					// Call backend logout endpoint to clear HTTP-only cookie
+					await postFetch(`${baseURL}/logout`, {});
+					
 					setFreezeOverlay(false);
 					localStorage.removeItem('user');
-					//setUserDetails(null);
 					window.location.replace(window.location.origin);
-
-					// Delete cookie with authToken
-					const cookies = new Cookies();
-					cookies.remove('authToken');
 				} 
 				else if (adminMessage.command == 'normal') {
 					setFreezeOverlay(false);	

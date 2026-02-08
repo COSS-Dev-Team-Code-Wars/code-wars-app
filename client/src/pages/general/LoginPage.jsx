@@ -1,5 +1,5 @@
 /* eslint-disable */ 
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect } from 'react';
 
 import KeyIcon from '@mui/icons-material/Key';
 import PersonIcon from '@mui/icons-material/Person';
@@ -16,7 +16,6 @@ import LoginBackground from 'assets/LoginBG.png';
 import { SponsorCarousel } from 'components/index.js';
 import { baseURL } from 'utils/constants';
 import { postFetch } from 'utils/apiRequest';
-import Cookies from "universal-cookie";
 
 /*
  * Purpose: Displays the login page for all users.
@@ -30,6 +29,33 @@ const LoginPage = () => {
 
 	// used for client-side routing to other pages
 	const navigate = useNavigate();
+
+	// Check if user is already authenticated
+	useEffect(() => {
+		const checkAuth = async () => {
+			try {
+				const response = await postFetch(`${baseURL}/checkifloggedin`, {});
+				
+				if (response.isLoggedIn && response.user) {
+					// User is already logged in, redirect to appropriate page
+					const usertype = response.user.usertype;
+					
+					if (usertype === 'team') {
+						navigate('/participant/view-all-problems');
+					} else if (usertype === 'judge') {
+						navigate('/judge/submissions');
+					} else if (usertype === 'admin') {
+						navigate('/admin/general');
+					}
+				}
+			} catch (error) {
+				// If check fails, user stays on login page
+				console.log('Auth check failed:', error);
+			}
+		};
+		
+		checkAuth();
+	}, []);
 
 	/**
 	 * Purpose: Handles click event on login button, sets user role based on username, and navigates to index page of user role.
@@ -45,21 +71,10 @@ const LoginPage = () => {
 			alert(loginResponse.results);
 		} else {
 			let user = loginResponse.results;
-			//console.log(loginResponse.results);
-			//localStorage.setItem("user", JSON.stringify(user));
-
-			// const cookies = new Cookies();
-			localStorage.setItem("authToken", loginResponse.token);
-			// cookies.set(
-			// 	"authToken",
-			// 	loginResponse.token,
-			// 	{
-			// 		secure: true,
-			// 		path: "/",
-			// 		age: 60*60*24,
-			// 		sameSite: "none"
-			// 	}
-			// );
+			
+			// Token is now stored in HTTP-only cookie by the server
+			// No need to manually store it in localStorage
+			
 			if (user.usertype == "team") {
 				user["username"] = user["team_name"];
 				delete user["team_name"];

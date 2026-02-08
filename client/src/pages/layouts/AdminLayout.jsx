@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 
 import { Box } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 import GeneralBackground from 'assets/GenBackground.png';
 import { FreezeOverlay, LoadingOverlay, Sidebar } from 'components';
@@ -18,22 +18,36 @@ const AdminLayout = ({
 	checkIfLoggedIn,
 }) => {
 
+	const navigate = useNavigate();
+
 	useEffect(() => { 
-		let usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
-		if (usertype == 'judge') {
-			navigate('/judge/submissions');
-		}
-		else if (usertype == 'participant') {
-			navigate('/participant/view-all-problems');
-		}
-		else if (usertype == 'admin') {
-			checkIfLoggedIn();	
-		}
-		else {
-			setIsLoggedIn(false);
-		}
+		// Always check authentication status
+		const verifyAuth = async () => {
+			await checkIfLoggedIn();
+			
+			// After auth check, route based on usertype
+			const usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
+			if (usertype == 'judge') {
+				navigate('/judge/submissions');
+			}
+			else if (usertype == 'participant') {
+				navigate('/participant/view-all-problems');
+			}
+		};
+		
+		verifyAuth();
 
   }, []);
+
+	// Redirect to login if authentication fails
+	useEffect(() => {
+		if (isLoggedIn === false) {
+			const usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
+			if (!usertype || usertype !== 'admin') {
+				navigate('/');
+			}
+		}
+	}, [isLoggedIn]);
   
   
 	return (

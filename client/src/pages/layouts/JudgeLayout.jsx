@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 
 import ViewListIcon from '@mui/icons-material/ViewList';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 
 import GeneralBackground from 'assets/GenBackground.png';
 import seal from 'assets/UPLB COSS.png';
@@ -64,6 +64,8 @@ const JudgeLayout = ({
 	const [hasNewUpdate, setHasNewUpdate] = useState(false);
 	const [lastSeenCount, setLastSeenCount] = useState(0);
 
+	const navigate = useNavigate();
+
 	/**
 	 * Fetch overall leaderboard data
 	 */
@@ -73,25 +75,34 @@ const JudgeLayout = ({
 	}
 
   useEffect(() => { 
-		let usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
-		if (usertype == 'participant') {
-			navigate('/participant/view-all-problems');
-		}
-		else if (usertype == 'admin') {
-			navigate('/admin/general');
-		}
-		else if (usertype == 'judge') {
-			checkIfLoggedIn();
-		}
-		else {
-			setIsLoggedIn(false);
-		}
-
+		// Always check authentication status
+		const verifyAuth = async () => {
+			await checkIfLoggedIn();
+			
+			// After auth check, route based on usertype
+			const usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
+			if (usertype == 'participant') {
+				navigate('/participant/view-all-problems');
+			}
+			else if (usertype == 'admin') {
+				navigate('/admin/general');
+			}
+		};
 		
-
+		verifyAuth();
 		fetchData();
     
 	}, []);
+	
+	// Redirect to login if authentication fails
+	useEffect(() => {
+		if (isLoggedIn === false) {
+			const usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
+			if (!usertype || usertype !== 'judge') {
+				navigate('/');
+			}
+		}
+	}, [isLoggedIn]);
 	
 	/**
 	 * Web sockets for real time update of leaderboard

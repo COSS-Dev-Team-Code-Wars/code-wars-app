@@ -57,7 +57,8 @@ export async function getFetch(url, params) {
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json'
-		}
+		},
+		withCredentials: true
 	})
 		.then(response => response.data)
 		.catch(error => console.log(error));
@@ -86,6 +87,7 @@ export async function postFetch(url, obj) {
 	try {
 		const response = await axios.post(url, obj, {
 			headers: { 'Content-Type': 'application/json' },
+			withCredentials: true
 		});
 		return response.data;
 	} catch (error) {
@@ -108,6 +110,7 @@ export async function putFetch(url, obj) {
 			'Content-Type': 'application/json'
 		},
 		body: JSON.stringify(obj),
+		withCredentials: true
 	})
 		.then(response => response.data)
 		.catch(error => console.log(error));
@@ -136,6 +139,7 @@ export async function deleteFetch(url, id) {
 		headers: {
 			'Content-Type': 'application/json'
 		},
+		withCredentials: true
 	})
 		.then(response => response.data)
 		.catch(error => console.log(error));
