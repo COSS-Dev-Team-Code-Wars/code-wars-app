@@ -136,17 +136,32 @@ const SponsorCarousel = () => {
 		<Carousel
 			sx={{
 				paddingY: 3,
-				// minWidth: '100%',
 				alignItems: 'center',
 				alignContent: 'center',
 				justifyContent: 'center',
-				borderRadius: '15px',
-				bgcolor: 'rgba(255, 255, 255, 0.1)',
-				boxShadow: '0px 0px 10px 5px rgba(0, 0, 0, 0.5)',
-				backdropFilter: 'blur(10px)',
+				borderRadius: '28px', // match login panel
+				bgcolor: 'linear-gradient(135deg, rgba(240, 248, 255, 0.25) 0%, rgba(230, 244, 255, 0.2) 100%)',
+				backdropFilter: 'blur(16px) saturate(180%)',
+				WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+				border: '2px solid rgba(255, 255, 255, 0.5)',
+				boxShadow: `
+					0px 16px 48px rgba(0, 0, 0, 0.35),
+					0px 0px 80px rgba(100, 200, 255, 0.25),
+					inset 0px 2px 4px rgba(255, 255, 255, 0.4),
+					inset 0px -2px 4px rgba(100, 150, 200, 0.1)
+				`,
+				transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+				'&:hover': {
+					boxShadow: `
+						0px 20px 56px rgba(0, 0, 0, 0.4),
+						0px 0px 100px rgba(100, 200, 255, 0.3),
+						inset 0px 2px 4px rgba(255, 255, 255, 0.5),
+						inset 0px -2px 4px rgba(100, 150, 200, 0.15)
+					`,
+					border: '2px solid rgba(255, 255, 255, 0.65)',
+				},
 			}}
 
-			// remove grow animation on component mount
 			swipe={false}
 			
 			// make prev and next buttons always visible
@@ -163,7 +178,7 @@ const SponsorCarousel = () => {
 			// modify color for active indicator
 			activeIndicatorIconButtonProps={{
 				style: {
-					backgroundColor: 'blue'
+					backgroundColor: '#2196F3'
 				}
 			}}
       
@@ -179,6 +194,7 @@ const SponsorCarousel = () => {
 				style: {
 					marginLeft: 8,
 					marginRight: 8,
+					backgroundColor: '#0D47A1',
 				}
 			}}
 		>

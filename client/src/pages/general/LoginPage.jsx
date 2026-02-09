@@ -1,18 +1,25 @@
 /* eslint-disable */ 
 import { useContext, useState } from 'react';
 
-import KeyIcon from '@mui/icons-material/Key';
-import PersonIcon from '@mui/icons-material/Person';
+// Modern rounded icons (same meaning, better look)
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
+import LockRoundedIcon from '@mui/icons-material/LockRounded';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import VisibilityOffRoundedIcon from '@mui/icons-material/VisibilityOffRounded';
+
 import {
 	Box,
 	TextField,
 	Button,
 	Stack,
-	Typography
+	Typography,
+	IconButton,
+	InputAdornment
 } from '@mui/material';
+
 import { useNavigate } from 'react-router-dom';
 
-import LoginBackground from 'assets/LoginBG.png';
+import LoginBackground from 'assets/CodeWarsBG[25-26].png';
 import { SponsorCarousel } from 'components/index.js';
 import { baseURL } from 'utils/constants';
 import { postFetch } from 'utils/apiRequest';
@@ -27,6 +34,8 @@ const LoginPage = () => {
 	const [username, SetUsername] = useState('');
 	// state for the password textfield
 	const [password, SetPassword] = useState('');
+	// state for password visibility toggle
+	const [showPassword, setShowPassword] = useState(false);
 
 	// used for client-side routing to other pages
 	const navigate = useNavigate();
@@ -84,17 +93,20 @@ const LoginPage = () => {
 		}
 	};
 
+	// Toggle password visibility
+	const handleTogglePasswordVisibility = () => {
+		setShowPassword(!showPassword);
+	};
 
 	return (
 		// The login page has a background image that is different from all other pages.
 		<Box
-			sx = {{
+			sx={{
 				height: '100vh',
 				overflow: 'hidden',
 				display: { xs: 'center', lg: 'flex' },
 				alignItems: { xs: 'center', lg: 'none'},
 				justifyContent: { xs: 'center', lg: 'none' },
-				
 				backgroundSize: 'cover',
 				backgroundRepeat: 'no-repeat',
 				backgroundAttachment: 'fixed',
@@ -104,9 +116,9 @@ const LoginPage = () => {
 			{/* Login form */}
 			<Box
 				sx={{
-					top: { lg: 0, },
+					top: { lg: 0 },
 					right: { lg: 0 },
-					paddingY: {lg: '5'},
+					paddingY: { lg: '5' },
 					display: 'flex',
 					marginY: '10vh',
 					marginRight: { lg: '16%' },
@@ -115,220 +127,196 @@ const LoginPage = () => {
 					justifyContent: 'center',
 					alignItems: 'center',
 				}}
-			> 
+			>
 				<Box
-					sx={{ 
-						paddingY: {
-							xs: '2rem',
-							xl: '4rem'
-						},
-						paddingX: '2.5rem',
-						borderRadius: '20px',
+					sx={{
+						paddingY: { xs: '2.5rem', xl: '3rem' },
+						paddingX: { xs: '2.8rem', xl: '3.5rem' },
+						borderRadius: '28px',
 						display: 'flex',
 						flexDirection: 'column',
 						marginBottom: '5vh',
+						minWidth: { xs: '340px', sm: '420px', xl: '460px' },
 
-						// White with opacity
-						bgcolor: 'rgba(255, 255, 255, 0.1)',
-						
-						backdropFilter: 'blur(10px)',
+						// Lighter glass morphism background
+						background: 'linear-gradient(135deg, rgba(240, 248, 255, 0.25), rgba(230, 244, 255, 0.2))',
 
-						// For Safari support
-						WebkitBackdropFilter: 'blur(10px)',
+						backdropFilter: 'blur(16px) saturate(180%)',
+						WebkitBackdropFilter: 'blur(16px) saturate(180%)',
 
-						// Black shadow
-						boxShadow: '0px 0px 10px 5px rgba(0, 0, 0, 0.5)',
+						// Bright border
+						border: '2px solid rgba(255, 255, 255, 0.55)',
+
+						// Enhanced shadow with glow
+						boxShadow: `
+							0px 16px 48px rgba(0, 0, 0, 0.35),
+							0px 0px 80px rgba(100, 200, 255, 0.25),
+							inset 0px 2px 4px rgba(255, 255, 255, 0.45)
+						`,
+
+						transition: 'all 0.3s ease',
+
+						'&:hover': {
+							transform: 'translateY(-3px)',
+							boxShadow: `
+								0px 22px 60px rgba(0, 0, 0, 0.4),
+								0px 0px 100px rgba(100, 200, 255, 0.35)
+							`,
+						},
 					}}
 				>
-					{/* Login Title */}
+					{/* Sign In Title */}
 					<Typography
 						variant="h4"
 						sx={{
 							alignSelf: 'center',
-							color: 'major.light',
-							marginBottom: {
-								xs: '1.5em',
-								xl: '1.8em',
-							},
+							color: '#0D47A1',
+							fontWeight: 900,
+							marginBottom: '1.5em',
+							fontSize: '3.0rem',
+							textShadow: `
+								0px 2px 10px rgba(255, 255, 255, 0.9),
+								0px 4px 12px rgba(33, 150, 243, 0.35)
+							`,
 						}}
 					>
-						Login
+						LOGIN
 					</Typography>
 
 					{/* Form */}
 					<form>
 						{/* Username */}
-						<Typography
-							variant="body1"
-							sx={{
-								gap: 2,
-								display: 'flex',
-								marginBottom: {
-									xs: '1em',
-									lg: '1.5em',
-									xl: '1.8em',
-								},
-							}}
-						>
-							<PersonIcon
+						<Box sx={{ marginBottom: '1.6em' }}>
+							<Typography
+								variant="caption"
 								sx={{
-									padding: '.7em',
-									width: '10%',
-									borderRadius: '5px',
-									bgcolor: 'rgba(255, 255, 255, 0.15)',
+									color: '#1565C0',
+									fontWeight: 700,
+									marginBottom: '0.6em',
+									display: 'block',
+									fontSize: '0.8rem',
+									letterSpacing: '0.04em',
+									textTransform: 'uppercase',
 								}}
-							/>
+							>
+								Username
+							</Typography>
 
 							<TextField
-								label="Username"
-								variant="filled"
-								onChange={e => {
-									SetUsername(e.target.value);
+								fullWidth
+								placeholder="Enter your username"
+								onChange={e => SetUsername(e.target.value)}
+								InputProps={{
+									startAdornment: (
+										<InputAdornment position="start">
+											<AccountCircleRoundedIcon
+												sx={{
+													color: '#1976D2',
+													fontSize: '1.6rem',
+													opacity: 0.9,
+													filter: 'drop-shadow(0px 3px 6px rgba(33, 150, 243, 0.35))',
+												}}
+											/>
+										</InputAdornment>
+									),
 								}}
-								sx = {{
-									bgcolor: 'rgba(255, 255, 255, 0.15)',
-									borderTopLeftRadius: '5px',
-									borderTopRightRadius: '5px',
-									'& .MuiFormLabel-root': {
-										color: 'white.main',
-									},
-									// input label when focused
-									"& label.Mui-focused": {
-										color: 'white.main',
-									},
-									'& .MuiFilledInput-root': {
-										// White with reduced opacity
-										color: 'rgba(255, 255, 255, 0.8)',
-
-										// Placeholder color with reduced opacity
-										'&::placeholder': {
-											color: 'rgba(255, 255, 255, 0.5)',
-										},
-										'&:focus::placeholder': {
-											color: 'rgba(255, 255, 255, 1)',      
-										},
-										// Underline color with reduced opacity
-										'&:before': {
-											borderBottom: '1px solid rgba(255, 255, 255, )',
-										},
-										// Underline on hover
-										'&:hover:before': {
-											borderBottom: '2px solid rgba(255, 255, 255, 1)',
-										},
-										// White color for the underline when focused
-										'&.Mui-focused:before': {
-											borderBottomColor: 'white',
-										},
-										// Border color when focused and input is not empty
-										'&.Mui-focused:after': {
-											borderBottomColor: 'major.main',
+								sx={{
+									'& .MuiOutlinedInput-root': {
+										height: '52px',
+										borderRadius: '14px',
+										background: 'rgba(255, 255, 255, 0.55)',
+										border: '2px solid rgba(33, 150, 243, 0.3)',
+										transition: 'all 0.3s ease',
+										'& fieldset': { border: 'none' },
+										'&.Mui-focused': {
+											boxShadow: '0 0 0 4px rgba(33, 150, 243, 0.18)',
 										},
 									},
 								}}
 							/>
-						</Typography>
+						</Box>
 
 						{/* Password */}
-						<Typography
-							variant="body1"
+						<Box>
+							<Typography
+								variant="caption"
+								sx={{
+									color: '#1565C0',
+									fontWeight: 700,
+									marginBottom: '0.6em',
+									display: 'block',
+									fontSize: '0.8rem',
+									letterSpacing: '0.04em',
+									textTransform: 'uppercase',
+								}}
+							>
+								Password
+							</Typography>
+
+							<TextField
+								fullWidth
+								type={showPassword ? 'text' : 'password'}
+								placeholder="Enter your password"
+								onChange={e => SetPassword(e.target.value)}
+								onKeyDown={(e)=>{ if (e.key === "Enter") handleLogin(username, password); }}
+								InputProps={{
+									startAdornment: (
+										<InputAdornment position="start">
+											<LockRoundedIcon sx={{ color: '#1976D2' }} />
+										</InputAdornment>
+									),
+									endAdornment: (
+										<InputAdornment position="end">
+											<IconButton onClick={handleTogglePasswordVisibility}>
+												{showPassword ? <VisibilityOffRoundedIcon /> : <VisibilityRoundedIcon />}
+											</IconButton>
+										</InputAdornment>
+									),
+								}}
+								sx={{
+									'& .MuiOutlinedInput-root': {
+										height: '52px',
+										borderRadius: '14px',
+										background: 'rgba(255, 255, 255, 0.55)',
+										border: '2px solid rgba(33, 150, 243, 0.3)',
+										transition: 'all 0.3s ease',
+										'& fieldset': { border: 'none' },
+										'&.Mui-focused': {
+											boxShadow: '0 0 0 4px rgba(33, 150, 243, 0.18)',
+										},
+									},
+								}}
+							/>
+						</Box>
+
+						{/* Sign In Button */}
+						<Button
+							fullWidth
+							disabled={!username || !password}
+							onClick={() => handleLogin(username, password)}
+							variant="contained"
 							sx={{
-								gap: 2,
-								display: 'flex',
-								marginBottom: {
-									xs: '1em',
-									lg: '1.5em',
-									xl: '1.8em',
+								height: '54px',
+								marginTop: '32px',
+								borderRadius: '14px',
+								fontWeight: 700,
+								letterSpacing: '1.2px',
+								background: 'linear-gradient(135deg, #2196F3, #1976D2, #0D47A1)',
+								'&:hover': { transform: 'translateY(-2px)' },
+								'&.Mui-disabled': {
+									background: 'linear-gradient(135deg, #90CAF9, #64B5F6)',
+									color: '#E3F2FD',
 								},
 							}}
 						>
-							<KeyIcon
-								sx={{
-									padding: '.7em',
-									width: '10%',
-									borderRadius: '5px',
-									bgcolor: 'rgba(255, 255, 255, 0.15)',
-								}}
-							/>
-							
-							<TextField
-								label="Password"
-								type="password"
-								autoComplete="current-password"
-								variant="filled"
-								onChange={e => {
-									SetPassword(e.target.value);
-								}}
-								onKeyDown={
-									(e)=>{if (e.key === "Enter") {handleLogin(username, password);}}
-								}
-								sx = {{
-									bgcolor: 'rgba(255, 255, 255, 0.15)',
-									borderTopLeftRadius: '5px',
-									borderTopRightRadius: '5px',
-									'& .MuiFormLabel-root': {
-										color: 'white.main',
-									},
-									// input label when focused
-									"& label.Mui-focused": {
-										color: 'white.main',
-									},
-									'& .MuiFilledInput-root': {
-										// White with reduced opacity
-										color: 'rgba(255, 255, 255, 0.8)',
-
-										// Placeholder color with reduced opacity
-										'&::placeholder': {
-											color: 'rgba(255, 255, 255, 0.5)',
-										},
-										'&:focus::placeholder': {
-											color: 'rgba(255, 255, 255, 1)',      
-										},
-										// Underline color with reduced opacity
-										'&:before': {
-											borderBottom: '1px solid rgba(255, 255, 255, )',
-										},
-										// Underline on hover
-										'&:hover:before': {
-											borderBottom: '2px solid rgba(255, 255, 255, 1)',
-										},
-										// White color for the underline when focused
-										'&.Mui-focused:before': {
-											borderBottomColor: 'white',
-										},
-										// Border color when focused and input is not empty
-										'&.Mui-focused:after': {
-											borderBottomColor: 'major.main',
-										},
-									},
-								}}
-							/>
-						</Typography>
-
-						{/* Sign In Button */}
-						<Button 
-							// type="submit"
-							onClick={() => { handleLogin(username, password); }}
-							variant="contained" 
-							sx={{
-								width: '100%',
-								height: '6vh',
-								maxHeight: '45px',
-								marginTop: '20px',
-								bgcolor: 'major.main',
-								'&:hover': {
-									bgcolor: 'major.light',
-									color: 'general.main',
-								}
-							}}
-						>
-							Sign In
+							Login
 						</Button>
-					</form>
+					</form>		
 				</Box>
-                
+
 				{/* Sponsor carousel in LogIn Page */}
 				<Box sx={{ width: '100%' }}>
-					<SponsorCarousel />
+					<SponsorCarousel themeColor="#0D47A1" />
 				</Box>
 			</Box>
 		</Box>
