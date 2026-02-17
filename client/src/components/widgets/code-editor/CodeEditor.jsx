@@ -35,6 +35,7 @@ function CodeEditor() {
   const [isHighlightDisabled, setIsHighlightDisabled] = useState(false);
   const [isImmune, setIsImmune] = useState(false);
   const [isFrostyHands, setIsFrostyHands] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(true);
   const [isSubmissionError, setIsSubmissionError] = useState(false);
   const [isSubmissionSuccess, setIsSubmissionSuccess] = useState(false);
 
@@ -52,6 +53,7 @@ function CodeEditor() {
     else if (debuff.code === "editor") setIsHighlightDisabled(activate);
     else if (["immune"].includes(debuff.code)) setIsImmune(activate);
     else if (debuff.code === "frosty") setIsFrostyHands(activate);
+    else if (debuff.code === "flip") setIsFlipped(activate);
   };
 
   // Handles Frosty Hands debuff - 50% chance to drop key presses
@@ -331,7 +333,7 @@ function CodeEditor() {
         </select>
       </div>
       <div className="container_editor_area" style={{ height: `${CODE_EDITOR_HEIGHT - 200}px` }}>
-        <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className="container__editor" onKeyDown={handleFrostyHandsKeyDown} />
+        <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className={`container__editor${isFlipped && !isImmune ? ' flipped' : ''}`} onKeyDown={handleFrostyHandsKeyDown} />
       </div>
       <CustomModal isOpen={isSubmissionError} windowTitle="Submission Error">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
