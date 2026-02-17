@@ -34,6 +34,7 @@ function CodeEditor() {
   const [isStunned, setIsStunned] = useState(false);
   const [isHighlightDisabled, setIsHighlightDisabled] = useState(false);
   const [isImmune, setIsImmune] = useState(false);
+  const [isFrostyHands, setIsFrostyHands] = useState(false);
   const [isSubmissionError, setIsSubmissionError] = useState(false);
   const [isSubmissionSuccess, setIsSubmissionSuccess] = useState(false);
 
@@ -50,6 +51,17 @@ function CodeEditor() {
     if (debuff.code === "stun") setIsStunned(activate);
     else if (debuff.code === "editor") setIsHighlightDisabled(activate);
     else if (["immune"].includes(debuff.code)) setIsImmune(activate);
+    else if (debuff.code === "frosty") setIsFrostyHands(activate);
+  };
+
+  // Handles Frosty Hands debuff - 50% chance to drop key presses
+  const handleFrostyHandsKeyDown = (e) => {
+    if (isFrostyHands && !isImmune) {
+      // 50% chance to block the key press
+      if (Math.random() < 0.5) {
+        e.preventDefault();
+      }
+    }
   };
 
   // Handles WebSocket events for buffs and debuffs
@@ -319,7 +331,7 @@ function CodeEditor() {
         </select>
       </div>
       <div className="container_editor_area" style={{ height: `${CODE_EDITOR_HEIGHT - 200}px` }}>
-        <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className="container__editor" />
+        <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className="container__editor" onKeyDown={handleFrostyHandsKeyDown} />
       </div>
       <CustomModal isOpen={isSubmissionError} windowTitle="Submission Error">
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>

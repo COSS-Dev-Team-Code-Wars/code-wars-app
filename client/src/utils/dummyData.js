@@ -71,7 +71,7 @@ export const debuffs = [
 	{
 		name: 'Frosty Hands',
 		type: 'debuff',
-		fullDescription: 'Target an opposing team, that team would be unable to make changes to their code for two (2) minutes upon its activation.',
+		fullDescription: 'Target an opposing team, that team has a 50% chance that any key they press will not register for two (2) minutes upon its activation.',
 		Cost: '100 points',
 		duration: '2 minutes'
 	}
