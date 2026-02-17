@@ -24,7 +24,7 @@ const PowerUpType = ({ seePowerups, label, handleClick }) => {
 					color: 'major.main',
 				},
 			}}
-			onClick={handleClick}
+			onClick={handleClick} 
 		>
 			{/* Subcontainer for the Buff title and arrow icon */}
 			<Toolbar

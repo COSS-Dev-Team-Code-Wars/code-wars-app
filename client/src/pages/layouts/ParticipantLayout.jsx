@@ -126,7 +126,7 @@ const ParticipantLayout = ({
 	const [evaluation, setEvaluation] = useState();
 	const [problem, setProblem] = useState();
 	const [problemDescription, setProblemDescription] = useState();
-	const [samplesInputOutput, setSampleInputOutput] = useState();
+	const [sampleTestCases, setSampleTestCases] = useState([]);
 
 
 	// page values
@@ -422,9 +422,16 @@ const ParticipantLayout = ({
 		setProblem(qResponse.question);
 		setProblemDescription(qResponse.question.body);
 		setEvaluation(qResponse.evaluation);
-		// setSampleInput(qResponse.question.sample_input);
-		// setSampleOutput(qResponse.question.sample_output);
-		setSampleInputOutput(qResponse.question.samples);
+
+		// Fetch test cases for sample I/O display
+		try {
+			const tcResponse = await getFetch(`${baseURL}/testcases/${qResponse.question._id}`);
+			if (tcResponse.success) {
+				setSampleTestCases(tcResponse.testCases);
+			}
+		} catch (err) {
+			console.error('Error fetching sample test cases:', err);
+		}
 	};
 
 	/**
@@ -688,7 +695,7 @@ const ParticipantLayout = ({
 										teamInfo: teamDetails,
 										setTeamInfo: setTeamDetails,
 										problemDesc: problemDescription,
-										samp: samplesInputOutput,
+										sampleTestCases: sampleTestCases,
 										fetchContent: getQuestionContent,
 										currQuestions: currQuestions,
 										setCurrQuestions: setCurrQuestions,
