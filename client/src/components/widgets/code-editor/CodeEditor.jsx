@@ -35,7 +35,7 @@ function CodeEditor() {
   const [isHighlightDisabled, setIsHighlightDisabled] = useState(false);
   const [isImmune, setIsImmune] = useState(false);
   const [isFrostyHands, setIsFrostyHands] = useState(false);
-  const [isFlipped, setIsFlipped] = useState(true);
+  const [isFlipped, setIsFlipped] = useState(false);
   const [isSubmissionError, setIsSubmissionError] = useState(false);
   const [isSubmissionSuccess, setIsSubmissionSuccess] = useState(false);
 
@@ -50,10 +50,12 @@ function CodeEditor() {
   // Handles applying debuffs and buffs
   const processDebuff = (debuff, activate) => {
     if (debuff.code === "stun") setIsStunned(activate);
-    else if (debuff.code === "editor") setIsHighlightDisabled(activate);
+    else if (debuff.code === "editor") {
+      setIsHighlightDisabled(activate);
+      setIsFlipped(activate);
+    }
     else if (["immune"].includes(debuff.code)) setIsImmune(activate);
     else if (debuff.code === "frosty") setIsFrostyHands(activate);
-    else if (debuff.code === "flip") setIsFlipped(activate);
   };
 
   // Handles Frosty Hands debuff - 50% chance to drop key presses

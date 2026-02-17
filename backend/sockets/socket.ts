@@ -359,6 +359,14 @@ const clearExistingTimers = () => {
   timerTimeout = null;
 };
 
+const stopRoundTimer = () => {
+  clearExistingTimers();
+  timerEndTime = null;
+  remainingSeconds = 0;
+  isPaused = false;
+  emitRemaining();
+};
+
 const emitRemaining = () => {
   const now = Date.now();
   let rem = 0;
@@ -447,4 +455,4 @@ const evalUpdate = (update: any) => {
   io.emit('evalupdate', update);
 }
 
-export { startRoundTimer, pauseRoundTimer, resumeRoundTimer, newUpload, evalUpdate };
+export { startRoundTimer, pauseRoundTimer, resumeRoundTimer, stopRoundTimer, newUpload, evalUpdate };
