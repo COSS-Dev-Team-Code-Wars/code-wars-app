@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { startRoundTimer, pauseRoundTimer, resumeRoundTimer } from '../sockets/socket';
+import { startRoundTimer, pauseRoundTimer, resumeRoundTimer, stopRoundTimer } from '../sockets/socket';
 
 const Team = mongoose.model("Team");
 
@@ -13,89 +13,90 @@ type Message = { message: string; timestamp: string };
 let messages: Message[] = [];
 
 const commandChannel = (req: Request, res: Response) => {
-    console.log("Connected channel for admin commands.");
-    res.set({
-        "Access-Control-Allow-Origin": "*",
-        "Cache-Control": "no-cache",
-        Connection: "keep-alive", // allowing TCP connection to remain open for multiple HTTP requests/responses
-        "Content-Type": "text/event-stream", // media type for Server Sent Events (SSE)
-      });
-      // res.flushHeaders();
-    
-      const interval = setInterval(() => {
-          res.write(`data: ${JSON.stringify({
-            command,
-            buyImmunity,
-            messages,
-            round
-          })}\n\n`);
+  console.log("Connected channel for admin commands.");
+  res.set({
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "no-cache",
+    Connection: "keep-alive", // allowing TCP connection to remain open for multiple HTTP requests/responses
+    "Content-Type": "text/event-stream", // media type for Server Sent Events (SSE)
+  });
+  // res.flushHeaders();
 
-          if (command == "logout") {
-            counter += 1;
+  const interval = setInterval(() => {
+    res.write(`data: ${JSON.stringify({
+      command,
+      buyImmunity,
+      messages,
+      round
+    })}\n\n`);
 
-            if (counter > 5) {
-              command = "normal";
-              counter = 0;
-            }
-          }
-      }, 1000);
-    
-      res.on("close", () => {
-        clearInterval(interval);
-        res.end();
-      });
+    if (command == "logout") {
+      counter += 1;
+
+      if (counter > 5) {
+        command = "normal";
+        counter = 0;
+      }
+    }
+  }, 1000);
+
+  res.on("close", () => {
+    clearInterval(interval);
+    res.end();
+  });
 }
 
 const setAdminCommand = async (req: Request, res: Response) => {
-    const newcommand = req.body.command;
-    const newround: string = req.body.round;
+  const newcommand = req.body.command;
+  const newround: string = req.body.round;
 
-    if (newround.toLowerCase() != round.toLowerCase()) {
-      setEndTimer(true);;
-      let duration: number;
+  if (newround.toLowerCase() != round.toLowerCase()) {
+    setEndTimer(true);
+    stopRoundTimer();
+    let duration: number;
 
-      if (newround == 'EASY') {
-        duration = 60 * 30;
-        await freePowerups();
-      }
-      else if (newround == 'MEDIUM') {
-        duration = 60 * 45;
-        await removePowerups();
-      }
-      else if (newround == 'WAGER') {
-        duration = 60 * 15;
-      }
-      else if (newround == 'HARD') {
-        duration = 60 * 30;
-      } else {
-        duration = 0;
-      }
-
-      if (duration > 0) {
-        setTimeout(()=>{
-          startRoundTimer(duration);
-        },1000);
-      }
+    if (newround == 'EASY') {
+      duration = 60 * 30;
+      await freePowerups();
+    }
+    else if (newround == 'MEDIUM') {
+      duration = 60 * 45;
+      await removePowerups();
+    }
+    else if (newround == 'WAGER') {
+      duration = 60 * 15;
+    }
+    else if (newround == 'HARD') {
+      duration = 60 * 30;
+    } else {
+      duration = 0;
     }
 
-    command = newcommand;
-    round = newround;
-    // handle freeze command: pause/resume the round timer when admin toggles freeze
-    if (newcommand === 'freeze') {
-      try { pauseRoundTimer(); } catch (err) { console.log(err); }
-    } else if (newcommand === 'normal') {
-      try { resumeRoundTimer(); } catch (err) { console.log(err); }
+    if (duration > 0) {
+      setTimeout(() => {
+        startRoundTimer(duration);
+      }, 1000);
     }
-    return res.send(
-      { ok: true }
-    );
+  }
+
+  command = newcommand;
+  round = newround;
+  // handle freeze command: pause/resume the round timer when admin toggles freeze
+  if (newcommand === 'freeze') {
+    try { pauseRoundTimer(); } catch (err) { console.log(err); }
+  } else if (newcommand === 'normal') {
+    try { resumeRoundTimer(); } catch (err) { console.log(err); }
+  }
+  return res.send(
+    { ok: true }
+  );
 }
 
 const setBuyImmunity = (req: Request, res: Response) => {
   buyImmunity = req.body.value;
   return res.send(
-      { ok: true }
-    );
+    { ok: true }
+  );
 }
 
 const setAnnouncement = (req: Request, res: Response) => {
