@@ -202,7 +202,7 @@ const ParticipantLayout = ({
 
 					toast.info('🚀 New buff ' + buff.name + ' applied on your team!', {
 						toastId: buff.name,
-						position: 'bottom-right',
+						position: 'bottom-left',
 						autoClose: duration,
 						hideProgressBar: false,
 						closeOnClick: false,
@@ -211,6 +211,9 @@ const ParticipantLayout = ({
 						progress: undefined,
 						theme: 'dark',
 						transition: Bounce,
+						style: {
+							marginLeft: '60px'
+						}
 					});
 				}
 			});
@@ -221,7 +224,7 @@ const ParticipantLayout = ({
 
 					toast.warn('New debuff ' + debuff.name + ' has been applied to your team!', {
 						toastId: debuff.name,
-						position: 'bottom-right',
+						position: 'bottom-left',
 						autoClose: duration,
 						hideProgressBar: false,
 						closeOnClick: false,
@@ -230,6 +233,9 @@ const ParticipantLayout = ({
 						progress: undefined,
 						theme: 'dark',
 						transition: Bounce,
+						style: {
+							marginLeft: '60px'
+						}
 					});
 				}
 			});
@@ -253,7 +259,7 @@ const ParticipantLayout = ({
 
 			toast.info('🚀 New buff ' + powerUpName + ' applied on your team!', {
 				toastId: powerUp.name,
-				position: 'bottom-right',
+				position: 'bottom-left',
 				autoClose: duration,
 				hideProgressBar: false,
 				closeOnClick: false,
@@ -262,6 +268,9 @@ const ParticipantLayout = ({
 				progress: undefined,
 				theme: 'dark',
 				transition: Bounce,
+				style: {
+					marginLeft: '60px'
+				}
 			});
 
 			getTeamScore();
@@ -275,7 +284,7 @@ const ParticipantLayout = ({
 
 			toast.warn('New debuff ' + powerUpName + ' has been applied to your team!', {
 				toastId: powerUp.name,
-				position: 'bottom-right',
+				position: 'bottom-left',
 				autoClose: duration,
 				hideProgressBar: false,
 				closeOnClick: false,
@@ -284,6 +293,9 @@ const ParticipantLayout = ({
 				progress: undefined,
 				theme: 'dark',
 				transition: Bounce,
+				style: {
+					marginLeft: '60px'
+				}
 			});
 
 			getTeamScore();
