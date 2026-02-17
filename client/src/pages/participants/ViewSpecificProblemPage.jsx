@@ -25,7 +25,11 @@ const ViewSpecificProblemPage = () => {
         </Typography>
         <Box sx={{ padding: 3, borderRadius: 4, backgroundColor: "#fff" }} style={{ display: "flex", flexDirection: "column", overflowY: "hidden" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px", overflow: "auto" }}>
-            <Typography variant="body1" paragraph style={{ margin: "0" }}>
+            <Typography 
+              variant="body1" 
+              paragraph 
+              style={{ margin: "0", whiteSpace: "pre-wrap" }} // Preserve line breaks in problem description
+            >
               {problemDesc}
             </Typography>
             <a href={samp} target="_blank" rel="noopener noreferrer">

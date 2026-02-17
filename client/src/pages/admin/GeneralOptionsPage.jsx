@@ -152,13 +152,13 @@ const GeneralOptionsPage = ({
 	};
 
 	/**
-	 * Handler for toggle switch button. This will allow teams to buy immunity
+	 * Handler for toggle switch button. This will allow teams to buy powerups
 	 */
 	const handleBuyImmunity = async (e) => {
 
-		// for allowing buy immunity for all sessions
+		// for allowing buy powerups for all sessions
 		if (e.target.checked) {
-			await enterAdminPassword({ title: 'Enable buy immunity' })
+			await enterAdminPassword({ title: 'Enable Buy Powerups' })
 				.then(async (res) => {
 					
 					if (res == true) {
@@ -167,7 +167,7 @@ const GeneralOptionsPage = ({
 						});
 
 						SuccessWindow.fire({
-							text: 'Successfully enabled buy immunity!'
+							text: 'Successfully enabled buy powerups!'
 						});
 						
 						immunityRef.current = true;
@@ -181,9 +181,9 @@ const GeneralOptionsPage = ({
 					}
 				});
 			
-		// for disabling buy immunity for all sessions
+		// for disabling buy powerups for all sessions
 		} else {
-			await enterAdminPassword({ title: 'Disable buy immunity' })
+			await enterAdminPassword({ title: 'Disable Buy Powerups' })
 				.then(async (res) => {
 
 					if (res == true) {
@@ -192,7 +192,7 @@ const GeneralOptionsPage = ({
 						});
 
 						SuccessWindow.fire({
-							text: 'Successfully disabled buy immunity for all active sessions!'
+							text: 'Successfully disabled buy powerups for all active sessions!'
 						});
 						
 						immunityRef.current = false;
@@ -458,10 +458,10 @@ const GeneralOptionsPage = ({
 												</Box>
 												<Box>
 													<Typography variant="h6" fontWeight={700} color="text.primary">
-														Allow Buy Immunity
+														Allow Buy Powerups
 													</Typography>
 													<Typography variant="body2" color="text.secondary">
-														{immunityRef.current ? 'Teams can buy immunity' : 'Immunity purchasing disabled'}
+														{immunityRef.current ? 'Teams can buy Powerups' : 'Powerups purchasing disabled'}
 													</Typography>
 												</Box>
 											</Stack>
