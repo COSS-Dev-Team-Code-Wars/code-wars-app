@@ -163,51 +163,51 @@ function CodeEditor() {
         const languageConfig = programmingLanguages.find(
           (lang) => lang.value === language.value
         );
-    
+
         if (!languageConfig) {
           throw new Error('Unsupported language');
         }
-  
+
         // Prepare submission payload
         const submissionPayload = {
           source_code: code,
           language_id: languageConfig.id,
           stdin: customInput,
         };
-    
+
         // Submit the code to Judge0
         const submissionResponse = await judge0.postSubmissions(submissionPayload);
-    
+
         if (!submissionResponse || !submissionResponse.token) {
           throw new Error("Failed to submit code to Judge0");
         }
-    
+
         const submissionToken = submissionResponse.token;
-    
+
         // Poll for results
         let result = null;
         for (let i = 0; i < 10; i++) { // Poll up to 10 times
           await new Promise(res => setTimeout(res, 2000)); // Wait 2 seconds
-    
+
           const fetchedResult = await judge0.getSubmissions(submissionToken);
-    
+
           if (fetchedResult && fetchedResult.status && fetchedResult.status.id >= 3) {
             result = fetchedResult;
             break;
           }
         }
-    
+
         if (!result) {
           throw new Error("Judge0 execution timeout or no response received.");
         }
-    
+
         setRunResult({
           status: 'Completed',
           testCaseResult: {
             result,
           }
         });
-    
+
         setIsRunModalOpen(true);
       } else {
         await handleRunCode();
@@ -229,16 +229,16 @@ function CodeEditor() {
     try {
       setIsRunning(true);
       setRunResult(null);
-  
+
       // Fetch question details to get test cases
-      const { question } = await postFetch(`${baseURL}/viewquestioncontent`, { 
-        problemId: id, 
-        teamId: user._id 
+      const { question } = await postFetch(`${baseURL}/viewquestioncontent`, {
+        problemId: id,
+        teamId: user._id
       });
-  
+
       // Fetch test cases
       const testCasesResponse = await getFetch(`${baseURL}/testcases/${question._id}`);
-      
+
       if (!testCasesResponse.success) {
         throw new Error('Failed to fetch test cases');
       }
@@ -247,52 +247,52 @@ function CodeEditor() {
       if (!firstTestCase) {
         throw new Error('No test cases found');
       }
-  
+
       // Get language configuration
       const languageConfig = programmingLanguages.find(
         (lang) => lang.value === language.value
       );
-  
+
       if (!languageConfig) {
         throw new Error('Unsupported language');
       }
-  
+
       // Prepare the submission payload for Judge0
       const submissionPayload = {
         source_code: code,
         language_id: languageConfig.id,
         stdin: firstTestCase.input.replace(/\\n/g, "\n"),
       };
-  
+
       // Submit the code to Judge0
       const submissionResponse = await judge0.postSubmissions(submissionPayload);
-  
+
       if (!submissionResponse || !submissionResponse.token) {
         throw new Error("Failed to submit code to Judge0");
       }
-  
+
       const submissionToken = submissionResponse.token;
-  
+
       // Poll for results
       let result = null;
       for (let i = 0; i < 10; i++) { // Poll up to 10 times
         await new Promise(res => setTimeout(res, 2000)); // Wait 2 seconds
-  
+
         const fetchedResult = await judge0.getSubmissions(submissionToken);
-  
+
         if (fetchedResult && fetchedResult.status && fetchedResult.status.id >= 3) {
           result = fetchedResult;
           break;
         }
       }
-  
+
       if (!result) {
         throw new Error("Judge0 execution timeout or no response received.");
       }
-  
+
       // Compare output with expected result
       const isPassed = result.stdout?.trim() === firstTestCase.expected_output.trim();
-  
+
       setRunResult({
         status: isPassed ? 'Accepted' : 'Failed',
         testCaseResult: {
@@ -301,7 +301,7 @@ function CodeEditor() {
           passed: isPassed
         }
       });
-  
+
       setIsRunModalOpen(true);
     } catch (error) {
       console.error("Error running code:", error);
@@ -313,11 +313,11 @@ function CodeEditor() {
     } finally {
       setIsRunning(false);
     }
-  };  
+  };
 
   const CODE_EDITOR_HEIGHT = 550;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "4px", width: "100%", minHeight: `${CODE_EDITOR_HEIGHT}px` }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", minHeight: `${CODE_EDITOR_HEIGHT}px` }}>
       <div style={{ marginBottom: "10px" }}>
         <label htmlFor="selectPL" style={{ marginRight: "10px", color: "#fff", fontFamily: "Poppins" }}>
           Select Language:
@@ -352,13 +352,13 @@ function CodeEditor() {
         </div>
       </CustomModal>
       <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
-        <Button 
+        <Button
           style={{ alignSelf: "flex-start" }}
-          variant="contained" 
-          color="secondary" 
-          size="large" 
-          onClick={handleRunCustomInput} 
-          disabled={!code || isRunning || !(['easy', 'medium'].includes(problemDifficulty))} 
+          variant="contained"
+          color="secondary"
+          size="large"
+          onClick={handleRunCustomInput}
+          disabled={!code || isRunning || !(['easy', 'medium'].includes(problemDifficulty))}
         >
           {isRunning ? 'Running...' : 'Run'}
         </Button>
@@ -366,14 +366,14 @@ function CodeEditor() {
         <Button style={{ alignSelf: "flex-start" }} variant="contained" color="primary" size="large" onClick={handleSubmitCode} disabled={!code}>
           Submit
         </Button>
-        
+
         {/* Ray was here, again... - 3/14/25 */}
 
         <label style={{ color: "white", marginTop: "5px" }}>
           <input
             type="checkbox"
             checked={testAgainstCustomInput}
-            onChange={() => {setTestAgainstCustomInput(!testAgainstCustomInput); setCustomInput("");}}
+            onChange={() => { setTestAgainstCustomInput(!testAgainstCustomInput); setCustomInput(""); }}
             disabled={!(['easy', 'medium'].includes(problemDifficulty))}
           />
           Test against custom input
@@ -391,8 +391,8 @@ function CodeEditor() {
       </div>
 
       {/* Run Result Modal */}
-      <CustomModal 
-        isOpen={isRunModalOpen} 
+      <CustomModal
+        isOpen={isRunModalOpen}
         windowTitle={runResult?.status === 'Accepted' ? 'Run Successful' : 'Run Result'}
         setOpen={setIsRunModalOpen}
       >
@@ -408,7 +408,7 @@ function CodeEditor() {
               <p><strong>Status:</strong> {runResult?.status}</p>
             </>
           )}
-          
+
           {runResult?.testCaseResult && (
             <div>
               <Typography variant="body2">

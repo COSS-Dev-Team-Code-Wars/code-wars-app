@@ -1,6 +1,7 @@
 .container_editor_area {
   tab-size: 2ch;
   overflow: auto;
+  height: 100%;
 }
 
 .container__editor {
@@ -12,6 +13,8 @@
   line-height: 1.5;
   font-size: 14px;
   font-family: 'Fira code', 'Fira Mono', Consolas, Menlo, Courier, monospace;
+  min-height: 100%;
+  box-sizing: border-box;
 }
 
 .container__editor textarea {
