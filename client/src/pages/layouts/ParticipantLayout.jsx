@@ -126,7 +126,7 @@ const ParticipantLayout = ({
 	const [evaluation, setEvaluation] = useState();
 	const [problem, setProblem] = useState();
 	const [problemDescription, setProblemDescription] = useState();
-	const [sampleTestCases, setSampleTestCases] = useState([]);
+
 
 
 	// page values
@@ -334,12 +334,18 @@ const ParticipantLayout = ({
 			var teamId = JSON.parse(localStorage?.getItem('user'))?._id;
 
 			if (teamId == arg.team_id) {
-				getRoundQuestions();//
+				getRoundQuestions();
 
 				if (location.pathname === '/participant/view-specific-problem') {
 					getQuestionContent();
 				}
 			}
+			getTeamScore();
+			fetchLeaderboardData();
+		});
+
+		// Refresh score and leaderboard when any submission is uploaded
+		socketClient.on('newupload', () => {
 			getTeamScore();
 			fetchLeaderboardData();
 		});
@@ -354,6 +360,7 @@ const ParticipantLayout = ({
 			socketClient.off('fetchActivePowerups');
 			socketClient.off('startRound');
 			socketClient.off('evalupdate');
+			socketClient.off('newupload');
 			socketClient.off('updateScoreOnBuyBuff');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
@@ -435,15 +442,7 @@ const ParticipantLayout = ({
 		setProblemDescription(qResponse.question.body);
 		setEvaluation(qResponse.evaluation);
 
-		// Fetch test cases for sample I/O display
-		try {
-			const tcResponse = await getFetch(`${baseURL}/testcases/${qResponse.question._id}`);
-			if (tcResponse.success) {
-				setSampleTestCases(tcResponse.testCases);
-			}
-		} catch (err) {
-			console.error('Error fetching sample test cases:', err);
-		}
+
 	};
 
 	/**
@@ -707,7 +706,7 @@ const ParticipantLayout = ({
 										teamInfo: teamDetails,
 										setTeamInfo: setTeamDetails,
 										problemDesc: problemDescription,
-										sampleTestCases: sampleTestCases,
+										sampleTestCases: [],
 										fetchContent: getQuestionContent,
 										currQuestions: currQuestions,
 										setCurrQuestions: setCurrQuestions,

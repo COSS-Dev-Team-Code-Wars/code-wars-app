@@ -32,49 +32,6 @@ const ViewSpecificProblemPage = () => {
 						>
 							{problemDesc}
 						</Typography>
-
-						{/* Sample Inputs and Outputs */}
-						{sampleTestCases && sampleTestCases.length > 0 && (
-							<div style={{ marginTop: "10px" }}>
-								<Typography variant="subtitle1" style={{ fontWeight: "bold", marginBottom: "8px" }}>
-
-								</Typography>
-								{sampleTestCases.map((tc, index) => (
-									<div key={index} style={{ marginBottom: "12px" }}>
-										<Typography variant="body2" style={{ fontWeight: "bold" }}>
-											Sample Input {sampleTestCases.length > 1 ? `#${index + 1}` : ""}:
-										</Typography>
-										<pre style={{
-											backgroundColor: "#f5f5f5",
-											padding: "8px 12px",
-											borderRadius: "4px",
-											fontFamily: "monospace",
-											fontSize: "0.875rem",
-											margin: "4px 0 8px 0",
-											whiteSpace: "pre-wrap",
-											overflowX: "auto",
-										}}>
-											{tc.input?.replace(/\\n/g, "\n")}
-										</pre>
-										<Typography variant="body2" style={{ fontWeight: "bold" }}>
-											Sample Output {sampleTestCases.length > 1 ? `#${index + 1}` : ""}:
-										</Typography>
-										<pre style={{
-											backgroundColor: "#f5f5f5",
-											padding: "8px 12px",
-											borderRadius: "4px",
-											fontFamily: "monospace",
-											fontSize: "0.875rem",
-											margin: "4px 0 0 0",
-											whiteSpace: "pre-wrap",
-											overflowX: "auto",
-										}}>
-											{tc.expected_output?.replace(/\\n/g, "\n")}
-										</pre>
-									</div>
-								))}
-							</div>
-						)}
 					</div>
 				</Box>
 			</div>

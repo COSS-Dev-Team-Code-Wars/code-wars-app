@@ -24,7 +24,7 @@ const signup = async (req: Request, res: Response) => {
 
   // Check if user exists
   var user = await Team.findOne({ team_name: username });
-    
+
   if (!user) {
     user = await Judge.findOne({ judge_name: username });
   }
@@ -48,9 +48,9 @@ const signup = async (req: Request, res: Response) => {
       team_name: username,
       password: password,
       members: members,
-      score: 0,
+      score: 100,
       total_points_used: 0,
-      
+
       active_buffs: [],
       activated_powerups: [],
       // applied_debuffs: [],
@@ -76,9 +76,9 @@ const signup = async (req: Request, res: Response) => {
   }
 
   let results = await newuser.save();
-    return res.send({
-      success: true,
-      results: results
+  return res.send({
+    success: true,
+    results: results
   });
 }
 
@@ -89,96 +89,96 @@ const signup = async (req: Request, res: Response) => {
  *      Object with fields success, the corresponding results, and the token if login is successful
  */
 const login = async (req: Request, res: Response) => {
-    const username = req.body.username.trim();
-    const inputPassword = req.body.password;
-    var userType = ""
-    var foundType = false;
+  const username = req.body.username.trim();
+  const inputPassword = req.body.password;
+  var userType = ""
+  var foundType = false;
 
-    // Check if user exists
-    var user = await Team.findOne({ team_name: username });
-    
-    if (user) {
-      userType = "team"
-      foundType = true;
-    } else {
-      user = await Judge.findOne({ judge_name: username });
-    }
+  // Check if user exists
+  var user = await Team.findOne({ team_name: username });
 
-    if (!foundType) {
-      if (user) {
-        userType = "judge"
-        foundType = true;
-      } else {
-        user = await Admin.findOne({ admin_name: username });
-      }
-    }
-
-    if (!foundType) {
-      if (user) {
-        userType = "admin"
-        foundType = true;
-      } else {
-        return res.send({
-          success: false,
-          results: "User does not exist"
-        });
-      }
-    }
-    
-    // Check if password is correct
-    user.comparePassword(inputPassword, (err: any, isMatch: boolean) => {
-      if (err || !isMatch) {
-        return res.send({
-          success: false,
-          results: "Wrong password"
-        })
-      }
-
-      // Create a token
-      const tokenPayload = {
-        _id: user._id
-      }
-
-      const token = jwt.sign(tokenPayload, secret1!);
-
-      // create a new copy to properly remove the password in the response 
-      let userCopy = ({...user}._doc);
-      delete userCopy["password"];
-      
-      if (userType == "team") {
-        delete userCopy["activated_powerups"];
-        delete userCopy["active_buffs"];
-        delete userCopy["debuffs_received"];
-        delete userCopy["score"];
-        delete userCopy["total_points_used"];
-      }
-
-      userCopy["usertype"] = userType;
-      return res.send({
-        success: true,
-        token: token,
-        results: userCopy
-      });
-    });
-
-    // Code block if password is not hashed or encrypted in any form
-    // if (user.password != inputPassword) {
-    //   res.send({
-    //     success: false,
-    //     results: "Wrong password"
-    //   })
-    //   return;
-    // }
-
+  if (user) {
+    userType = "team"
+    foundType = true;
+  } else {
+    user = await Judge.findOne({ judge_name: username });
   }
 
-  /*
- * Purpose: Check if user is logged in 
- * Note: This particular endpoint may not be used, just copy relevant code blocks and paste in the appropriate endpoints
- * Params (in the Request): The "authToken" cookie will be checked
- * Returns (in the Response): 
- *      Object with field isLoggedIn
- */
+  if (!foundType) {
+    if (user) {
+      userType = "judge"
+      foundType = true;
+    } else {
+      user = await Admin.findOne({ admin_name: username });
+    }
+  }
+
+  if (!foundType) {
+    if (user) {
+      userType = "admin"
+      foundType = true;
+    } else {
+      return res.send({
+        success: false,
+        results: "User does not exist"
+      });
+    }
+  }
+
+  // Check if password is correct
+  user.comparePassword(inputPassword, (err: any, isMatch: boolean) => {
+    if (err || !isMatch) {
+      return res.send({
+        success: false,
+        results: "Wrong password"
+      })
+    }
+
+    // Create a token
+    const tokenPayload = {
+      _id: user._id
+    }
+
+    const token = jwt.sign(tokenPayload, secret1!);
+
+    // create a new copy to properly remove the password in the response 
+    let userCopy = ({ ...user }._doc);
+    delete userCopy["password"];
+
+    if (userType == "team") {
+      delete userCopy["activated_powerups"];
+      delete userCopy["active_buffs"];
+      delete userCopy["debuffs_received"];
+      delete userCopy["score"];
+      delete userCopy["total_points_used"];
+    }
+
+    userCopy["usertype"] = userType;
+    return res.send({
+      success: true,
+      token: token,
+      results: userCopy
+    });
+  });
+
+  // Code block if password is not hashed or encrypted in any form
+  // if (user.password != inputPassword) {
+  //   res.send({
+  //     success: false,
+  //     results: "Wrong password"
+  //   })
+  //   return;
+  // }
+
+}
+
+/*
+* Purpose: Check if user is logged in 
+* Note: This particular endpoint may not be used, just copy relevant code blocks and paste in the appropriate endpoints
+* Params (in the Request): The "authToken" cookie will be checked
+* Returns (in the Response): 
+*      Object with field isLoggedIn
+*/
 const checkIfLoggedIn = (req: Request, res: Response) => {
   console.log(req.body);
 
@@ -236,7 +236,7 @@ const checkTokenMiddleware = (req: Request, res: Response, next: any) => {
 
     for (let i = 0; i < cookies!.length; i++) {
       cookieDict[cookies[i].split("=")[0]] = cookies[i].split("=")[1];
-    } 
+    }
     if (!cookieDict.authToken) {
       // Scenario 1: FAIL - No cookies / no authToken cookie sent
       return res.send({ isLoggedIn: false, scenario: 1 });
