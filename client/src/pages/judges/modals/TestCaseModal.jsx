@@ -8,6 +8,7 @@ import {
   List,
   ListItem,
   ListItemText,
+  Chip,
 } from "@mui/material";
 import { CustomModal } from "components";
 import { getFetch } from "utils/apiRequest";
@@ -223,6 +224,33 @@ const TestCaseModal = ({ open, setOpen, submission }) => {
         <Typography color="error">{error}</Typography>
       ) : (
         <Box sx={{ maxHeight: "250px", overflowY: "auto" }}>
+          {results.length > 0 && (() => {
+            const correctCount = results.filter(({ testCase, result }) =>
+              cleanOutput(result.stdout, testCase.expected_output) === testCase.expected_output
+            ).length;
+            const total = results.length;
+            const allRunning = results.every(({ result }) => result?.status?.description === "Running...");
+            return (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, marginBottom: "16px" }}>
+                <Typography variant="body2" sx={{ fontWeight: "bold" }}>Score:</Typography>
+                <Chip
+                  label={allRunning ? `Running... / ${total}` : `${correctCount} / ${total} test cases correct`}
+                  sx={{
+                    fontWeight: "bold",
+                    backgroundColor: allRunning
+                      ? "#6c757d"
+                      : correctCount === total
+                      ? "#28a745"
+                      : correctCount === 0
+                      ? "#dc3545"
+                      : "#fd7e14",
+                    color: "white",
+                    fontSize: "0.85rem",
+                  }}
+                />
+              </Box>
+            );
+          })()}
           <Typography variant="body1" sx={{ marginBottom: "20px" }}>
             Below are the test cases and their results:
           </Typography>
