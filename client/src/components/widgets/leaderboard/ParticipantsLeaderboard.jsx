@@ -9,25 +9,10 @@ import {
 	Typography,
 } from '@mui/material';
 
-import { CustomModal, Table } from 'components';
-import { columnsLeaderboard } from 'utils/dummyData';
+import { LeaderboardModal } from 'components';
 
 import getLeaderboard from './getLeaderboard';
 import { socketClient } from 'socket/socket';
-
-
-/**
- * Additional styling for overall leaderboard modal window.
- */
-const additionalStyles = {
-	'& .MuiDataGrid-columnHeader': {
-		fontSize: 'h2',
-		bgcolor: 'rgba(0, 0, 0, 0.1)',
-	},
-	bgcolor: 'transparent',
-	border: 'none',
-	padding: 2,
-};
 
 
 /**
@@ -120,7 +105,6 @@ const ParticipantsLeaderboard = () => {
 					{leaderboardRows.map((row, idx) => (
 						// check if row belongs to top 4
 						idx < 4 ? (
-							// if row is in top 4, display this
 							<Typography
 								key={idx}
 								sx={{
@@ -163,19 +147,11 @@ const ParticipantsLeaderboard = () => {
 			</Stack>
 
 			{/* Overall Leaderboard Modal Window */}
-			<CustomModal isOpen={open} setOpen={setOpen} windowTitle="Leaderboard">
-				<Table
-					rows={leaderboardRows}
-					columns={columnsLeaderboard}
-					hideFields={['id', 'total_points_used']}
-					additionalStyles={additionalStyles}
-					pageSize={5}
-					pageSizeOptions={[5, 10]}
-					initialState={{
-						pagination: { paginationModel: { pageSize: 5 } },
-					}}
-				/>
-			</CustomModal>
+			<LeaderboardModal
+				isOpen={open}
+				setOpen={setOpen}
+				rows={leaderboardRows}
+			/>
 		</Box>
 	);
 };

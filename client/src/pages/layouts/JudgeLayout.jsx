@@ -7,10 +7,11 @@ import { Outlet } from 'react-router-dom';
 import GeneralBackground from 'assets/GenBackground.png';
 import seal from 'assets/UPLB COSS.png';
 import {
+	AnnouncementModal,
 	CustomModal,
 	FreezeOverlay,
+	LeaderboardModal,
 	LoadingOverlay,
-	Table,
 	TopBar
 } from 'components';
 import {
@@ -48,12 +49,12 @@ const JudgeLayout = ({
 	currAnnouncements
 }) => {
 	/**
-     * State handler for overall leaderboard modal window
-     */
+	 * State handler for overall leaderboard modal window
+	 */
 	const [open, setOpen] = useState(false);
 	/**
-     * State handler for rows of overall leaderboard
-     */
+	 * State handler for rows of overall leaderboard
+	 */
 	const [leaderboardRows, setLeaderboardRows] = useState([]);
 	/**
 	 * State handler for announcement modal.
@@ -72,7 +73,7 @@ const JudgeLayout = ({
 		setLeaderboardRows(currLeaderboard);
 	}
 
-  useEffect(() => { 
+	useEffect(() => {
 		let usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
 		if (usertype == 'participant') {
 			navigate('/participant/view-all-problems');
@@ -87,17 +88,17 @@ const JudgeLayout = ({
 			setIsLoggedIn(false);
 		}
 
-		
+
 
 		fetchData();
-    
+
 	}, []);
-	
+
 	/**
 	 * Web sockets for real time update of leaderboard
 	 */
-	useEffect(() => { 
-		if(!socketClient) return;
+	useEffect(() => {
+		if (!socketClient) return;
 
 		socketClient.on('evalupdate', () => {
 			fetchData();
@@ -132,15 +133,15 @@ const JudgeLayout = ({
 	};
 
 	/**
-     * Handles opening of modal window for announcements.
-     */
+	 * Handles opening of modal window for announcements.
+	 */
 	const handleOpenAnnouncement = () => {
 		setOpenAnnouncement(!openAnnouncement);
 		setHasNewUpdate(false);
 		setLastSeenCount(currAnnouncements.length);
 	};
-  
-  
+
+
 	return (
 		<Box
 			sx={{
@@ -153,12 +154,12 @@ const JudgeLayout = ({
 			}}
 			id="commonBox"
 		>
-			{ freezeOverlay ?
+			{freezeOverlay ?
 				<div className='fOverlayScreen' style={{ zIndex: '10000' }}>
 					<FreezeOverlay />
 				</div>
 
-			// if user is logged in as judge
+				// if user is logged in as judge
 				: isLoggedIn ?
 					<Box
 						sx={{
@@ -178,83 +179,26 @@ const JudgeLayout = ({
 							handleClick={handleOpenAnnouncement}
 							hasNewUpdate={hasNewUpdate}
 						/>
-  
+
 						{/* Children */}
 						<Outlet />
 
 						{/* Overall Leaderboard Modal Window */}
-						<CustomModal isOpen={open} setOpen={setOpen} windowTitle="Leaderboard">
-							<Table
-								rows={leaderboardRows}
-								columns={columnsLeaderboard}
-								hideFields={['id', 'totalSpent']}
-								additionalStyles={additionalStyles}
-								pageSize={5}
-								pageSizeOptions={[5, 10]}
-								initialState={{
-									pagination: { paginationModel: { pageSize: 5 } },
-								}}
-								// if there are no entries yet
-								slots={{
-									noRowsOverlay: () => (
-										<Stack height="100%" alignItems="center" justifyContent="center">
-											<Typography><em>No records to display.</em></Typography>
-										</Stack>
-									)
-								}}
-							/>
-						</CustomModal>
+						<LeaderboardModal
+							isOpen={open}
+							setOpen={setOpen}
+							rows={leaderboardRows}
+						/>
 
 						{/* Announcement Modal Window */}
-						<CustomModal isOpen={openAnnouncement} setOpen={setOpenAnnouncement} windowTitle="Announcement">
-							{currAnnouncements.length > 0 ? (
-								<Table
-									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
-									columns={[{
-											field: "message", headerName: "Message", flex: 1.2, minWidth: 150,
-											renderCell: (params) => (
-											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", paddingTop: "10px" }}>
-												{params.value}
-											</div>
-											),
-										},
-										{ field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
-											renderCell: (params) => (
-												<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
-													{params.value}
-												</div>
-												),
-										}
-									]}
-									hideFields={[]}
-									additionalStyles={additionalStyles}
-									pageSize={5}
-									pageSizeOptions={[5, 10]}
-									initialState={{
-										pagination: { paginationModel: { pageSize: 5 } },
-									}}
-									getRowHeight={() => "auto"}
-									sx={{
-										height: 400, 
-										width: 600,
-										overflow: "auto",
-										'& .MuiDataGrid-columnHeader': {
-											bgcolor: 'rgba(0, 0, 0, 0.1)',
-										},
-										bgcolor: 'transparent',
-										border: 'none',
-										padding: 2,
-									}}
-								/>
-							) : (
-								<Stack height="100%" alignItems="center" justifyContent="center">
-									<Typography><em>No announcements to display.</em></Typography>
-								</Stack>
-							)}
-						</CustomModal>
+						<AnnouncementModal
+							isOpen={openAnnouncement}
+							setOpen={setOpenAnnouncement}
+							announcements={currAnnouncements}
+						/>
 					</Box>
 
-				// replace with protected page sana
+					// replace with protected page sana
 					: <LoadingOverlay />
 			}
 		</Box>

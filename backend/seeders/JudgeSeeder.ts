@@ -8,8 +8,8 @@ const Judge = mongoose.model('Judge');
 
 // ito edit niyo pag magsseed kayo ng judge
 const JUDGE_DATA = {
-    judge_name: 'judge1',
-    password: 'judgepass1'
+    judge_name: 'testjudge',
+    password: 'pw'
 };
 
 

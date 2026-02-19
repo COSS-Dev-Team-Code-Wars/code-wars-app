@@ -1,13 +1,34 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Box, Button, Link, MenuItem, Select, Stack } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import { DropdownSelect, ConfirmWindow } from "components";
+import { AllCommunityModule, themeQuartz, colorSchemeLight } from "ag-grid-community";
+import { AgGridReact, AgGridProvider } from "ag-grid-react";
+import { ConfirmWindow, FilterDropdown } from "components";
 import { getFetch, postFetch } from "utils/apiRequest";
 import { baseURL } from "utils/constants";
 import { optionsEval } from "utils/dummyData";
 import { socketClient } from "socket/socket";
 import TestCaseModal from "./modals/TestCaseModal";
 import EvaluationModal from "./modals/PartiallyCorrectModal";
+
+/* Clean white AG Grid theme */
+const gridTheme = themeQuartz.withPart(colorSchemeLight).withParams({
+  backgroundColor: "#ffffff",
+  foregroundColor: "#333333",
+  headerBackgroundColor: "#fafafa",
+  headerFontWeight: 700,
+  headerTextColor: "#707070",
+  oddRowBackgroundColor: "#fafafa",
+  rowHoverColor: "rgba(0, 0, 0, 0.04)",
+  borderColor: "rgba(0, 0, 0, 0.07)",
+  accentColor: "#1976d2",
+  fontSize: 14,
+  headerFontSize: 13,
+  spacing: 8,
+  wrapperBorderRadius: 10,
+  columnBorder: false,
+});
+
+const modules = [AllCommunityModule];
 
 const ViewSubmissionsPage = () => {
   const [submissions, setSubmissions] = useState([]);
@@ -18,65 +39,132 @@ const ViewSubmissionsPage = () => {
   const [selectedProblem, setSelectedProblem] = useState("");
   const [isRunTestModalOpen, setIsRunTestModalOpen] = useState(false);
   const [isEvaluateModalOpen, setIsEvaluateModalOpen] = useState(false);
-  const columns = [
-    { field: "id", headerName: "ID", width: 75 },
-    { field: "team_name", headerName: "Team Name", width: 200 },
-    { field: "problem_title", headerName: "Problem Title", width: 300 },
-    { field: "submitted_at", headerName: "Submitted At", width: 150 },
-    {
-      field: "uploadedFile",
-      headerName: "Uploaded File",
-      width: 300,
-      renderCell: (cell) => {
-        return (
-          <Link target="_blank" download onClick={() => handleDownload(cell)}>
-            {cell.value}
-          </Link>
-        );
-      },
-    },
-    {
-      field: "testCases",
-      headerName: "Test Cases",
-      width: 150,
-      renderCell: (cell) => {
-        return (
-          <Button variant="contained" color="primary" onClick={() => handleClickRunTest(cell.row)}>
-            Run Tests
-          </Button>
-        );
-      },
-    },
-    {
-      field: "evaluation",
-      headerName: "Evaluation",
-      width: 200,
-      renderCell: (cell) => {
-        return (
-          <Select
-            value={cell.value}
-            onChange={(e) => handleTypeChange(cell.row, e.target.value)}
-            sx={{ border: "0px", outline: "none", "& .MuiSelect-select": { padding: "10px 14px" }, "&:focus": { border: "none" } }}
-            fullWidth
-          >
-            {optionsEval.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
-              </MenuItem>
-            ))}
-          </Select>
-        );
-      },
-    },
-    { field: "judge", headerName: "Judge", width: 250 },
-  ];
 
-  const handleClickRunTest = (submission) => {
-    setIsRunTestModalOpen(true);
-    setSelectedSubmission(submission);
-  };
+  // ── Cell Renderers ───────────────────────────────────────────────
 
-  // Memoize loadSubmissions to avoid re-creating it on every render
+  const UploadedFileCellRenderer = useCallback((params) => {
+    const handleDownload = () => {
+      const blob = new Blob([params.data.content]);
+      const elem = window.document.createElement("a");
+      elem.href = window.URL.createObjectURL(blob);
+      elem.download = params.value;
+      elem.style.display = "none";
+      document.body.appendChild(elem);
+      elem.click();
+      document.body.removeChild(elem);
+      window.URL.revokeObjectURL(elem.href);
+    };
+    return (
+      <Link
+        component="button"
+        onClick={handleDownload}
+        sx={{ color: "#1976d2", textDecoration: "underline", cursor: "pointer", fontSize: "inherit" }}
+      >
+        {params.value}
+      </Link>
+    );
+  }, []);
+
+  const TestCasesCellRenderer = useCallback((params) => {
+    return (
+      <Button
+        variant="contained"
+        size="small"
+        color="primary"
+        onClick={() => {
+          setIsRunTestModalOpen(true);
+          setSelectedSubmission(params.data);
+        }}
+        sx={{
+          textTransform: "none",
+          fontWeight: 600,
+          borderRadius: "8px",
+          px: 2,
+          py: 0.5,
+          fontSize: "0.8rem",
+        }}
+      >
+        Run Tests
+      </Button>
+    );
+  }, []);
+
+  const EvaluationCellRenderer = useCallback(
+    (params) => {
+      const handleChange = (e) => {
+        handleTypeChange(params.data, e.target.value);
+      };
+      return (
+        <Select
+          value={params.value || ""}
+          onChange={handleChange}
+          size="small"
+          fullWidth
+          sx={{
+            fontSize: "0.85rem",
+            borderRadius: "8px",
+            "& .MuiSelect-select": { padding: "8px 14px" },
+          }}
+        >
+          {optionsEval.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </Select>
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  // ── Column Definitions ──────────────────────────────────────────
+
+  const columnDefs = useMemo(
+    () => [
+      { field: "id", headerName: "ID", width: 90, sortable: true },
+      { field: "team_name", headerName: "Team Name", minWidth: 160, flex: 1, sortable: true, filter: true },
+      { field: "problem_title", headerName: "Problem Title", minWidth: 200, flex: 1.5, sortable: true, filter: true },
+      { field: "submitted_at", headerName: "Submitted At", width: 150, sortable: true },
+      {
+        field: "uploadedFile",
+        headerName: "Uploaded File",
+        minWidth: 200,
+        flex: 1,
+        cellRenderer: UploadedFileCellRenderer,
+      },
+      {
+        field: "testCases",
+        headerName: "Test Cases",
+        width: 150,
+        cellRenderer: TestCasesCellRenderer,
+        sortable: false,
+        filter: false,
+      },
+      {
+        field: "evaluation",
+        headerName: "Evaluation",
+        width: 200,
+        cellRenderer: EvaluationCellRenderer,
+        sortable: false,
+        filter: false,
+      },
+      { field: "judge", headerName: "Judge", minWidth: 160, flex: 1 },
+    ],
+    [UploadedFileCellRenderer, TestCasesCellRenderer, EvaluationCellRenderer]
+  );
+
+  const defaultColDef = useMemo(
+    () => ({
+      resizable: true,
+      sortable: false,
+      filter: false,
+    }),
+    []
+  );
+
+  // ── Data Loading ────────────────────────────────────────────────
+
   const loadSubmissions = useCallback(async () => {
     const submissions = await getFetch(`${baseURL}/getallsubmissions`);
     const transformedData = submissions.results.map(({ _id, timestamp, filename, judge_name, ...rest }) => ({
@@ -92,7 +180,6 @@ const ViewSubmissionsPage = () => {
     setProblemsList([...new Set(transformedData.map((e) => e.problem_title))]);
   }, []);
 
-  // Initial load
   useEffect(() => {
     loadSubmissions();
   }, [loadSubmissions]);
@@ -100,34 +187,15 @@ const ViewSubmissionsPage = () => {
   // Socket listeners for real-time updates
   useEffect(() => {
     if (!socketClient) return;
-
-    // Listen for new submissions
-    socketClient.on('newupload', () => {
-      loadSubmissions();
-    });
-
-    // Listen for evaluation updates from other judges
-    socketClient.on('evalupdate', () => {
-      loadSubmissions();
-    });
-
+    socketClient.on("newupload", () => loadSubmissions());
+    socketClient.on("evalupdate", () => loadSubmissions());
     return () => {
-      socketClient.off('newupload');
-      socketClient.off('evalupdate');
+      socketClient.off("newupload");
+      socketClient.off("evalupdate");
     };
   }, [loadSubmissions]);
 
-  const handleDownload = (cell) => {
-    const blob = new Blob([cell.row.content]);
-    const elem = window.document.createElement("a");
-    elem.href = window.URL.createObjectURL(blob);
-    elem.download = cell.row.uploadedFile;
-    elem.style.display = "none";
-    document.body.appendChild(elem);
-    elem.click();
-    document.body.removeChild(elem);
-    window.URL.revokeObjectURL(elem.href);
-  };
+  // ── Handlers ────────────────────────────────────────────────────
 
   const handleTypeChange = async (submission, evaluation) => {
     if (evaluation === "Partially Correct") {
@@ -153,7 +221,7 @@ const ViewSubmissionsPage = () => {
   };
 
   const updateEvaluationOfSubmission = (id, evaluation) => {
-    setSubmissions(submissions.map((row) => (row.id === id ? { ...row, evaluation } : row)));
+    setSubmissions((prev) => prev.map((row) => (row.id === id ? { ...row, evaluation } : row)));
   };
 
   const filteredRows = useMemo(() => {
@@ -164,56 +232,73 @@ const ViewSubmissionsPage = () => {
     });
   }, [submissions, selectedTeam, selectedProblem]);
 
-  return (
-    <Stack spacing={5} sx={{ mt: 5, mx: { xs: 5, md: 8, lg: 15 } }}>
-      {/* Dropdown selects for team name and problem title */}
-      <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 5 }}>
-        <DropdownSelect
-          isDisabled={false}
-          label="Team Name"
-          minWidth="28%"
-          variant="filled"
-          options={teamsList}
-          handleChange={(e) => setSelectedTeam(e.target.value)}
-          value={selectedTeam}
-        >
-          <MenuItem value="">
-            <em>All</em>
-          </MenuItem>
-        </DropdownSelect>
+  // Row class for checked submissions
+  const getRowClass = useCallback((params) => {
+    return params.data?.status === "checked" ? "submission-checked" : "";
+  }, []);
 
-        <DropdownSelect
-          isDisabled={false}
-          minWidth="38%"
-          variant="filled"
+  // ── Render ──────────────────────────────────────────────────────
+
+  return (
+    <Stack spacing={3} sx={{ mt: 4, mx: { xs: 3, md: 6, lg: 12 }, mb: 4, height: "calc(100vh - 140px)" }}>
+      {/* Dropdown filters */}
+      <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2 }}>
+        <FilterDropdown
+          label="Team Name"
+          options={teamsList}
+          value={selectedTeam}
+          onChange={setSelectedTeam}
+        />
+        <FilterDropdown
           label="Problem Title"
           options={problemsList}
-          handleChange={(e) => setSelectedProblem(e.target.value)}
           value={selectedProblem}
-        >
-          <MenuItem value="">
-            <em>All</em>
-          </MenuItem>
-        </DropdownSelect>
-      </Box>
-      {submissions && (
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          pageSize={10}
-          density="comfortable"
-          columnHeaderHeight={45}
-          pageSizeOptions={[10, 15, 20]}
-          autoHeight
-          disableColumnSelector
-          disableColumnFilter
-          checkboxSelection={false}
-          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
-          style={{ backgroundColor: "#FFFFFF", paddingX: 2 }}
-          sx={commonStyles}
-          getRowClassName={(params) => (params.row.status === 'checked' ? 'submission-checked' : '')}
+          onChange={setSelectedProblem}
         />
-      )}
+      </Box>
+
+      {/* AG Grid Table — white container */}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          borderRadius: "10px",
+          overflow: "hidden",
+          bgcolor: "#ffffff",
+          boxShadow: "0 2px 12px rgba(0, 0, 0, 0.1)",
+          /* Checked submission rows */
+          "& .submission-checked": {
+            backgroundColor: "#b7f0c7 !important",
+            color: "#0b5a2e",
+            fontWeight: 600,
+          },
+          "& .submission-checked:hover": {
+            backgroundColor: "#9ae6b4 !important",
+          },
+        }}
+      >
+        <AgGridProvider modules={modules}>
+          <AgGridReact
+            theme={gridTheme}
+            rowData={filteredRows}
+            columnDefs={columnDefs}
+            defaultColDef={defaultColDef}
+            pagination={true}
+            paginationPageSize={15}
+            paginationPageSizeSelector={[10, 15, 20, 50]}
+            animateRows={true}
+            rowSelection="single"
+            getRowClass={getRowClass}
+            suppressCellFocus={true}
+            domLayout="normal"
+            overlayNoRowsTemplate={
+              '<div style="padding:40px;text-align:center;color:#999;font-size:1.1rem;">No submissions yet</div>'
+            }
+          />
+        </AgGridProvider>
+      </Box>
+
+      {/* Modals */}
       <TestCaseModal open={isRunTestModalOpen} setOpen={setIsRunTestModalOpen} submission={selectedSubmission} />
       <EvaluationModal
         open={isEvaluateModalOpen}
@@ -223,50 +308,6 @@ const ViewSubmissionsPage = () => {
       />
     </Stack>
   );
-};
-
-const commonStyles = {
-  // modify cell typography
-  ".MuiDataGrid-cell": {
-    fontFamily: "Inter",
-    fontSize: { xs: "0.93rem", xl: "0.98rem" },
-    fontWeight: "400",
-    borderLeft: "none",
-    borderRight: "none",
-    borderTop: "none",
-    borderBottom: "1px solid rgba(0, 0, 0, 0.07)",
-  },
-  // make column header separator invisible
-  ".MuiDataGrid-columnSeparator": { display: "none" },
-  // remove cell focus on selection
-  ".MuiDataGrid-cell:focus": { outline: "none" },
-  // make cursor a pointer on all rows
-  ".MuiDataGrid-row:hover": { cursor: "pointer" },
-  // Change the color and width of the line
-  ".MuiDataGrid-footerContainer": { borderTop: "none" },
-  // Modify column header font styling
-  ".MuiDataGrid-columnHeaderTitle": {
-    fontWeight: "700",
-    fontFamily: "Poppins",
-    color: "#707070",
-    fontSize: { xs: ".93rem", xl: ".98rem" },
-  },
-  backgroundColor: "#fff",
-  paddingX: 2,
-  // style for checked submissions (more prominent green)
-  '& .submission-checked': {
-    backgroundColor: '#b7f0c7',
-    color: '#0b5a2e',
-    fontWeight: 600,
-  },
-  '& .submission-checked .MuiDataGrid-cell': {
-    backgroundColor: '#b7f0c7',
-    color: '#0b5a2e',
-    fontWeight: 600,
-  },
-  '& .submission-checked .MuiDataGrid-cell a': {
-    color: '#0b5a2e',
-  },
 };
 
 export default ViewSubmissionsPage;

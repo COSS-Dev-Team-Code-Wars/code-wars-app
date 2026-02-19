@@ -323,7 +323,7 @@ function CodeEditor() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", minHeight: `${CODE_EDITOR_HEIGHT}px` }}>
       <div style={{ marginBottom: "10px" }}>
-        <label htmlFor="selectPL" style={{ marginRight: "10px", color: "#fff", fontFamily: "Poppins" }}>
+        <label htmlFor="selectPL" style={{ marginRight: "10px", color: "#000000ff", fontFamily: "Poppins" }}>
           Select Language:
         </label>
         <select id="selectPL" value={language.value} onChange={handleChangePL} style={{ padding: "5px", borderRadius: "10px", fontFamily: "Poppins" }}>

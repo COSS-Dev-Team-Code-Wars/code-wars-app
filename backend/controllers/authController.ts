@@ -42,7 +42,7 @@ const signup = async (req: Request, res: Response) => {
 
   var newuser;
   if (intendedUserType == "team") {
-    const members = req.body.members.trim();
+    const members = req.body.members?.trim() ?? '';
 
     newuser = new Team({
       team_name: username,

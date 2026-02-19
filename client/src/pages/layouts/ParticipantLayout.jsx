@@ -22,8 +22,10 @@ import GeneralBackground from 'assets/GenBackground.png';
 import seal from 'assets/UPLB COSS.png';
 import {
 	BuyPowerUpsPopover,
+	AnnouncementModal,
 	CustomModal,
 	FreezeOverlay,
+	LeaderboardModal,
 	LoadingOverlay,
 	ParticipantsLeaderboard,
 	RoundTimer,
@@ -562,10 +564,6 @@ const ParticipantLayout = ({
 									additionalButtonIcon={<ListIcon />}
 									additionalButtonText="Submission Log"
 									handleAdditionalButton={handleSubmissionLog}
-									startIcon={<ShoppingBasketIcon />}
-									buttonText="BUY POWER-UP"
-									disabledState={roundsDisablePowerUps.includes(currRound.toLowerCase()) && !isBuyImmunityChecked}
-									handleButton={handleViewPowerUps}
 									handleClick={handleOpenAnnouncement}
 									hasNewUpdate={hasNewUpdate}
 								/>
@@ -599,6 +597,10 @@ const ParticipantLayout = ({
 										}
 										title={problemTitle}
 										subtitle={problemSubtitle}
+										additionalButtonIcon={<ShoppingBasketIcon />}
+										additionalButtonText="BUY POWER-UP"
+										handleAdditionalButton={handleViewPowerUps}
+										additionalButtonDisabled={roundsDisablePowerUps.includes(currRound.toLowerCase()) && !isBuyImmunityChecked}
 										buttonText="UPLOAD SUBMISSION"
 										startIcon={<FileUploadIcon />}
 										handleButton={handleButton}
@@ -718,7 +720,7 @@ const ParticipantLayout = ({
 						</Stack>
 
 						{/* Buy Power-ups Popover */}
-						{location.pathname === '/participant/view-all-problems' ?
+						{location.pathname === '/participant/view-specific-problem' ?
 							<ClickAwayListener mouseEvent="onMouseUp" onClickAway={handleClickAway}>
 								{/* Wrapping button and popover in Box for clickaway ref */}
 								<Box>
@@ -737,65 +739,18 @@ const ParticipantLayout = ({
 						}
 
 						{/* Overall Leaderboard Modal Window */}
-						<CustomModal isOpen={openLeaderboard} setOpen={setOpenLeaderboard} windowTitle="Leaderboard">
-							<Table
-								rows={leaderboardRows}
-								columns={columnsLeaderboard}
-								hideFields={['id', 'total_points_used']}
-								additionalStyles={additionalStyles}
-								pageSize={5}
-								pageSizeOptions={[5, 10]}
-								initialState={{
-									pagination: { paginationModel: { pageSize: 5 } },
-								}}
-								// if there are no entries yet
-								slots={{
-									noRowsOverlay: () => (
-										<Stack height="100%" alignItems="center" justifyContent="center">
-											<Typography><em>No records to display.</em></Typography>
-										</Stack>
-									)
-								}}
-							/>
-						</CustomModal>
+						<LeaderboardModal
+							isOpen={openLeaderboard}
+							setOpen={setOpenLeaderboard}
+							rows={leaderboardRows}
+						/>
 
 						{/* Announcement Modal Window */}
-						<CustomModal isOpen={openAnnouncement} setOpen={setOpenAnnouncement} windowTitle="Announcement">
-							{currAnnouncements.length > 0 ? (
-								<Table
-									rows={currAnnouncements.map((item, index) => ({ ...item, id: index }))}
-									columns={[{
-										field: "message", headerName: "Message", flex: 1, minWidth: 150,
-										renderCell: (params) => (
-											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word", paddingTop: "10px" }}>
-												{params.value}
-											</div>
-										),
-									},
-									{
-										field: "time", headerName: "Time Sent", flex: 0.5, minWidth: 100,
-										renderCell: (params) => (
-											<div style={{ whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "break-word" }}>
-												{params.value}
-											</div>
-										),
-									}
-									]}
-									hideFields={[]}
-									additionalStyles={additionalStyles}
-									pageSize={5}
-									pageSizeOptions={[5, 10]}
-									initialState={{
-										pagination: { paginationModel: { pageSize: 5 } },
-									}}
-									getRowHeight={() => "auto"}
-								/>
-							) : (
-								<Stack height="100%" alignItems="center" justifyContent="center">
-									<Typography><em>No announcements to display.</em></Typography>
-								</Stack>
-							)}
-						</CustomModal>
+						<AnnouncementModal
+							isOpen={openAnnouncement}
+							setOpen={setOpenAnnouncement}
+							announcements={currAnnouncements}
+						/>
 
 						{/* Submit Modal Window */}
 						{location.pathname === '/participant/view-specific-problem' ?
