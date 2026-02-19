@@ -206,6 +206,10 @@ const PowerUpDetails = ({ type, handleReturn, powerUp }) => {
 						ErrorWindow.fire({
 							text: `You have an active buff ${powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}. Stacking of buffs is not allowed!`
 						});
+					} else if (scenario === 'has_debuff') {
+						ErrorWindow.fire({
+							text: `You cannot buy Immunity while your team has an active debuff!`
+						});
 					} else if (scenario === 'insufficient_funds') {
 						ErrorWindow.fire({
 							text: `You have insufficient points to buy ${powerUp.code === 'immune' ? powerUp.name + " " + Object.keys(powerUp.tier)[0] : powerUp.name}!`

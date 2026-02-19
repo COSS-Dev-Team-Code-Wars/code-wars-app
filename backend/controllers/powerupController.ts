@@ -112,12 +112,17 @@ export const get_available_powerups = async (req: Request, res: Response) => {
 
       // Check availability of Dispel and Immunity 4 (due to % costs)
       for (const powerup of availablePowerups) {
-        if (powerup.code === 'dispel') {
+        if (powerup.code === 'immune' && team.debuffs_received.length > 0) {
+          // Cannot buy immunity while under an active debuff — remove from available list
+          const index = availablePowerups.indexOf(powerup);
+          availablePowerups.splice(index, 1);
+          continue;
+        } else if (powerup.code === 'dispel') {
           const index = availablePowerups.indexOf(powerup);
           // Check if there are debuffs that can be dispelled
           if (team.debuffs_received.length === 0) {
             availablePowerups.splice(index, 1);
-          } else {
+          } else { // eslint-disable-next-line no-else-return
             let isScoreEnough = false;
 
             // Check if the points of the team is sufficient to buy Dispel (120% of the debuff's cost)
@@ -321,6 +326,13 @@ export const buy_powerup = async (req: Request, res: Response) => {
             });
           }
         } else if (['immune', 'unchain'].includes(powerup.code)) { // Check if it is really a buff aside from dispel
+          // Cannot buy immunity while under an active debuff
+          if (powerup.code === 'immune' && team.debuffs_received.length > 0) {
+            return res.send({
+              success: false,
+              message: 'You cannot buy Immunity while you have an active debuff on your team.',
+            });
+          }
           if (powerup.code == 'immune' && tier_no == '4') {
             var cost: number = powerup.tier[tier_no].cost + (0.1 * team.score);
           } else {

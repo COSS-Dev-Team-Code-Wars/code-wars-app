@@ -77,6 +77,8 @@ io.on("connection", (socket: any) => {
       // check if buff is existing to prevent stacking of buffs
       if (team.active_buffs.some((buff: any) => buff._id == powerUp._id)) {
         socket.emit("scenarioCheckerBuff", 'existing');
+      } else if (powerUp.code === 'immune' && team.debuffs_received.length > 0) { // cannot buy immunity while under a debuff
+        socket.emit("scenarioCheckerBuff", 'has_debuff');
       } else if ((powerUp.code === 'immune' && tier_no == '4' && team.score < 0.1 * team.score + powerUp.tier[tier_no].cost)) { // check if it affords immunity tier 4
         socket.emit("scenarioCheckerBuff", 'insufficient_funds');
       } else if (team.score < powerUp.tier[tier_no].cost) { // check if it affords other buffs
