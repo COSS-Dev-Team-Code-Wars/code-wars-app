@@ -200,15 +200,15 @@ const ViewSubmissionsPage = () => {
         <DataGrid
           rows={filteredRows}
           columns={columns}
-          pageSize={5}
+          pageSize={10}
           density="comfortable"
           columnHeaderHeight={45}
-          pageSizeOptions={[5, 8, 10]}
+          pageSizeOptions={[10, 15, 20]}
           autoHeight
           disableColumnSelector
           disableColumnFilter
           checkboxSelection={false}
-          initialState={{ pagination: { paginationModel: { pageSize: 5 } } }}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
           style={{ backgroundColor: "#FFFFFF", paddingX: 2 }}
           sx={commonStyles}
           getRowClassName={(params) => (params.row.status === 'checked' ? 'submission-checked' : '')}
