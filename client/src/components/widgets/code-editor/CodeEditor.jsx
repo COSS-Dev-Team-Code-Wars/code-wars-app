@@ -372,7 +372,7 @@ function CodeEditor() {
           color="secondary"
           size="large"
           onClick={handleRunCustomInput}
-          disabled={!code || isRunning || !(['easy', 'medium'].includes(problemDifficulty))}
+          disabled={!code || isRunning || !(['easy', 'medium', 'wager'].includes(problemDifficulty))}
         >
           {isRunning ? 'Running...' : 'Run'}
         </Button>
