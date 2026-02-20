@@ -138,7 +138,7 @@ const TopBar = ({
 						size="large"
 						disabled={additionalButtonDisabled}
 						onClick={handleAdditionalButton}
-						startIcon={additionalButtonIcon ? <>{additionalButtonIcon}</> : <></>}
+						startIcon={onlyLargeScreen ? undefined : (additionalButtonIcon ? <>{additionalButtonIcon}</> : <></>)}
 						sx={{
 							minWidth: 30,
 							'&:hover': {
@@ -151,9 +151,13 @@ const TopBar = ({
 							}
 						}}
 					>
-						{
-							onlyLargeScreen ? null : <>{additionalButtonText}</>
-						}
+						{onlyLargeScreen ? (
+							<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+								{additionalButtonIcon}
+							</Box>
+						) : (
+							additionalButtonText
+						)}
 						</Button>
 					)}
 
@@ -164,7 +168,7 @@ const TopBar = ({
 						size="large"
 						disabled={disabledState}
 						onClick={handleButton}
-						startIcon={startIcon ? <>{startIcon}</> : <></>}
+						startIcon={onlyLargeScreen ? undefined : (startIcon ? <>{startIcon}</> : <></>)}
 						sx={{
 							minWidth: 30,
 							'&:hover': {
@@ -179,9 +183,13 @@ const TopBar = ({
 
 						}}
 					>
-						{
-							onlyLargeScreen ? null : <>{buttonText}</>
-						}
+						{onlyLargeScreen ? (
+							<Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
+								{startIcon}
+							</Box>
+						) : (
+							buttonText
+						)}
 						</Button>
 					)}
 

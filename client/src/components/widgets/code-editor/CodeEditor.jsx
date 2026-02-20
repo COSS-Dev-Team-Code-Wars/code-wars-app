@@ -333,11 +333,9 @@ function CodeEditor() {
     } finally {
       setIsRunning(false);
     }
-  };
-
-  const CODE_EDITOR_HEIGHT = 550;
+  };  const CODE_EDITOR_HEIGHT = 550;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", minHeight: `${CODE_EDITOR_HEIGHT}px` }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "100%", minHeight: `${CODE_EDITOR_HEIGHT}px`, overflow: "hidden", boxSizing: "border-box" }}>
       <div style={{ marginBottom: "10px" }}>
         <label htmlFor="selectPL" style={{ marginRight: "10px", color: "#000000ff", fontFamily: "Poppins" }}>
           Select Language:
@@ -350,8 +348,8 @@ function CodeEditor() {
           ))}
         </select>
       </div>
-      <div className="container_editor_area" style={{ height: `${CODE_EDITOR_HEIGHT - 200}px` }}>
-        <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className={`container__editor${isFlipped && !isImmune ? ' flipped' : ''}`} onKeyDown={handleFrostyHandsKeyDown} />
+      <div className="container_editor_area" style={{ height: `${CODE_EDITOR_HEIGHT - 200}px`, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflowX: "hidden", overflowY: "auto" }}>
+        <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className={`container__editor${isFlipped && !isImmune ? ' flipped' : ''}`} onKeyDown={handleFrostyHandsKeyDown} style={{ overflowX: "hidden", wordWrap: "break-word" }} />
       </div>
       <StatusModal
         isOpen={isSubmissionError}

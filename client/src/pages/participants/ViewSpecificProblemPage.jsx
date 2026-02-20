@@ -11,19 +11,53 @@ const ViewSpecificProblemPage = () => {
 	/**
 	 * Consuming context needed for the page
 	 */
-	const { problemDesc, sampleTestCases, fetchContent } = useOutletContext();
-
+	const { problemDesc, sampleTestCases, fetchContent, teamInfo } = useOutletContext();
 	useEffect(() => {
 		fetchContent();
-	}, []);
-	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: "25px", justifyContent: "space-between", minHeight: "100%", width: "100%", padding: "20px 40px 20px 0px" }}>
-			<div style={{ display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden", flex: "0 1 auto" }}>
+	}, []);	return (
+		<Box 
+			sx={{ 
+				display: "flex", 
+				flexDirection: "column", 
+				gap: "25px", 
+				justifyContent: "space-between", 
+				minHeight: "100%", 
+				width: "100%", 
+				maxWidth: "100%",
+				overflow: "hidden",
+				boxSizing: "border-box",
+				padding: { 
+					xs: "15px 20px 15px 20px",  // mobile
+					sm: "20px 30px 20px 20px",   // small tablets
+					md: "20px 40px 20px 30px",   // medium screens
+					lg: "20px 40px 20px 20px"     // large screens
+				}
+			}}		>
+			{/* Header section with Description title and Current Score */}
+			<Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
 				<Typography variant="h5" color="white.main" sx={{ fontFamily: "Poppins" }}>
 					Description
 				</Typography>
-				<Box sx={{ padding: 3, borderRadius: 4, backgroundColor: "#fff", maxHeight: "400px" }} style={{ display: "flex", flexDirection: "column", overflowY: "auto" }}>
-					<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+				
+				{/* Team Score - matching ViewAllProblemsPage style */}
+				<Typography
+					sx={{
+						color: '#fff',
+						display: 'flex',
+						fontSize: { xs: '1rem', lg: '1.15rem' },
+						alignItems: 'center',
+					}}
+				>
+					<Box sx={{ display: 'flex', gap: 2 }}>
+						<span style={{ fontWeight: '500' }}>Current Score:</span>
+						<span style={{ fontWeight: '300' }}>{teamInfo?.score || 0}</span>
+					</Box>
+				</Typography>
+			</Box>
+
+			<div style={{ display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden", flex: "0 1 auto", width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
+				<Box sx={{ padding: 3, borderRadius: 4, backgroundColor: "#fff", maxHeight: "400px", width: "100%", maxWidth: "100%", boxSizing: "border-box" }} style={{ display: "flex", flexDirection: "column", overflowY: "auto", overflowX: "hidden" }}>
+					<div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "100%", boxSizing: "border-box", wordWrap: "break-word", overflowWrap: "break-word" }}>
 						<Typography
 							variant="body1"
 							paragraph
@@ -32,10 +66,9 @@ const ViewSpecificProblemPage = () => {
 							{problemDesc}
 						</Typography>
 					</div>
-				</Box>
-			</div>
+				</Box>			</div>
 			<CodeEditor />
-		</div>
+		</Box>
 	);
 };
 

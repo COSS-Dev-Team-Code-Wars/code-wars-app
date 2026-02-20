@@ -1,7 +1,11 @@
 .container_editor_area {
   tab-size: 2ch;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   height: 100%;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .container__editor {
@@ -14,8 +18,14 @@
   font-size: 14px;
   font-family: 'Fira code', 'Fira Mono', Consolas, Menlo, Courier, monospace;
   min-height: 100%;
+  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   transition: transform 0.5s ease;
+  overflow-x: hidden;
+  overflow-y: auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .container__editor.flipped {
@@ -24,6 +34,12 @@
 
 .container__editor textarea {
   outline: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 
