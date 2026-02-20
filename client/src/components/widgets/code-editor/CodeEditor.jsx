@@ -14,7 +14,7 @@ import "prismjs/components/prism-go";
 import "prismjs/components/prism-javascript";
 import { Button, Typography } from "@mui/material";
 import { postFetch, getFetch } from "utils/apiRequest";
-import { CustomModal } from "components";
+import { CustomModal, StatusModal } from "components";
 import judge0 from "utils/judge0";
 
 const programmingLanguages = [
@@ -337,24 +337,20 @@ function CodeEditor() {
       <div className="container_editor_area" style={{ height: `${CODE_EDITOR_HEIGHT - 200}px` }}>
         <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className={`container__editor${isFlipped && !isImmune ? ' flipped' : ''}`} onKeyDown={handleFrostyHandsKeyDown} />
       </div>
-      <CustomModal isOpen={isSubmissionError} windowTitle="Submission Error">
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
-          <p>
-            The system encountered an error while processing your submission. Please try submitting again. If the error continues, contact an usher or watcher for assistance.
-          </p>
-          <Button style={{ alignSelf: "end" }} variant="contained" color="primary" size="large" onClick={() => setIsSubmissionError(false)}>
-            OK
-          </Button>
-        </div>
-      </CustomModal>
-      <CustomModal isOpen={isSubmissionSuccess} windowTitle="Submission Success">
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: "500px" }}>
-          <p>Your code has been successfully submitted!</p>
-          <Button style={{ alignSelf: "center" }} variant="contained" color="primary" size="large" onClick={() => setIsSubmissionSuccess(false)}>
-            OK
-          </Button>
-        </div>
-      </CustomModal>
+      <StatusModal
+        isOpen={isSubmissionError}
+        setOpen={setIsSubmissionError}
+        variant="error"
+        title="Submission Error"
+        message="The system encountered an error while processing your submission. Please try submitting again. If the error continues, contact an usher or watcher for assistance."
+      />
+      <StatusModal
+        isOpen={isSubmissionSuccess}
+        setOpen={setIsSubmissionSuccess}
+        variant="success"
+        title="Submission Successful"
+        message="Your code has been successfully submitted!"
+      />
       <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px' }}>
         <Button
           style={{ alignSelf: "flex-start" }}

@@ -50,11 +50,11 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
   const presentDbIds = useRef([]);
 
   const renderEvalEditInputCell = (params) => {
-      return <EvalEditInputCell props={params} submissionsList={submissionsList} setSubmissionsList={setSubmissionsList} subListRef={subListRef} />;
+    return <EvalEditInputCell props={params} submissionsList={submissionsList} setSubmissionsList={setSubmissionsList} subListRef={subListRef} />;
   };
-/**
-   * State handler for team dropdown select
-   */
+  /**
+     * State handler for team dropdown select
+     */
   const [selectedTeam, setSelectedTeam] = useState('');
   /**
    * State handler for problem title dropdown select
@@ -66,8 +66,8 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
   const [options, setOptions] = useState([]);
 
   const {
-		teamInfo
-	} = useOutletContext();
+    teamInfo
+  } = useOutletContext();
 
   useEffect(() => {
     console.log(submissionsList);
@@ -79,10 +79,10 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 
   useEffect(() => {
     if (!fetchAllPrevious.current) {
-        fetchAllPrevious.current = true;
-        getSubmissions();
+      fetchAllPrevious.current = true;
+      getSubmissions();
     }
-}, [isLoggedIn]); 
+  }, [isLoggedIn]);
 
   /**
    * Handles on click event on submitted file for a particular submission entry.
@@ -126,16 +126,16 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
   /**
    * Rendering cells dropdown selects for uploaded file and evaluation column of submission table
    */
-  const modifiedSubmissionColumns = columnsSubmissions.filter((obj) => 
+  const modifiedSubmissionColumns = columnsSubmissions.filter((obj) =>
     ['id', 'problemTitle', 'submittedAt', 'uploadedFile'].includes(obj.field)
   ).map((obj) => {
     if (obj.field === 'evaluation') {
-          return {
-            ...obj,
-            renderEditCell: renderEvalEditInputCell,
-            renderCell: renderEval,
-          };
-        }
+      return {
+        ...obj,
+        renderEditCell: renderEvalEditInputCell,
+        renderCell: renderEval,
+      };
+    }
     if (obj.field === 'uploadedFile') {
       return {
         ...obj,
@@ -175,23 +175,23 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
   */
   const getFilteredRows = (rowsSubmissions) => {
     // will hold the filtered rows
-		let temp = [];
+    let temp = [];
 
-		if (selectedProblem === '') return rowsSubmissions;
-		
-		if (selectedProblem != '') {
-				rowsSubmissions.filter((row) => {
-					// if problemTitle matches selectedProblem
-					if (row.problemTitle === selectedProblem) {
-						// If matched row is not yet in temp2, push to temp
-						if (!temp.find(obj => obj.id === row.id)) {
-							temp.push(row);
-						}
-					}
-				});
-				return temp;
-		}
-		return temp;
+    if (selectedProblem === '') return rowsSubmissions;
+
+    if (selectedProblem != '') {
+      rowsSubmissions.filter((row) => {
+        // if problemTitle matches selectedProblem
+        if (row.problemTitle === selectedProblem) {
+          // If matched row is not yet in temp2, push to temp
+          if (!temp.find(obj => obj.id === row.id)) {
+            temp.push(row);
+          }
+        }
+      });
+      return temp;
+    }
+    return temp;
   };
 
   /**
@@ -206,79 +206,80 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
       //console.log("socketClient is present")
     }
 
-    socketClient.on('newupload', (arg)=> {
-			if (!presentDbIds.current.includes(arg._id)) {
-				presentDbIds.current.push(arg._id);
+    socketClient.on('newupload', (arg) => {
+      if (!presentDbIds.current.includes(arg._id)) {
+        presentDbIds.current.push(arg._id);
 
-				let newsubmission = {};
-				newsubmission.id = arg.display_id;
-				newsubmission.teamName = arg.team_name;
-				newsubmission.problemTitle = arg.problem_title;
-				newsubmission.submittedAt = new Date(arg.timestamp).toLocaleTimeString();
-				newsubmission.uploadedFile = arg.filename;
-				newsubmission.evaluation = arg.evaluation;
-				newsubmission.checkedBy = arg.judge_name;
-				newsubmission.content = arg.content,
-				newsubmission.possible_points = arg.possible_points,
-				newsubmission.dbId = arg._id;
-				newsubmission.totalCases = arg.total_test_cases;
+        let newsubmission = {};
+        newsubmission.id = arg.display_id;
+        newsubmission.teamName = arg.team_name;
+        newsubmission.problemTitle = arg.problem_title;
+        newsubmission.submittedAt = new Date(arg.timestamp).toLocaleTimeString();
+        newsubmission.uploadedFile = arg.filename;
+        newsubmission.evaluation = arg.evaluation;
+        newsubmission.checkedBy = arg.judge_name;
+        newsubmission.content = arg.content,
+          newsubmission.possible_points = arg.possible_points,
+          newsubmission.dbId = arg._id;
+        newsubmission.totalCases = arg.total_test_cases;
 
-				newsubmission.isDisabled = true;
+        newsubmission.isDisabled = true;
 
-				let newSubmissionsList = [];
-				let present = false;
-				
-				subListRef.current?.map((submission)=> {
-					if (submission.dbId == newsubmission.dbId) {
-						present = true;
-					} else {
-						newSubmissionsList.push(submission);
-					}
-				});
-				newSubmissionsList.unshift(newsubmission);
+        let newSubmissionsList = [];
+        let present = false;
 
-				if (!present) {
-					setSubmissionsList(newSubmissionsList);
-					subListRef.current = newSubmissionsList;
-				}
+        subListRef.current?.map((submission) => {
+          if (submission.dbId == newsubmission.dbId) {
+            present = true;
+          } else {
+            newSubmissionsList.push(submission);
+          }
+        });
+        newSubmissionsList.unshift(newsubmission);
+
+        if (!present) {
+          setSubmissionsList(newSubmissionsList);
+          subListRef.current = newSubmissionsList;
+        }
 
         // Fetch submissions again after new submission
         getSubmissions();
-			}
-		});
+      }
+    });
 
-    socketClient.on('evalupdate', (arg)=> {
-			var judgeId = JSON.parse(localStorage?.getItem('user'))?._id;
-			
-			if (judgeId != arg.judge_id) {
-				let foundIt = false;
+    socketClient.on('evalupdate', (arg) => {
+      var teamId = JSON.parse(localStorage?.getItem('user'))?._id;
 
-				let newSubmissionsList = [];
+      // Only update the list if this submission belongs to the logged-in team
+      if (teamId == arg.team_id) {
+        let foundIt = false;
 
-				subListRef.current?.map((submission)=> {
-					if (!foundIt && submission.id == arg.display_id) {
-						foundIt = true;
+        let newSubmissionsList = [];
 
-						submission.id = arg.display_id;
-						submission.teamName = arg.team_name;
-						submission.problemTitle = arg.problem_title;
-						submission.submittedAt = new Date(arg.timestamp).toLocaleTimeString();
-						submission.uploadedFile = arg.filename;
-						submission.evaluation = arg.evaluation;
-						submission.checkedBy = arg.judge_name;
-						submission.content = arg.content;
-						submission.possible_points = arg.possible_points;
-						submission.dbId = arg._id;
-						submission.totalCases = arg.total_test_cases;
-						submission.isDisabled = true;
-					}
-					newSubmissionsList.push(submission);
-				});
-				
-				setSubmissionsList(newSubmissionsList);
-				subListRef.current = newSubmissionsList;
-			}
-		});
+        subListRef.current?.map((submission) => {
+          if (!foundIt && submission.id == arg.display_id) {
+            foundIt = true;
+
+            submission.id = arg.display_id;
+            submission.teamName = arg.team_name;
+            submission.problemTitle = arg.problem_title;
+            submission.submittedAt = new Date(arg.timestamp).toLocaleTimeString();
+            submission.uploadedFile = arg.filename;
+            submission.evaluation = arg.evaluation;
+            submission.checkedBy = arg.judge_name;
+            submission.content = arg.content;
+            submission.possible_points = arg.possible_points;
+            submission.dbId = arg._id;
+            submission.totalCases = arg.total_test_cases;
+            submission.isDisabled = true;
+          }
+          newSubmissionsList.push(submission);
+        });
+
+        setSubmissionsList(newSubmissionsList);
+        subListRef.current = newSubmissionsList;
+      }
+    });
 
     return () => {
       socketClient.off('newupload');
@@ -287,43 +288,43 @@ const ViewSubmissionLogPage = ({ isLoggedIn }) => {
 
   };
 
-/**
- * Fetching submissions on page mount.
- */
-const getSubmissions = async () => {
-  const submissions = await getFetch(`${baseURL}/getallsubmissions`);
+  /**
+   * Fetching submissions on page mount.
+   */
+  const getSubmissions = async () => {
+    const submissions = await getFetch(`${baseURL}/getallsubmissions`);
 
-  let submissionEntries = [];
+    let submissionEntries = [];
 
-  if (submissions.results.length > 0) {
+    if (submissions.results.length > 0) {
 
       // Filter submissions to only include the hardcoded team
       const teamSubmissions = submissions.results.filter(
-          (entry) => entry.team_name === teamInfo.teamName
+        (entry) => entry.team_name === teamInfo.teamName
       );
 
       teamSubmissions.forEach((entry) => {
-          submissionEntries.unshift({
-              id: entry.display_id,
-              teamName: entry.team_name,
-              problemTitle: entry.problem_title,
-              submittedAt: new Date(entry.timestamp).toLocaleTimeString(),
-              uploadedFile: entry.filename,
-              evaluation: entry.evaluation,
-              checkedBy: entry.judge_name,
-              content: entry.content,
-              possible_points: entry.possible_points,
-              dbId: entry._id,
-              totalCases: entry.total_test_cases,
-              isDisabled: true,
-          });
+        submissionEntries.unshift({
+          id: entry.display_id,
+          teamName: entry.team_name,
+          problemTitle: entry.problem_title,
+          submittedAt: new Date(entry.timestamp).toLocaleTimeString(),
+          uploadedFile: entry.filename,
+          evaluation: entry.evaluation,
+          checkedBy: entry.judge_name,
+          content: entry.content,
+          possible_points: entry.possible_points,
+          dbId: entry._id,
+          totalCases: entry.total_test_cases,
+          isDisabled: true,
+        });
 
-          // Add problem title to the questionsList
-          if (!questionsList.includes(entry.problem_title)) {
-              questionsList.push(entry.problem_title);
-          }
+        // Add problem title to the questionsList
+        if (!questionsList.includes(entry.problem_title)) {
+          questionsList.push(entry.problem_title);
+        }
 
-          presentDbIds.current.push(entry._id);
+        presentDbIds.current.push(entry._id);
       });
 
       // Set dropdown options for filtering
@@ -332,8 +333,8 @@ const getSubmissions = async () => {
       // Update table state
       setSubmissionsList([...submissionEntries]);
       subListRef.current = submissionEntries;
-  }
-};
+    }
+  };
 
 
 

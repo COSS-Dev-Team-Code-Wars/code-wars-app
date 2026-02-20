@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
@@ -112,6 +112,10 @@ const ParticipantLayout = ({
 	// for navigation
 	const navigate = useNavigate();
 
+	// Keep a ref to the current pathname so socket closures always see the latest route
+	const locationRef = useRef(location.pathname);
+	// Keep a ref to the current round so socket closures always see the latest round (avoids stale closure)
+	const currRoundRef = useRef(currRound);
 
 	// used to retrieve values of datagrid row
 	let params = new URLSearchParams(location.search);
@@ -173,6 +177,16 @@ const ParticipantLayout = ({
 		setShowBuffs(false);
 		setShowDebuffs(false);
 		setSelectedPowerUp(null);
+	}, [currRound]);
+
+	// Keep locationRef in sync with the current route
+	useEffect(() => {
+		locationRef.current = location.pathname;
+	}, [location.pathname]);
+
+	// Keep currRoundRef in sync with the currRound prop
+	useEffect(() => {
+		currRoundRef.current = currRound;
 	}, [currRound]);
 
 	/**
@@ -332,25 +346,27 @@ const ParticipantLayout = ({
 			toast.dismiss(powerUp.name);
 		});
 
-		socketClient.on('evalupdate', (arg) => {
+		const handleEvalUpdate = (arg) => {
+			console.log('[DEBUG] evalupdate received:', arg);
 			var teamId = JSON.parse(localStorage?.getItem('user'))?._id;
 
 			if (teamId == arg.team_id) {
 				getRoundQuestions();
-
-				if (location.pathname === '/participant/view-specific-problem') {
+				if (locationRef.current === '/participant/view-specific-problem') {
 					getQuestionContent();
 				}
 			}
 			getTeamScore();
 			fetchLeaderboardData();
-		});
+		};
 
-		// Refresh score and leaderboard when any submission is uploaded
-		socketClient.on('newupload', () => {
+		const handleNewUpload = () => {
 			getTeamScore();
 			fetchLeaderboardData();
-		});
+		};
+
+		socketClient.on('evalupdate', handleEvalUpdate);
+		socketClient.on('newupload', handleNewUpload);
 
 
 		return () => {
@@ -361,8 +377,8 @@ const ParticipantLayout = ({
 			socketClient.off('debuffEnded');
 			socketClient.off('fetchActivePowerups');
 			socketClient.off('startRound');
-			socketClient.off('evalupdate');
-			socketClient.off('newupload');
+			socketClient.off('evalupdate', handleEvalUpdate);
+			socketClient.off('newupload', handleNewUpload);
 			socketClient.off('updateScoreOnBuyBuff');
 			socketClient.off('updateScoreOnBuyDebuff');
 		};
@@ -375,65 +391,79 @@ const ParticipantLayout = ({
 	}, [currAnnouncements]);
 
 	/**
-	 * Fetching questions for the current round
+	 * Fetching questions for the current round.
+	 * @param {string} [roundOverride] - Pass the known round directly to bypass stale-ref timing issues.
+	 *   If omitted, falls back to currRoundRef.current (safe for socket callbacks).
 	 */
-	const getRoundQuestions = async () => {
-		let user = JSON.parse(localStorage?.getItem('user'));
+	const getRoundQuestions = async (roundOverride) => {
+		try {
+			let user = JSON.parse(localStorage?.getItem('user'));
 
-		const qResponse = await postFetch(`${baseURL}/viewquestionsdiff`, {
-			difficulty: currRound.toLowerCase()
-		});
+			const roundToFetch = roundOverride !== undefined ? roundOverride : currRoundRef.current;
 
-		const tResponse = await postFetch(`${baseURL}/teamsets`, {
-			id: user._id
-		});
+			// Don't fetch if we're still in the 'start' state — no questions exist for it
+			if (!roundToFetch || roundToFetch.toLowerCase() === 'start') {
+				return;
+			}
 
-		let counter = 0;
-		let questionsList = [];
-		let set = 'c';
-		if (currRound.toLowerCase() == 'easy') {
-			set = tResponse.easy_set;
+			const qResponse = await postFetch(`${baseURL}/viewquestionsdiff`, {
+				difficulty: roundToFetch.toLowerCase()
+			});
+
+			// If the request failed, don't touch the current table data
+			if (!qResponse?.success || !qResponse.questions) {
+				return;
+			}
+
+			// Round has no questions configured yet — don't wipe the current list
+			if (qResponse.questions.length === 0) {
+				setCurrQuestions([]);
+				return;
+			}
+
+			const tResponse = await postFetch(`${baseURL}/teamsets`, {
+				id: user._id
+			});
+
+			let questionsList = [];
+
+			await Promise.all(
+				qResponse.questions.map(async (question) => {
+					const qeResponse = await postFetch(`${baseURL}/getlastsubmissionbyteam`, {
+						problemId: question._id,
+						teamId: user._id
+					});
+
+					questionsList.push({
+						id: question.display_id,
+						dbId: question._id,
+						title: question.title,
+						problemTitle: `(SET ${question.set.toUpperCase()}) ${question.title}`,
+						evaluation: qeResponse.evaluation,
+						score: qeResponse.score,
+						checkedby: qeResponse.checkedby,
+					});
+				})
+			);
+
+			const sortedList = [...questionsList].sort((a, b) => a.id - b.id);
+			setCurrQuestions(sortedList);
+		} catch (error) {
+			console.error('[getRoundQuestions] Error fetching questions:', error);
+			// Don't clear questions on error — keep existing state
 		}
-		else if (currRound.toLowerCase() == 'medium') {
-			set = tResponse.medium_set;
-		}
-
-		await Promise.all(
-			qResponse.questions?.map(async (question) => {
-				let formattedQuestion = {};
-				formattedQuestion.problemTitle = `(SET ${question.set.toUpperCase()}) ${question.title}`;
-				formattedQuestion.id = question.display_id;
-				counter += 1;
-				formattedQuestion.dbId = question._id;
-
-				const qeResponse = await postFetch(`${baseURL}/getlastsubmissionbyteam`, {
-					problemId: question._id,
-					teamId: user._id
-				});
-
-				formattedQuestion.status = qeResponse.evaluation;
-				formattedQuestion.score = qeResponse.score;
-				formattedQuestion.checkedBy = qeResponse.checkedby;
-
-				console.log(set, question.set);
-				if (set == 'c' || set == question.set) {
-					questionsList.push(formattedQuestion);
-				}
-			})
-		);
-		//console.log(questionsList);
-		const sortedList = [...questionsList].sort((a, b) => a.id - b.id);
-
-		setCurrQuestions(sortedList);
 	};
 
 	/**
 	 * Fetching problem description.
 	 */
 	const getQuestionContent = async () => {
-		console.log(params.get('id'))
+		const currentUrlParams = new URLSearchParams(window.location.search);
+		const problemIdParam = currentUrlParams.get('id') || params.get('id');
+		console.log(problemIdParam);
+
 		const qResponse = await postFetch(`${baseURL}/viewquestioncontent`, {
-			problemId: params.get('id'),
+			problemId: problemIdParam,
 			teamId: JSON.parse(localStorage?.getItem('user'))._id
 		});
 
@@ -518,6 +548,7 @@ const ParticipantLayout = ({
 		const user = JSON.parse(localStorage?.getItem('user'));
 		try {
 			const res = await postFetch(`${baseURL}/viewteamscore`, { teamId: user?._id });
+			console.log('[DEBUG] getTeamScore response:', res);
 			const uname = user?.username;
 			if (res.success === true) {
 				setTeamDetails({

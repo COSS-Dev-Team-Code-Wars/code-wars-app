@@ -42,22 +42,24 @@ const ParticipantsLeaderboard = () => {
 	useEffect(() => {
 		if (!socketClient) return;
 
-		socketClient.on('evalupdate', () => {
+		const handleEvalUpdate = () => {
 			fetchData();
-		});
+		};
+		const handleScoreBuff = () => {
+			fetchData();
+		};
+		const handleScoreDebuff = () => {
+			fetchData();
+		};
 
-		socketClient.on('updateScoreOnBuyBuff', () => {
-			fetchData();
-		});
-
-		socketClient.on('updateScoreOnBuyDebuff', () => {
-			fetchData();
-		});
+		socketClient.on('evalupdate', handleEvalUpdate);
+		socketClient.on('updateScoreOnBuyBuff', handleScoreBuff);
+		socketClient.on('updateScoreOnBuyDebuff', handleScoreDebuff);
 
 		return () => {
-			socketClient.off('evalupdate');
-			socketClient.off('updateScoreOnBuyBuff');
-			socketClient.off('updateScoreOnBuyDebuff');
+			socketClient.off('evalupdate', handleEvalUpdate);
+			socketClient.off('updateScoreOnBuyBuff', handleScoreBuff);
+			socketClient.off('updateScoreOnBuyDebuff', handleScoreDebuff);
 		};
 	}, [socketClient]);
 
@@ -106,7 +108,7 @@ const ParticipantsLeaderboard = () => {
 						// check if row belongs to top 4
 						idx < 4 ? (
 							<Typography
-								key={idx}
+								key={row.team_name}
 								sx={{
 									gap: 5,
 									padding: 2,

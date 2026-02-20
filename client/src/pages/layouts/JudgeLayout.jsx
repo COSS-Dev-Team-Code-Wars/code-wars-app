@@ -100,24 +100,20 @@ const JudgeLayout = ({
 	useEffect(() => {
 		if (!socketClient) return;
 
-		socketClient.on('evalupdate', () => {
+		const handleFetchData = () => {
 			fetchData();
-		});
+		};
 
-		socketClient.on('updateScoreOnBuyBuff', () => {
-			fetchData();
-		});
-
-		socketClient.on('updateScoreOnBuyDebuff', () => {
-			fetchData();
-		});
+		socketClient.on('evalupdate', handleFetchData);
+		socketClient.on('updateScoreOnBuyBuff', handleFetchData);
+		socketClient.on('updateScoreOnBuyDebuff', handleFetchData);
 
 		return () => {
-			socketClient.off('evalupdate');
-			socketClient.off('updateScoreOnBuyBuff');
-			socketClient.off('updateScoreOnBuyDebuff');
+			socketClient.off('evalupdate', handleFetchData);
+			socketClient.off('updateScoreOnBuyBuff', handleFetchData);
+			socketClient.off('updateScoreOnBuyDebuff', handleFetchData);
 		};
-	});
+	}, []);
 
 	useEffect(() => {
 		if (currAnnouncements.length > lastSeenCount) {

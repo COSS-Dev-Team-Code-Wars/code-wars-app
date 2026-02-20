@@ -18,7 +18,7 @@ const AdminLayout = ({
 	checkIfLoggedIn,
 }) => {
 
-	useEffect(() => { 
+	useEffect(() => {
 		let usertype = JSON.parse(localStorage?.getItem('user'))?.usertype;
 		if (usertype == 'judge') {
 			navigate('/judge/submissions');
@@ -27,20 +27,20 @@ const AdminLayout = ({
 			navigate('/participant/view-all-problems');
 		}
 		else if (usertype == 'admin') {
-			checkIfLoggedIn();	
+			checkIfLoggedIn();
 		}
 		else {
 			setIsLoggedIn(false);
 		}
 
-  }, []);
-  
-  
+	}, []);
+
+
 	return (
 		<Box
 			sx={{
 				height: '100vh',
-				overflow: 'hidden',
+				overflowY: 'hidden',
 				backgroundSize: 'cover',
 				backgroundRepeat: 'no-repeat',
 				backgroundAttachment: 'fixed',
@@ -48,20 +48,22 @@ const AdminLayout = ({
 			}}
 			id="commonBox"
 		>
-			{ freezeOverlay ?
+			{freezeOverlay ?
 				<div className='fOverlayScreen' style={{ zIndex: '10000' }}>
 					<FreezeOverlay />
 				</div>
 
-			  // if user is logged in as admin
+				// if user is logged in as admin
 				: isLoggedIn ?
-					<Box sx={{ display: 'flex' }}>
+					<Box sx={{ display: 'flex', height: '100vh' }}>
 						<Sidebar />
-  
-						<Outlet />
+
+						<Box sx={{ flex: 1, overflowY: 'auto', height: '100vh' }}>
+							<Outlet />
+						</Box>
 					</Box>
 
-				  // replace with protected page sana
+					// replace with protected page sana
 					: <LoadingOverlay />
 			}
 		</Box>

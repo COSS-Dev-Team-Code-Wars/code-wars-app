@@ -5,30 +5,31 @@ import mongoose from 'mongoose';
 const Question = mongoose.model("Question");
 const Submission = mongoose.model("Submission");
 
-const viewQuestions = async (req : any, res : any) => {
+const viewQuestions = async (req: any, res: any) => {
     try {
         const questions = await Question.find({});
         return res.send({ success: true, questions });
-    }catch(err) {
+    } catch (err) {
         console.error(err);
         return res.send({ success: false, error: err });
     }
-  }
+}
 
-const getQuestionsBasedOnDifficulty = async (req : any, res : any) => {
+const getQuestionsBasedOnDifficulty = async (req: any, res: any) => {
     const difficulty = req.body.difficulty.trim();
 
     try {
         const questions = await Question.find({ difficulty: difficulty }).sort({ points: 1 });
         return res.send({ success: true, questions });
-    }catch(err) {
+    } catch (err) {
         console.error(err);
         return res.send({ success: false, error: err });
     }
-  } 
+}
 
-const getQuestionContent = async (req : any, res : any) => {
-    const problemId = req.body.problemId.trim();
+const getQuestionContent = async (req: any, res: any) => {
+    const problemId = req.body.problemId?.trim();
+    if (!problemId) return res.send({ success: false, error: "problemId is required" });
     const teamId = req.body.teamId;
 
     try {
@@ -43,10 +44,13 @@ const getQuestionContent = async (req : any, res : any) => {
         let checkedby;
         if (submission.length > 0) {
             lastSubmission = submission[submission.length - 1];
-            if (lastSubmission.prev_max_score >= lastSubmission.score) {
-                score = lastSubmission.prev_max_score;
-            } else {
-                score = lastSubmission.score;
+
+            score = 0;
+            for (let i = submission.length - 1; i >= 0; i--) {
+                if (submission[i].status !== "Pending") {
+                    score = submission[i].score || 0;
+                    break;
+                }
             }
 
             status = lastSubmission.status;
@@ -59,13 +63,13 @@ const getQuestionContent = async (req : any, res : any) => {
         }
 
         return res.send({ success: true, question, evaluation });
-    }catch(err) {
+    } catch (err) {
         console.error(err);
         return res.send({ success: false, error: err });
     }
-  }
+}
 
-const generateQuestion = async (req : any, res : any) => {
+const generateQuestion = async (req: any, res: any) => {
     const title = req.body.title.trim();
     const body = req.body.body.trim();
     const difficulty = req.body.difficulty.trim();

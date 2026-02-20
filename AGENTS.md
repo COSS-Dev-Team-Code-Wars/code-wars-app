@@ -4,6 +4,133 @@
 
 ---
 
+## Known Bugs and Fixes — READ FIRST
+
+### If score does not reflect in real-time after judge evaluation
+
+Root cause 1: `socketClient.off('evalupdate')` without a handler reference removes ALL listeners for that event globally, including those from other components. Always pass the handler reference: `socketClient.off('evalupdate', handleEvalUpdate)`.
+
+Root cause 2: In `submissionController.ts`, `team.save()` and `submission.save()` must be `await`ed before emitting `evalUpdate()`. Otherwise the socket fires before the DB write completes.
+
+Root cause 3: Socket listeners in `useEffect([socketClient])` capture `location` at mount time (stale closure). Use a `useRef` synced via `useEffect([location.pathname])` to read the current route inside socket closures.
+
+### If closing a modal throws `TypeError: setOpen is not a function`
+
+**Symptom:** Clicking the ✕ close button on certain modals crashes with `setOpen is not a function` at `handleClose`.
+
+**Root cause:** `CustomModal` (and `LeaderboardModal`, `AnnouncementModal`) define `const handleClose = () => setOpen(false)` internally. If the `setOpen` prop is not passed when rendering the component, it is `undefined`, so calling it throws a TypeError.
+
+**Fix:** Always pass `setOpen` when using `CustomModal`. The two offending instances were in `client/src/components/widgets/code-editor/CodeEditor.jsx`:
+```jsx
+// ❌ Before — setOpen omitted, close button crashes
+<CustomModal isOpen={isSubmissionError} windowTitle="Submission Error">
+<CustomModal isOpen={isSubmissionSuccess} windowTitle="Submission Success">
+
+// ✅ After — setOpen provided
+<CustomModal isOpen={isSubmissionError} setOpen={setIsSubmissionError} windowTitle="Submission Error">
+<CustomModal isOpen={isSubmissionSuccess} setOpen={setIsSubmissionSuccess} windowTitle="Submission Success">
+```
+
+**Rule:** Every `<CustomModal>`, `<LeaderboardModal>`, and `<AnnouncementModal>` usage **must** include a `setOpen` prop pointing to the corresponding state setter.
+
+---
+
+### If problems do not appear for participants when a round starts or on page refresh
+
+**Symptom:** The problems table stays empty after the admin starts a round, or after the participant refreshes the page. No network error is visible.
+
+**Root cause:** React fires child component effects **before** parent component effects. The sequence when `currRound` changes is:
+
+1. `ViewAllProblemsPage` `useEffect([currRound])` fires → calls `getRoundQuestions()` → reads `currRoundRef.current` which is still `'start'` (the parent's sync effect hasn't run yet) → early-return guard triggers, no fetch happens.
+2. THEN `ParticipantLayout` `useEffect([currRound])` fires → updates `currRoundRef.current` to `'EASY'` — too late.
+
+**Fix:** `getRoundQuestions` in `ParticipantLayout.jsx` accepts an optional `roundOverride` parameter. When a known round value is available at the call site, pass it directly instead of relying on the ref.
+
+```javascript
+// ParticipantLayout.jsx — getRoundQuestions signature
+const getRoundQuestions = async (roundOverride) => {
+  const roundToFetch = roundOverride !== undefined ? roundOverride : currRoundRef.current;
+  // ...
+};
+
+// ViewAllProblemsPage.jsx — pass currRound explicitly
+useEffect(() => {
+  getRoundQuestions(currRound);  // ✅ bypasses stale ref
+}, [currRound]);
+```
+
+Socket callbacks in `ParticipantLayout` that call `getRoundQuestions()` without an argument are still safe — they use `currRoundRef.current` which is always up to date by the time a socket event fires.
+
+---
+
+### If a team's score accumulates incorrectly when solving multiple problems in the same round
+
+**Symptom:** A team submits to Q1 (Set A, partial → 80 pts) then Q2 (Set A, correct → 200 pts). Their total score becomes 280 instead of 200.
+
+**Root cause:** The old scoring logic computed the delta **per problem** in isolation. Each graded submission added its own per-problem delta to `team.score`, so solving two problems in the same round accumulated both scores independently.
+
+**Expected behavior:** Within a round, the team's credited score is the **maximum best-per-problem score** across all problems in that round — not the cumulative sum. The delta applied to `team.score` is:
+```
+pointsToAdd = newRoundMax − oldRoundMax
+```
+Where `roundMax = max(best_score_for_Q1, best_score_for_Q2, ...)`.
+
+**Trace:**
+| Event | Round max before | New score | Round max after | Delta |
+|---|---|---|---|---|
+| Q1 graded 80 | 0 | 80 | 80 | **+80** |
+| Q2 graded 200 | 80 | 200 | 200 | **+120** → total = 200 ✓ |
+| Q1 re-graded 300 | 200 | 300 | 300 | **+100** → total = 300 ✓ |
+| Q1 re-graded 50 | 300 | 50 (worse) | 300 | **+0** → total unchanged ✓ |
+
+**Fix location:** `backend/controllers/submissionController.ts` — `checkSubmission` function.
+
+The fix replaces the per-problem delta block with per-round logic:
+1. Look up the problem's `difficulty` from the `Question` model.
+2. Fetch all `Question` IDs with that same difficulty (all problems in the round).
+3. For each round problem, compute its best credited score from all non-pending submissions.
+4. `oldCreditedScore` = `max(...)` of those best scores (current submission is still "Pending" so auto-excluded).
+5. `newCreditedScore` = same, but the current problem's best is `max(newScore, priorBest)`.
+6. `pointsToAdd = newCreditedScore − oldCreditedScore`.
+
+```typescript
+// Added at top of submissionController.ts
+const Question = mongoose.model("Question");
+
+// Inside checkSubmission, replacing the old allSubmissions/getCreditedScore block:
+const questionDoc = await Question.findById(submission.problem_id);
+const problemDifficulty = questionDoc ? questionDoc.difficulty : "";
+
+const roundQuestions = await Question.find({ difficulty: problemDifficulty }).select("_id");
+const roundQuestionIds = roundQuestions.map((q: any) => q._id.toString());
+
+const getBestScoreForProblem = async (problemId: string): Promise<number> => {
+  const subs = await Submission.find({
+    team_id: submission.team_id,
+    problem_id: problemId,
+    status: { $ne: "Pending" },
+  });
+  if (subs.length === 0) return 0;
+  return Math.max(...subs.map((s: any) => s.score || 0));
+};
+
+const oldPerProblemScores = await Promise.all(roundQuestionIds.map(getBestScoreForProblem));
+const oldCreditedScore = Math.max(0, ...oldPerProblemScores);
+
+const newPerProblemScores = await Promise.all(
+  roundQuestionIds.map(async (qId) => {
+    if (qId === submission.problem_id.toString()) {
+      return Math.max(score, await getBestScoreForProblem(qId));
+    }
+    return getBestScoreForProblem(qId);
+  })
+);
+const newCreditedScore = Math.max(0, ...newPerProblemScores);
+const pointsToAdd = newCreditedScore - oldCreditedScore;
+```
+
+---
+
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)

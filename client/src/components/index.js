@@ -6,6 +6,7 @@ import DropdownSelect from './ui/DropdownSelect';
 import FilterDropdown from './widgets/filter-dropdown/FilterDropdown';
 import ErrorWindow from './ui/ErrorWindow';
 import Sidebar from './ui/Sidebar';
+import StatusModal from './ui/StatusModal';
 import SuccessWindow from './ui/SuccessWindow';
 import Table from './ui/Table';
 import TopBar from './ui/Topbar';
@@ -40,6 +41,7 @@ export {
 	RoundTimer,
 	Sidebar,
 	SponsorCarousel,
+	StatusModal,
 	SuccessWindow,
 	Table,
 	ToastContainerConfig,

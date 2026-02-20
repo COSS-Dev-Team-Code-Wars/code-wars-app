@@ -381,7 +381,7 @@ const emitRemaining = () => {
   return { remainingTime: rem };
 };
 
-const startRoundTimer = (seconds: number) => {
+const startRoundTimer = (seconds: number, onComplete?: () => void) => {
   console.log('Started round timer');
   // reset any previous timers
   clearExistingTimers();
@@ -406,6 +406,7 @@ const startRoundTimer = (seconds: number) => {
     remainingSeconds = 0;
     clearExistingTimers();
     emitRemaining();
+    if (onComplete) onComplete();
   }, seconds * 1000);
 };
 
