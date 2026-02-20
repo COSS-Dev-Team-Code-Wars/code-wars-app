@@ -643,13 +643,14 @@ const ParticipantLayout = ({
 												['Pending', 'Correct'].includes(evaluation)
 										}
 									/>
-							}
-
+							}							
+							
 							<Box
 								gap={2}
 								sx={{
 									display: 'flex',
 									height: "100%",
+									overflow: 'auto',
 									flexDirection: {
 										xs: 'column',
 										xl: 'row'

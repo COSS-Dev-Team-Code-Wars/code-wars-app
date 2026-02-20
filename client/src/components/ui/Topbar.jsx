@@ -130,11 +130,8 @@ const TopBar = ({
 							<span>{subtitle}</span>
 						</Typography>
 					</Box>
-				</Box>
-
-				<div>
-					{/* Button */}
-					{additionalButtonText && (
+				</Box>				<div>
+					{/* Button */}					{additionalButtonText && (
 						<Button
 						variant="contained"
 						color="major"
@@ -155,7 +152,7 @@ const TopBar = ({
 						}}
 					>
 						{
-							onlySmallScreen ? null : <>{additionalButtonText}</>
+							onlyLargeScreen ? null : <>{additionalButtonText}</>
 						}
 						</Button>
 					)}
@@ -183,7 +180,7 @@ const TopBar = ({
 						}}
 					>
 						{
-							onlySmallScreen ? null : <>{buttonText}</>
+							onlyLargeScreen ? null : <>{buttonText}</>
 						}
 						</Button>
 					)}

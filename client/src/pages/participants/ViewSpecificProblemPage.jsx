@@ -16,15 +16,14 @@ const ViewSpecificProblemPage = () => {
 	useEffect(() => {
 		fetchContent();
 	}, []);
-
 	return (
-		<div style={{ display: "flex", flexDirection: "column", gap: "25px", justifyContent: "space-between", height: "100%", width: "100%", padding: "20px 40px 20px 0px" }}>
-			<div style={{ display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden" }}>
+		<div style={{ display: "flex", flexDirection: "column", gap: "25px", justifyContent: "space-between", minHeight: "100%", width: "100%", padding: "20px 40px 20px 0px" }}>
+			<div style={{ display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden", flex: "0 1 auto" }}>
 				<Typography variant="h5" color="white.main" sx={{ fontFamily: "Poppins" }}>
 					Description
 				</Typography>
-				<Box sx={{ padding: 3, borderRadius: 4, backgroundColor: "#fff" }} style={{ display: "flex", flexDirection: "column", overflowY: "hidden" }}>
-					<div style={{ display: "flex", flexDirection: "column", gap: "10px", overflow: "auto" }}>
+				<Box sx={{ padding: 3, borderRadius: 4, backgroundColor: "#fff", maxHeight: "400px" }} style={{ display: "flex", flexDirection: "column", overflowY: "auto" }}>
+					<div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
 						<Typography
 							variant="body1"
 							paragraph

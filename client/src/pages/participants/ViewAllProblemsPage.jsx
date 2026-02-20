@@ -165,12 +165,12 @@ const ViewAllProblemsPage = ({ currRound }) => {
 		});
 	};
 
-
 	return (
 		<Box
 			sx={{
 				display: 'flex',
 				width: '100%',
+				minHeight: '100%',
 				paddingBottom: "20px",
 				alignContent: { xs: 'center', md: 'none' },
 				justifyContent: { xs: 'center', md: 'none' }
