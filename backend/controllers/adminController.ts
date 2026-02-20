@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { startRoundTimer, pauseRoundTimer, resumeRoundTimer, stopRoundTimer } from '../sockets/socket';
+import { clearAllPowerups } from './powerupController';
 
 const Team = mongoose.model("Team");
 
@@ -53,11 +54,13 @@ const setAdminCommand = async (req: Request, res: Response) => {
   if (newround.toLowerCase() != round.toLowerCase()) {
     setEndTimer(true);
     stopRoundTimer();
+    // Clean up all powerups from the previous round
+    await clearAllPowerups();
     let duration: number;
 
     if (newround == 'EASY') {
-      // duration = 60 * 30;
-      duration = 1000;
+      duration = 60;
+      // duration = 1000;
     }
     else if (newround == 'MEDIUM') {
       duration = 60 * 45;
@@ -73,8 +76,10 @@ const setAdminCommand = async (req: Request, res: Response) => {
 
     if (duration > 0) {
       setTimeout(() => {
-        startRoundTimer(duration, () => {
+        startRoundTimer(duration, async () => {
           round = "START";
+          // Clean up all powerups when the round timer naturally expires
+          await clearAllPowerups();
           console.log("Round timer ended, resetting round to START");
         });
       }, 1000);
