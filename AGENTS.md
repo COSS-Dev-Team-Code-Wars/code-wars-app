@@ -65,68 +65,45 @@ Socket callbacks in `ParticipantLayout` that call `getRoundQuestions()` without 
 
 ### If a team's score accumulates incorrectly when solving multiple problems in the same round
 
-**Symptom:** A team submits to Q1 (Set A, partial → 80 pts) then Q2 (Set A, correct → 200 pts). Their total score becomes 280 instead of 200.
+**Symptom (v1):** A team submits to Q1 (Set A, partial → 80 pts) then Q2 (Set A, correct → 200 pts). Their total score becomes 280 instead of 200.
 
-**Root cause:** The old scoring logic computed the delta **per problem** in isolation. Each graded submission added its own per-problem delta to `team.score`, so solving two problems in the same round accumulated both scores independently.
+**Symptom (v2):** A team scores 200 on Q1 A, retries Q2 A and gets 80 — their score stays 200 instead of dropping to 80. Or: a team scores 160, retries and gets a lower score — their score stays 160 instead of reflecting the lower result.
 
-**Expected behavior:** Within a round, the team's credited score is the **maximum best-per-problem score** across all problems in that round — not the cumulative sum. The delta applied to `team.score` is:
-```
-pointsToAdd = newRoundMax − oldRoundMax
-```
-Where `roundMax = max(best_score_for_Q1, best_score_for_Q2, ...)`.
+**Business rule:** Participants answer **one question only** per round (from their chosen set). Scoring is based on **last submission strictly** — the score of the most recently graded submission in the round determines the team's round credit. Retrying always replaces the prior score, even if the new score is lower.
 
-**Trace:**
-| Event | Round max before | New score | Round max after | Delta |
+**Expected behavior:**
+| Event | Old credited | New score | New credited | Delta |
 |---|---|---|---|---|
-| Q1 graded 80 | 0 | 80 | 80 | **+80** |
-| Q2 graded 200 | 80 | 200 | 200 | **+120** → total = 200 ✓ |
-| Q1 re-graded 300 | 200 | 300 | 300 | **+100** → total = 300 ✓ |
-| Q1 re-graded 50 | 300 | 50 (worse) | 300 | **+0** → total unchanged ✓ |
+| Q1 graded 200 | 0 | 200 | 200 | **+200** |
+| Q1 re-graded 80 | 200 | 80 | 80 | **−120** → total = 80 ✓ |
+| Q1 re-graded 500 | 80 | 500 | 500 | **+420** → total = 500 ✓ |
+| Q2 graded 80 (after Q1=200) | 200 | 80 | 80 | **−120** → total = 80 ✓ |
 
 **Fix location:** `backend/controllers/submissionController.ts` — `checkSubmission` function.
 
-The fix replaces the per-problem delta block with per-round logic:
-1. Look up the problem's `difficulty` from the `Question` model.
-2. Fetch all `Question` IDs with that same difficulty (all problems in the round).
-3. For each round problem, compute its best credited score from all non-pending submissions.
-4. `oldCreditedScore` = `max(...)` of those best scores (current submission is still "Pending" so auto-excluded).
-5. `newCreditedScore` = same, but the current problem's best is `max(newScore, priorBest)`.
-6. `pointsToAdd = newCreditedScore − oldCreditedScore`.
-
 ```typescript
-// Added at top of submissionController.ts
-const Question = mongoose.model("Question");
-
-// Inside checkSubmission, replacing the old allSubmissions/getCreditedScore block:
+// 1. Get the difficulty (round) of the problem being graded.
 const questionDoc = await Question.findById(submission.problem_id);
-const problemDifficulty = questionDoc ? questionDoc.difficulty : "";
+const problemDifficulty: string = questionDoc ? questionDoc.difficulty : "";
 
+// 2. Get all problems in the same round.
 const roundQuestions = await Question.find({ difficulty: problemDifficulty }).select("_id");
-const roundQuestionIds = roundQuestions.map((q: any) => q._id.toString());
+const roundQuestionIds: string[] = roundQuestions.map((q: any) => q._id.toString());
 
-const getBestScoreForProblem = async (problemId: string): Promise<number> => {
-  const subs = await Submission.find({
-    team_id: submission.team_id,
-    problem_id: problemId,
-    status: { $ne: "Pending" },
-  });
-  if (subs.length === 0) return 0;
-  return Math.max(...subs.map((s: any) => s.score || 0));
-};
+// 3. Old credited score: score of the most recently graded submission across
+//    all round problems for this team. Current submission is still "Pending" → auto-excluded.
+const prevGradedSubs = await Submission.find({
+  team_id: submission.team_id,
+  problem_id: { $in: roundQuestionIds },
+  status: { $ne: "Pending" },
+}).sort({ timestamp: -1 });
 
-const oldPerProblemScores = await Promise.all(roundQuestionIds.map(getBestScoreForProblem));
-const oldCreditedScore = Math.max(0, ...oldPerProblemScores);
+const oldCreditedScore: number = prevGradedSubs.length > 0 ? (prevGradedSubs[0].score || 0) : 0;
 
-const newPerProblemScores = await Promise.all(
-  roundQuestionIds.map(async (qId) => {
-    if (qId === submission.problem_id.toString()) {
-      return Math.max(score, await getBestScoreForProblem(qId));
-    }
-    return getBestScoreForProblem(qId);
-  })
-);
-const newCreditedScore = Math.max(0, ...newPerProblemScores);
-const pointsToAdd = newCreditedScore - oldCreditedScore;
+// 4. New credited score: strictly the score from this (now-last) submission.
+const newCreditedScore: number = score;
+
+const pointsToAdd = newCreditedScore - oldCreditedScore;  // can be negative
 ```
 
 ---

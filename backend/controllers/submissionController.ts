@@ -231,19 +231,20 @@ const checkSubmission = async (req: Request, res: Response) => {
     console.log(`-- Score Calc: ${correctCases}/${submission.total_test_cases} (${percentage}%) -> Multiplier: ${multiplier} -> Score: ${score}`);
     console.log("--", score);
 
-    // ── Per-round scoring ────────────────────────────────────────────────────
+    // ── Per-round scoring (last-submission-strictly) ─────────────────────────
     //
-    // The team's credited score for a round is the MAXIMUM best-per-problem
-    // score across all problems in that round (not the cumulative sum).
+    // A team's credited score for a round equals the score of the most recently
+    // graded submission across all problems in the round. Retrying a problem
+    // always replaces the prior score — even if the new score is lower.
     //
-    // Example:
-    //   Q1 graded 80  → round max becomes 80,  delta = 80 − 0  = 80  (+80)
-    //   Q2 graded 200 → round max becomes 200, delta = 200 − 80 = 120 (+120)
-    //   Team total = 200  ✓  (not 280)
+    // Examples (one question per round, 500 pts possible):
+    //   Sub1 graded 200 → old=0,   new=200, delta=+200
+    //   Sub2 graded 80  → old=200, new=80,  delta=−120  (team score drops)
+    //   Sub3 graded 500 → old=80,  new=500, delta=+420
     //
-    // For a single-problem re-submission:
-    //   Q1 re-graded 300 → round max becomes 300, delta = 300 − 200 = 100 (+100)
-    //   Q1 re-graded 50  → round max stays  300, delta = 0           (+0)
+    // "Stupid Q2" scenario (team answers Q2 after already scoring 200 on Q1):
+    //   Q1 graded 200 → old=0,   new=200, delta=+200
+    //   Q2 graded 80  → old=200, new=80,  delta=−120  (last sub wins)
     // ─────────────────────────────────────────────────────────────────────────
 
     // 1. Get the difficulty (round) of the problem being graded.
@@ -254,42 +255,19 @@ const checkSubmission = async (req: Request, res: Response) => {
     const roundQuestions = await Question.find({ difficulty: problemDifficulty }).select("_id");
     const roundQuestionIds: string[] = roundQuestions.map((q: any) => q._id.toString());
 
-    // 3. Helper: best credited score for a team+problem from all non-pending submissions.
-    //    Excludes a specific submission ID when supplied (used to simulate "before" state).
-    const getBestScoreForProblem = async (problemId: string, excludeId?: string): Promise<number> => {
-      const subs = await Submission.find({
-        team_id: submission.team_id,
-        problem_id: problemId,
-        status: { $ne: "Pending" },
-      });
-      const relevant = excludeId
-        ? subs.filter((s: any) => s._id.toString() !== excludeId)
-        : subs;
-      if (relevant.length === 0) return 0;
-      return Math.max(...relevant.map((s: any) => s.score || 0));
-    };
+    // 3. Old credited score: score of the most recently graded submission across
+    //    all round problems for this team. The current submission is still "Pending"
+    //    so it is automatically excluded.
+    const prevGradedSubs = await Submission.find({
+      team_id: submission.team_id,
+      problem_id: { $in: roundQuestionIds },
+      status: { $ne: "Pending" },
+    }).sort({ timestamp: -1 });
 
-    // 4. Old round credited score: best score per problem BEFORE this grading.
-    //    The current submission is still "Pending" so it's automatically excluded
-    //    from non-pending queries; no special exclusion needed for other problems.
-    const oldPerProblemScores = await Promise.all(
-      roundQuestionIds.map((qId) => getBestScoreForProblem(qId))
-    );
-    const oldCreditedScore = oldPerProblemScores.length > 0 ? Math.max(...oldPerProblemScores) : 0;
+    const oldCreditedScore: number = prevGradedSubs.length > 0 ? (prevGradedSubs[0].score || 0) : 0;
 
-    // 5. New round credited score: same per-problem bests but with this submission
-    //    now reflecting `score` for its problem.
-    const newPerProblemScores = await Promise.all(
-      roundQuestionIds.map(async (qId) => {
-        if (qId === submission.problem_id.toString()) {
-          // Take the max of the newly computed score and any prior best for this problem.
-          const priorBest = await getBestScoreForProblem(qId);
-          return Math.max(score, priorBest);
-        }
-        return getBestScoreForProblem(qId);
-      })
-    );
-    const newCreditedScore = newPerProblemScores.length > 0 ? Math.max(...newPerProblemScores) : 0;
+    // 4. New credited score: strictly the score from this (now-last) submission.
+    const newCreditedScore: number = score;
 
     let pointsToAdd = newCreditedScore - oldCreditedScore;
 
