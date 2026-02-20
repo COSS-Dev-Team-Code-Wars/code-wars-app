@@ -20,11 +20,11 @@ const ViewSpecificProblemPage = () => {
 				display: "flex", 
 				flexDirection: "column", 
 				gap: "25px", 
-				justifyContent: "space-between", 
 				minHeight: "100%", 
 				width: "100%", 
 				maxWidth: "100%",
-				overflow: "hidden",
+				overflowY: "auto",
+				overflowX: "hidden",
 				boxSizing: "border-box",
 				padding: { 
 					xs: "15px 20px 15px 20px",  // mobile
@@ -52,22 +52,32 @@ const ViewSpecificProblemPage = () => {
 						<span style={{ fontWeight: '500' }}>Current Score:</span>
 						<span style={{ fontWeight: '300' }}>{teamInfo?.score || 0}</span>
 					</Box>
-				</Typography>
-			</Box>
+				</Typography>			</Box>
 
-			<div style={{ display: "flex", flexDirection: "column", gap: "10px", overflow: "hidden", flex: "0 1 auto", width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
-				<Box sx={{ padding: 3, borderRadius: 4, backgroundColor: "#fff", maxHeight: "400px", width: "100%", maxWidth: "100%", boxSizing: "border-box" }} style={{ display: "flex", flexDirection: "column", overflowY: "auto", overflowX: "hidden" }}>
-					<div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "100%", boxSizing: "border-box", wordWrap: "break-word", overflowWrap: "break-word" }}>
-						<Typography
-							variant="body1"
-							paragraph
-							style={{ margin: "0", whiteSpace: "pre-wrap" }}
-						>
-							{problemDesc}
-						</Typography>
-					</div>
-				</Box>			</div>
-			<CodeEditor />
+		<Box 
+			sx={{ 
+				padding: 3, 
+				borderRadius: 4, 
+				backgroundColor: "#fff", 
+				height: "400px",
+				minHeight: "150px",
+				width: "100%", 
+				maxWidth: "100%", 
+				boxSizing: "border-box",
+				overflow: "auto",
+				resize: "vertical"
+			}}
+		>
+			<Typography
+				variant="body1"
+				paragraph
+				style={{ margin: "0", whiteSpace: "pre-wrap", wordWrap: "break-word", overflowWrap: "break-word" }}
+			>
+				{problemDesc}
+			</Typography>
+		</Box>
+		
+		<CodeEditor />
 		</Box>
 	);
 };

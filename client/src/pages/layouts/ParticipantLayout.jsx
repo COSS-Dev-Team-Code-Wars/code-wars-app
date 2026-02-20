@@ -573,12 +573,11 @@ const ParticipantLayout = ({
 		}
 	}
 
-
 	return (
 		<Box
 			sx={{
 				height: '100vh',
-				overflow: 'hidden',
+				overflow: 'auto',
 				backgroundSize: 'cover',
 				backgroundRepeat: 'no-repeat',
 				backgroundAttachment: 'fixed',
@@ -592,10 +591,8 @@ const ParticipantLayout = ({
 				</div>
 
 				// if user is logged in as participant
-				: isLoggedIn ?
-
-					<>
-						<Stack style={{ height: "100%" }}>
+				: isLoggedIn ?					<>
+						<Stack style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
 							{location.pathname === '/participant/view-all-problems' ?
 								<TopBar
 									isImg={true}
@@ -652,14 +649,13 @@ const ParticipantLayout = ({
 												evaluation != 'No Submission' :
 												['Pending', 'Correct'].includes(evaluation)
 										}
-									/>
-							}							
+									/>							}							
 							
 							<Box
 								gap={2}
 								sx={{
 									display: 'flex',
-									height: "100%",
+									minHeight: "100%",
 									overflow: 'auto',
 									flexDirection: {
 										xs: 'column',

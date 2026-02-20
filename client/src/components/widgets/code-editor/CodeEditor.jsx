@@ -335,7 +335,7 @@ function CodeEditor() {
     }
   };  const CODE_EDITOR_HEIGHT = 550;
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", maxWidth: "100%", minHeight: `${CODE_EDITOR_HEIGHT}px`, overflow: "hidden", boxSizing: "border-box" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", overflow: "hidden" }}>
       <div style={{ marginBottom: "10px" }}>
         <label htmlFor="selectPL" style={{ marginRight: "10px", color: "#000000ff", fontFamily: "Poppins" }}>
           Select Language:
@@ -348,8 +348,23 @@ function CodeEditor() {
           ))}
         </select>
       </div>
-      <div className="container_editor_area" style={{ height: `${CODE_EDITOR_HEIGHT - 200}px`, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflowX: "hidden", overflowY: "auto" }}>
-        <Editor placeholder="Type your code here..." value={code} onValueChange={handleCodeChange} highlight={highlightCode} padding={10} className={`container__editor${isFlipped && !isImmune ? ' flipped' : ''}`} onKeyDown={handleFrostyHandsKeyDown} style={{ overflowX: "hidden", wordWrap: "break-word" }} />
+      <div className="container_editor_area" style={{ height: "350px", width: "100%", overflow: "hidden" }}>
+        <Editor 
+          placeholder="Type your code here..." 
+          value={code} 
+          onValueChange={handleCodeChange} 
+          highlight={highlightCode} 
+          padding={10} 
+          textareaClassName="editor-textarea"
+          preClassName="editor-pre"
+          className={`container__editor${isFlipped && !isImmune ? ' flipped' : ''}`} 
+          onKeyDown={handleFrostyHandsKeyDown} 
+          style={{ 
+            minHeight: "100%",
+            fontFamily: "'Fira code', 'Fira Mono', Consolas, Menlo, Courier, monospace"
+          }} 
+          textareaId="code-editor-textarea"
+        />
       </div>
       <StatusModal
         isOpen={isSubmissionError}
