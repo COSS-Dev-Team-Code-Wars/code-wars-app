@@ -402,50 +402,44 @@ export const buy_powerup = async (req: Request, res: Response) => {
   }
 };
 
+
 /*
- * Purpose: Removes expired powerups from a team's actuve_buffs and debuffs_received
- * Params: None
- * Returns: None
+ * Purpose: Clears ALL powerup arrays for ALL teams.
+ *          Called when a round transitions (start of a new round or timer expiry).
  */
-const remove_active_powerup = async (team_id: String) => {
+export const clearAllPowerups = async () => {
   try {
-    let team = await TeamModel.findById(team_id);
-    if (team) {
-      const currentTime = new Date();
-      // NOTE: ENSURE THAT active_buffs AND debuffs_received OF ALL TEAMS ARE CLEARED WHEN STARTING A ROUND
-
-      //Filter out expired buffs
-      team.active_buffs = team.active_buffs.filter((buff) => {
-        if (buff.endTime) {
-          return buff.endTime > currentTime;
-        }
-      });
-
-      //Filter out expired debuffs
-      team.debuffs_received = team.debuffs_received.filter((debuff) => {
-        if (debuff.endTime) {
-          return debuff.endTime > currentTime;
-        }
-      });
-
-      await team.save();
-    } else {
-      console.log("Team not found.");
-    }
+    await TeamModel.updateMany({}, {
+      $set: { active_buffs: [], debuffs_received: [], activated_powerups: [] }
+    });
   } catch (error) {
-    // Handle errors here
+    console.error('Error clearing powerups:', error);
+  }
+};
+
+/*
+ * Purpose: Atomically removes expired powerups from ALL teams' active_buffs and debuffs_received.
+ *          Uses $pull so there is no race condition with clearAllPowerups or team.save() calls.
+ *          Items without endTime are NOT affected (they don't match the $lte condition).
+ */
+const removeExpiredPowerups = async () => {
+  try {
+    const currentTime = new Date();
+    await TeamModel.updateMany(
+      {},
+      {
+        $pull: {
+          active_buffs: { endTime: { $lte: currentTime } },
+          debuffs_received: { endTime: { $lte: currentTime } }
+        }
+      }
+    );
+  } catch (error) {
     console.error('Error removing expired powerups:', error);
   }
-}
+};
 
-// Run every 1 second
+// Run every 1 second — atomically remove expired powerups
 setInterval(async () => {
-  try {
-    const teams = await TeamModel.find({});
-    for (const team of teams) {
-      await remove_active_powerup(team._id.toString());
-    }
-  } catch (error) {
-    console.error('Error checking for expired elements:', error);
-  }
+  await removeExpiredPowerups();
 }, 1000);

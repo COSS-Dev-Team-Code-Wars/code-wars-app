@@ -346,6 +346,15 @@ const ParticipantLayout = ({
 			toast.dismiss(powerUp.name);
 		});
 
+		// When a round ends (timer hits 0 or admin resets to START),
+		// all powerups are cleared server-side. Dismiss active powerup toasts
+		// and refresh team score to reflect the clean state instantly.
+		socketClient.on('roundPowerupsCleared', () => {
+			console.log('Round ended — all powerups cleared.');
+			toast.dismiss();
+			getTeamScore();
+		});
+
 		const handleEvalUpdate = (arg) => {
 			console.log('[DEBUG] evalupdate received:', arg);
 			var teamId = JSON.parse(localStorage?.getItem('user'))?._id;
@@ -377,6 +386,7 @@ const ParticipantLayout = ({
 			socketClient.off('debuffEnded');
 			socketClient.off('fetchActivePowerups');
 			socketClient.off('startRound');
+			socketClient.off('roundPowerupsCleared');
 			socketClient.off('evalupdate', handleEvalUpdate);
 			socketClient.off('newupload', handleNewUpload);
 			socketClient.off('updateScoreOnBuyBuff');

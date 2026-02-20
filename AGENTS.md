@@ -108,6 +108,46 @@ const pointsToAdd = newCreditedScore - oldCreditedScore;  // can be negative
 
 ---
 
+### If powerups and debuffs are not removed from the database
+
+**Symptom:** After a powerup's duration expires, or after a round ends, or after the admin sets the round to START, the team's `active_buffs`, `debuffs_received`, and `activated_powerups` arrays in MongoDB still contain old entries.
+
+**Root cause 1 — Race condition in `remove_active_powerup`:** The original implementation used a load-modify-save pattern (`findById` → filter arrays in JS → `team.save()`). Because `team.save()` writes the **entire document**, it would race with `clearAllPowerups`'s `updateMany`. If the interval loaded a team before `updateMany` ran but saved after, the `save()` would overwrite the cleared arrays with stale data.
+
+**Root cause 2 — `activated_powerups` never cleaned:** The `clearAllPowerups` function only cleared `active_buffs` and `debuffs_received`, never `activated_powerups`. This purchase history array accumulated indefinitely.
+
+**Root cause 3 — No cleanup on round transitions:** `setAdminCommand` in `adminController.ts` never called any cleanup function when changing rounds or when the round timer expired.
+
+**Fix location:** `backend/controllers/powerupController.ts` and `backend/controllers/adminController.ts`
+
+**Fix details:**
+
+1. Replaced the per-team `findById` + `save()` loop with a single **atomic `$pull`** operation that removes expired items directly in MongoDB — no race condition possible:
+```typescript
+// removeExpiredPowerups — runs every 1 second
+await TeamModel.updateMany({}, {
+  $pull: {
+    active_buffs: { endTime: { $lte: currentTime } },
+    debuffs_received: { endTime: { $lte: currentTime } }
+  }
+});
+```
+
+2. `clearAllPowerups()` now clears **all three arrays**:
+```typescript
+await TeamModel.updateMany({}, {
+  $set: { active_buffs: [], debuffs_received: [], activated_powerups: [] }
+});
+```
+
+3. `clearAllPowerups()` is called in `adminController.ts`:
+   - When the admin changes the round (inside `setAdminCommand`)
+   - When the round timer naturally expires (in the `onComplete` callback of `startRoundTimer`)
+
+**Rule:** Never use `findById` + modify + `save()` for arrays that are also modified by `updateMany` elsewhere. Use atomic operators (`$pull`, `$push`, `$set`) to avoid race conditions.
+
+---
+
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
