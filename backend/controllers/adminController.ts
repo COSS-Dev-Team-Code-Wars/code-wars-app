@@ -59,7 +59,7 @@ const setAdminCommand = async (req: Request, res: Response) => {
     let duration: number;
 
     if (newround == 'EASY') {
-      duration = 60;
+      duration = 500;
       // duration = 1000;
     }
     else if (newround == 'MEDIUM') {

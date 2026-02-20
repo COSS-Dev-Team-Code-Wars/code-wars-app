@@ -94,14 +94,30 @@ function CodeEditor() {
 
     const hadnleStartBuffOrDebuff = (powerUp) => processDebuff(powerUp, true);
     const handleEndBuffOrDebuff = (powerUp) => processDebuff(powerUp, false);
+
+    const handleDebuffDispelled = (debuffName) => {
+      let code = "";
+      if (debuffName === "Stun") code = "stun";
+      else if (debuffName === "Editor") code = "editor";
+      else if (debuffName === "Frosty Hands") code = "frosty";
+
+      if (code) {
+        processDebuff({ code }, false);
+      }
+    };
+
     socketClient.on("newDebuff", hadnleStartBuffOrDebuff);
     socketClient.on("debuffEnded", handleEndBuffOrDebuff);
     socketClient.on("newBuff", hadnleStartBuffOrDebuff);
     socketClient.on("buffEnded", handleEndBuffOrDebuff);
+    socketClient.on("debuffDispelled", handleDebuffDispelled);
+
     return () => {
       socketClient.off("newDebuff", hadnleStartBuffOrDebuff);
       socketClient.off("debuffEnded", handleEndBuffOrDebuff);
       socketClient.off("newBuff", hadnleStartBuffOrDebuff);
+      socketClient.off("buffEnded", handleEndBuffOrDebuff);
+      socketClient.off("debuffDispelled", handleDebuffDispelled);
     };
   }, [id, user._id]);
 
