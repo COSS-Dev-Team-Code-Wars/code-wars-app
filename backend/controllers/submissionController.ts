@@ -231,42 +231,33 @@ const checkSubmission = async (req: Request, res: Response) => {
     console.log(`-- Score Calc: ${correctCases}/${submission.total_test_cases} (${percentage}%) -> Multiplier: ${multiplier} -> Score: ${score}`);
     console.log("--", score);
 
-    // ── Per-round scoring (last-submission-strictly) ─────────────────────────
+    // ── Per-question scoring ──────────────────────────────────────────────────
     //
-    // A team's credited score for a round equals the score of the most recently
-    // graded submission across all problems in the round. Retrying a problem
-    // always replaces the prior score — even if the new score is lower.
+    // Scores are additive across different questions in the same round.
+    // For the same question, only the delta vs the last graded score applies
+    // (retrying replaces the prior score for that question, even if lower).
     //
-    // Examples (one question per round, 500 pts possible):
-    //   Sub1 graded 200 → old=0,   new=200, delta=+200
-    //   Sub2 graded 80  → old=200, new=80,  delta=−120  (team score drops)
-    //   Sub3 graded 500 → old=80,  new=500, delta=+420
-    //
-    // "Stupid Q2" scenario (team answers Q2 after already scoring 200 on Q1):
-    //   Q1 graded 200 → old=0,   new=200, delta=+200
-    //   Q2 graded 80  → old=200, new=80,  delta=−120  (last sub wins)
+    // Examples:
+    //   Q1 graded 200           → old=0,   new=200, delta=+200 → total=200
+    //   Q2 graded 60  (new Q)   → old=0,   new=60,  delta=+60  → total=260
+    //   Q2 re-graded 80         → old=60,  new=80,  delta=+20  → total=280
+    //   Q1 re-graded 80         → old=200, new=80,  delta=−120 → total=160
     // ─────────────────────────────────────────────────────────────────────────
 
-    // 1. Get the difficulty (round) of the problem being graded.
-    const questionDoc = await Question.findById(submission.problem_id);
-    const problemDifficulty: string = questionDoc ? questionDoc.difficulty : "";
-
-    // 2. Get all problems in the same round.
-    const roundQuestions = await Question.find({ difficulty: problemDifficulty }).select("_id");
-    const roundQuestionIds: string[] = roundQuestions.map((q: any) => q._id.toString());
-
-    // 3. Old credited score: score of the most recently graded submission across
-    //    all round problems for this team. The current submission is still "Pending"
-    //    so it is automatically excluded.
-    const prevGradedSubs = await Submission.find({
+    // 1. Old credited score: score of the most recently graded submission for
+    //    THIS specific problem by THIS team. The current submission is still
+    //    "Pending" so it is automatically excluded.
+    const prevGradedSubsForProblem = await Submission.find({
       team_id: submission.team_id,
-      problem_id: { $in: roundQuestionIds },
+      problem_id: submission.problem_id,
       status: { $ne: "Pending" },
     }).sort({ timestamp: -1 });
 
-    const oldCreditedScore: number = prevGradedSubs.length > 0 ? (prevGradedSubs[0].score || 0) : 0;
+    const oldCreditedScore: number = prevGradedSubsForProblem.length > 0
+      ? (prevGradedSubsForProblem[0].score || 0)
+      : 0;
 
-    // 4. New credited score: strictly the score from this (now-last) submission.
+    // 2. New credited score: strictly the score from this (now-last) submission.
     const newCreditedScore: number = score;
 
     let pointsToAdd = newCreditedScore - oldCreditedScore;
