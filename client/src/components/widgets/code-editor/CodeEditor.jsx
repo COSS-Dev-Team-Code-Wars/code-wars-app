@@ -345,14 +345,13 @@ function CodeEditor() {
             <option value={pl.value} key={pl.value}>
               {pl.name}
             </option>
-          ))}
-        </select>
+          ))}        </select>
       </div>
-      <div className="container_editor_area" style={{ height: "350px", width: "100%", overflow: "hidden" }}>
+      <div className="container_editor_area" style={{ height: "350px", width: "100%", overflowY: "auto", overflowX: "hidden" }}>
         <Editor 
           placeholder="Type your code here..." 
           value={code} 
-          onValueChange={handleCodeChange} 
+          onValueChange={handleCodeChange}
           highlight={highlightCode} 
           padding={10} 
           textareaClassName="editor-textarea"
