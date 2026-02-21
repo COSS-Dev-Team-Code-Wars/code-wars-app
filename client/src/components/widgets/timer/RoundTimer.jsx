@@ -40,8 +40,7 @@ const RoundTimer = ({
 				minWidth: {minWidth},
 				alignItems: 'center',
 			}}
-		>
-			<Typography
+		>			<Typography
 				noWrap
 				color="primary.contrastText"
 				sx={{
@@ -56,7 +55,17 @@ const RoundTimer = ({
 				<span>ROUND TIMER</span>
 			</Typography>
 
-			<Typography noWrap variant="h3" {...props}>
+			<Typography 
+				noWrap 
+				variant="h3" 
+				sx={{
+					fontWeight: 900,
+					fontSize: '4.5rem',
+					color: 'primary.contrastText',
+					letterSpacing: '0.1em',
+				}}
+				{...props}
+			>
 				{seconds}
 			</Typography>
 		</Box>

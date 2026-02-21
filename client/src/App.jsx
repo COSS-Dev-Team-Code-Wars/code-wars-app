@@ -243,12 +243,11 @@ function App() {
 									setAnnouncementList={setAnnouncementList}
 								/>
 							}
-						/>
-						<Route path="admin/logs" element={ <PowerUpLogs /> } />
+						/>						<Route path="admin/logs" element={ <PowerUpLogs /> } />
 								<Route path="admin/podium" element={<TopTeamsPage />} />
 								<Route path="admin/create-team" element={<CreateTeamPage />} />
 								<Route path="admin/create-question" element={<CreateQuestionPage />} />
-						<Route path="admin/timer" element={<TimerPage />} />
+						<Route path="admin/timer" element={<TimerPage currRound={currRound} />} />
 					</Route>
 				</Routes>
 				<ToastContainerConfig />
