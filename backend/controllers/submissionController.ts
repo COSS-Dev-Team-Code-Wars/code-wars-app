@@ -208,15 +208,21 @@ const checkSubmission = async (req: Request, res: Response) => {
     if (percentage === 100) {
       multiplier = 1;
       status = "checked"; // Fully correct
+    } else if (percentage >= 81 && percentage < 100) {
+      multiplier = 0.8;
+      if (evaluation !== "Correct") evaluation = "Partially Correct";
     } else if (percentage >= 41 && percentage <= 80) {
       multiplier = 0.4;
-      if (evaluation !== "Correct") evaluation = "Partially Correct"; // Overwrite unless marked Correct manually
+      if (evaluation !== "Correct") evaluation = "Partially Correct";
     } else if (percentage >= 20 && percentage <= 40) {
       multiplier = 0.2;
       if (evaluation !== "Correct") evaluation = "Partially Correct";
+    } else if (percentage > 0 && percentage < 20) {
+      multiplier = 0.1;
+      if (evaluation !== "Correct") evaluation = "Partially Correct";
     } else {
       multiplier = 0;
-      // If < 20%, it remains "Incorrect" or whatever was passed, but score is 0
+      // 0% — no test cases passed
     }
 
     score = Math.floor(possiblePoints * multiplier);
