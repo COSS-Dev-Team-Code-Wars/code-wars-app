@@ -68,7 +68,7 @@ const setAdminCommand = async (req: Request, res: Response) => {
       // duration = 1000;
     }
     else if (newround == 'MEDIUM') {
-      duration = 60 * 45;
+      duration = 703;
     }
     else if (newround == 'WAGER') {
       duration = 60 * 15;
