@@ -56,6 +56,11 @@ const setAdminCommand = async (req: Request, res: Response) => {
     stopRoundTimer();
     // Clean up all powerups from the previous round
     await clearAllPowerups();
+    // Reset team sets when round changes
+    await Team.updateMany({}, {
+      $set: { easy_set: "c", medium_set: "c" }
+    });
+
     let duration: number;
 
     if (newround == 'EASY') {
@@ -80,6 +85,10 @@ const setAdminCommand = async (req: Request, res: Response) => {
           round = "START";
           // Clean up all powerups when the round timer naturally expires
           await clearAllPowerups();
+          // Reset team sets when timer naturally expires
+          await Team.updateMany({}, {
+            $set: { easy_set: "c", medium_set: "c" }
+          });
           console.log("Round timer ended, resetting round to START");
         });
       }, 1000);

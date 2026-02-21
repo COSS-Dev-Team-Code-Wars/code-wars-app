@@ -16,7 +16,7 @@ const getAllTeams = async (req: Request, res: Response) => {
         return res.send({
             success: true,
             teams: results
-        }); 
+        });
     } catch (error) {
         return res.send({
             success: false,
@@ -37,7 +37,7 @@ const getTeamDetailsById = async (req: Request, res: Response) => {
         return res.send({
             success: true,
             team: results
-        }); 
+        });
     } catch (error) {
         return res.send({
             success: false,
@@ -56,7 +56,7 @@ const getTeamSets = async (req: Request, res: Response) => {
             success: true,
             easy_set: results.easy_set,
             medium_set: results.medium_set
-        }); 
+        });
     } catch (error) {
         return res.send({
             success: false,
@@ -65,4 +65,36 @@ const getTeamSets = async (req: Request, res: Response) => {
     }
 }
 
-export { getAllTeams, getTeamDetailsById, getTeamSets };
+const setTeamSet = async (req: Request, res: Response) => {
+    try {
+        const team = await Team.findById(req.body.teamId);
+        const { difficulty, problemSet } = req.body;
+
+        let updated = false;
+        if (difficulty?.toLowerCase() === 'easy' && team.easy_set === 'c') {
+            team.easy_set = problemSet;
+            updated = true;
+        } else if (difficulty?.toLowerCase() === 'medium' && team.medium_set === 'c') {
+            team.medium_set = problemSet;
+            updated = true;
+        }
+
+        if (updated) {
+            await team.save();
+        }
+
+        return res.send({
+            success: true,
+            easy_set: team.easy_set,
+            medium_set: team.medium_set,
+            updated
+        });
+    } catch (error) {
+        return res.send({
+            success: false,
+            message: error
+        });
+    }
+}
+
+export { getAllTeams, getTeamDetailsById, getTeamSets, setTeamSet };
