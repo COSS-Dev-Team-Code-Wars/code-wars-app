@@ -144,6 +144,9 @@ function CodeEditor() {
   // Handles code submission
   const handleSubmitCode = async () => {
     try {
+      // Lock the team into this set once they press Submit
+      await handleSetTeamSet();
+
       const { question } = await postFetch(`${baseURL}/viewquestioncontent`, { problemId: id, teamId: user._id });
       const body = {
         filename: `${user.username}-${question.title}${language.extension}`,
@@ -204,9 +207,6 @@ function CodeEditor() {
     try {
       setIsRunning(true);
       setRunResult(null);
-
-      // Lock the team into this set once they press Run
-      await handleSetTeamSet();
 
       if (testAgainstCustomInput) {
         const languageConfig = programmingLanguages.find(
