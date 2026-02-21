@@ -173,11 +173,40 @@ function CodeEditor() {
     }
   };
 
+  // Set team set helper
+  const handleSetTeamSet = async () => {
+    try {
+      const { question } = await postFetch(`${baseURL}/viewquestioncontent`, { problemId: id, teamId: user._id });
+      if (['easy', 'medium'].includes(question.difficulty?.toLowerCase())) {
+        const res = await fetch(`${baseURL}/setteamset`, {
+          method: "POST",
+          headers: { "Content-type": "application/json" },
+          body: JSON.stringify({
+            teamId: user._id,
+            difficulty: question.difficulty,
+            problemSet: question.set
+          }),
+        });
+        const data = await res.json();
+        if (data.updated) {
+          user.easy_set = data.easy_set;
+          user.medium_set = data.medium_set;
+          localStorage.setItem("user", JSON.stringify(user));
+        }
+      }
+    } catch (err) {
+      console.error("Error setting team set", err);
+    }
+  };
+
   // Handles running code with custom input
   const handleRunCustomInput = async () => {
     try {
       setIsRunning(true);
       setRunResult(null);
+
+      // Lock the team into this set once they press Run
+      await handleSetTeamSet();
 
       if (testAgainstCustomInput) {
         const languageConfig = programmingLanguages.find(
@@ -333,7 +362,7 @@ function CodeEditor() {
     } finally {
       setIsRunning(false);
     }
-  };  const CODE_EDITOR_HEIGHT = 550;
+  }; const CODE_EDITOR_HEIGHT = 550;
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px", width: "100%", overflow: "hidden" }}>
       <div style={{ marginBottom: "10px" }}>
@@ -348,20 +377,20 @@ function CodeEditor() {
           ))}        </select>
       </div>
       <div className="container_editor_area" style={{ height: "350px", width: "100%", overflowY: "auto", overflowX: "hidden" }}>
-        <Editor 
-          placeholder="Type your code here..." 
-          value={code} 
+        <Editor
+          placeholder="Type your code here..."
+          value={code}
           onValueChange={handleCodeChange}
-          highlight={highlightCode} 
-          padding={10} 
+          highlight={highlightCode}
+          padding={10}
           textareaClassName="editor-textarea"
           preClassName="editor-pre"
-          className={`container__editor${isFlipped && !isImmune ? ' flipped' : ''}`} 
-          onKeyDown={handleFrostyHandsKeyDown} 
-          style={{ 
+          className={`container__editor${isFlipped && !isImmune ? ' flipped' : ''}`}
+          onKeyDown={handleFrostyHandsKeyDown}
+          style={{
             minHeight: "100%",
             fontFamily: "'Fira code', 'Fira Mono', Consolas, Menlo, Courier, monospace"
-          }} 
+          }}
           textareaId="code-editor-textarea"
         />
       </div>

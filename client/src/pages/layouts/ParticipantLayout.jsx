@@ -435,10 +435,25 @@ const ParticipantLayout = ({
 				id: user._id
 			});
 
+			// Filter out questions with a different set if the team already has a set locked in
+			const teamEasySet = tResponse.easy_set;
+			const teamMediumSet = tResponse.medium_set;
+
+			const filteredQuestions = qResponse.questions.filter((question) => {
+				const diff = question.difficulty?.toLowerCase();
+				if (diff === 'easy' && teamEasySet && teamEasySet !== 'c' && question.set !== teamEasySet) {
+					return false;
+				}
+				if (diff === 'medium' && teamMediumSet && teamMediumSet !== 'c' && question.set !== teamMediumSet) {
+					return false;
+				}
+				return true;
+			});
+
 			let questionsList = [];
 
 			await Promise.all(
-				qResponse.questions.map(async (question) => {
+				filteredQuestions.map(async (question) => {
 					const qeResponse = await postFetch(`${baseURL}/getlastsubmissionbyteam`, {
 						problemId: question._id,
 						teamId: user._id
@@ -591,228 +606,228 @@ const ParticipantLayout = ({
 				</div>
 
 				// if user is logged in as participant
-				: isLoggedIn ?					<>
-						<Stack style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
-							{location.pathname === '/participant/view-all-problems' ?
+				: isLoggedIn ? <>
+					<Stack style={{ minHeight: "100%", display: "flex", flexDirection: "column" }}>
+						{location.pathname === '/participant/view-all-problems' ?
+							<TopBar
+								isImg={true}
+								icon={seal}
+								title="Code Wars"
+								subtitle="UPLB Computer Science Society"
+								additionalButtonIcon={<ListIcon />}
+								additionalButtonText="Submission Log"
+								handleAdditionalButton={handleSubmissionLog}
+								handleClick={handleOpenAnnouncement}
+								hasNewUpdate={hasNewUpdate}
+							/>
+							: location.pathname === '/participant/view-submission-log' ?
 								<TopBar
 									isImg={true}
 									icon={seal}
 									title="Code Wars"
 									subtitle="UPLB Computer Science Society"
-									additionalButtonIcon={<ListIcon />}
-									additionalButtonText="Submission Log"
-									handleAdditionalButton={handleSubmissionLog}
+									buttonText="back"
+									handleButton={handleReturn}
+								/>
+								:
+								<TopBar
+									isImg={false}
+									icon={
+										<IconButton sx={{ color: '#fff' }} onClick={handleReturn}>
+											<ArrowBackIcon
+												sx={{
+													fontSize: '2rem',
+													cursor: 'pointer',
+													padding: 1.5,
+													borderRadius: 2,
+													'&:hover': {
+														backgroundColor: 'rgba(201, 209, 231, 0.1)',
+														color: 'major.main',
+													}
+												}}
+											/>
+										</IconButton>
+									}
+									title={problemTitle}
+									subtitle={problemSubtitle}
+									additionalButtonIcon={<ShoppingBasketIcon />}
+									additionalButtonText="BUY POWER-UP"
+									handleAdditionalButton={handleViewPowerUps}
+									additionalButtonDisabled={roundsDisablePowerUps.includes(currRound.toLowerCase()) && !isBuyImmunityChecked}
+									buttonText="UPLOAD SUBMISSION"
+									startIcon={<FileUploadIcon />}
+									handleButton={handleButton}
 									handleClick={handleOpenAnnouncement}
 									hasNewUpdate={hasNewUpdate}
-								/>
-								: location.pathname === '/participant/view-submission-log' ?
-									<TopBar
-										isImg={true}
-										icon={seal}
-										title="Code Wars"
-										subtitle="UPLB Computer Science Society"
-										buttonText="back"
-										handleButton={handleReturn}
-									/>
-									:
-									<TopBar
-										isImg={false}
-										icon={
-											<IconButton sx={{ color: '#fff' }} onClick={handleReturn}>
-												<ArrowBackIcon
-													sx={{
-														fontSize: '2rem',
-														cursor: 'pointer',
-														padding: 1.5,
-														borderRadius: 2,
-														'&:hover': {
-															backgroundColor: 'rgba(201, 209, 231, 0.1)',
-															color: 'major.main',
-														}
-													}}
-												/>
-											</IconButton>
-										}
-										title={problemTitle}
-										subtitle={problemSubtitle}
-										additionalButtonIcon={<ShoppingBasketIcon />}
-										additionalButtonText="BUY POWER-UP"
-										handleAdditionalButton={handleViewPowerUps}
-										additionalButtonDisabled={roundsDisablePowerUps.includes(currRound.toLowerCase()) && !isBuyImmunityChecked}
-										buttonText="UPLOAD SUBMISSION"
-										startIcon={<FileUploadIcon />}
-										handleButton={handleButton}
-										handleClick={handleOpenAnnouncement}
-										hasNewUpdate={hasNewUpdate}
-										disabledState={
-											currRound.toLowerCase() == 'wager' ?
-												evaluation != 'No Submission' :
-												['Pending', 'Correct'].includes(evaluation)
-										}
-									/>							}							
-							
+									disabledState={
+										currRound.toLowerCase() == 'wager' ?
+											evaluation != 'No Submission' :
+											['Pending', 'Correct'].includes(evaluation)
+									}
+								/>}
+
+						<Box
+							gap={2}
+							sx={{
+								display: 'flex',
+								minHeight: "100%",
+								overflow: 'auto',
+								flexDirection: {
+									xs: 'column',
+									xl: 'row'
+								},
+							}}
+						>
+
+							{/* Mobile View for laederboard, round timer, sponsor carousel */}
 							<Box
-								gap={2}
 								sx={{
-									display: 'flex',
-									minHeight: "100%",
-									overflow: 'auto',
-									flexDirection: {
-										xs: 'column',
-										xl: 'row'
+									mt: 4,
+									mx: 8,
+									minWidth: 325,
+									display: {
+										xs: 'flex', xl: 'none'
+									},
+									flexDirection: 'row',
+									gap: 7,
+									alignItems: {
+										xs: 'center',
+									},
+									justifyContent: {
+										xs: 'center'
 									},
 								}}
 							>
-
-								{/* Mobile View for laederboard, round timer, sponsor carousel */}
+								{/* Round Timer and Leaderboard Button */}
 								<Box
 									sx={{
-										mt: 4,
-										mx: 8,
-										minWidth: 325,
-										display: {
-											xs: 'flex', xl: 'none'
+										gap: 5,
+										display: 'flex',
+										justifyContent: 'center',
+										flexDirection: {
+											xs: 'column',
+											lg: 'column',
 										},
-										flexDirection: 'row',
-										gap: 7,
-										alignItems: {
-											xs: 'center',
-										},
-										justifyContent: {
-											xs: 'center'
-										},
-									}}
-								>
-									{/* Round Timer and Leaderboard Button */}
-									<Box
-										sx={{
-											gap: 5,
-											display: 'flex',
-											justifyContent: 'center',
-											flexDirection: {
-												xs: 'column',
-												lg: 'column',
-											},
-										}}
-									>
-										<RoundTimer fontSize='1.4rem' minWidth='325px' />
-										<Button
-											variant="contained"
-											color="major"
-											onClick={handleOpenLeaderboard}
-											sx={{
-												maxHeight: '5vh',
-												minWidth: 30,
-												'&:hover': {
-													bgcolor: 'major.light',
-													color: 'general.main',
-												},
-												'&:disabled': {
-													bgcolor: 'major.light',
-													color: 'major.contrastText'
-												}
-											}}
-										>
-											Overall Leaderboard
-										</Button>
-									</Box>
-
-									{/* Sponsors Carousel */}
-									<Box sx={{ width: '100%', display: { xs: 'none', md: 'initial' } }}>
-										<SponsorCarousel />
-									</Box>
-								</Box>
-
-								{/* Desktop View -- container for components on the left */}
-								<Stack
-									spacing={3}
-									sx={{
-										mt: 4,
-										mx: 8,
-										minWidth: 325,
-										display: {
-											xs: 'none', xl: 'flex'
-										}
 									}}
 								>
 									<RoundTimer fontSize='1.4rem' minWidth='325px' />
-									<ParticipantsLeaderboard rows={rowsLeaderboard} columns={columnsLeaderboard} />
-									<SponsorCarousel />
-								</Stack>
+									<Button
+										variant="contained"
+										color="major"
+										onClick={handleOpenLeaderboard}
+										sx={{
+											maxHeight: '5vh',
+											minWidth: 30,
+											'&:hover': {
+												bgcolor: 'major.light',
+												color: 'general.main',
+											},
+											'&:disabled': {
+												bgcolor: 'major.light',
+												color: 'major.contrastText'
+											}
+										}}
+									>
+										Overall Leaderboard
+									</Button>
+								</Box>
 
-								{/* Other components */}
-								<Outlet
-									context={{
-										teamInfo: teamDetails,
-										setTeamInfo: setTeamDetails,
-										problemDesc: problemDescription,
-										sampleTestCases: [],
-										fetchContent: getQuestionContent,
-										currQuestions: currQuestions,
-										setCurrQuestions: setCurrQuestions,
-										getRoundQuestions: getRoundQuestions,
-										problem: problem
-									}}
+								{/* Sponsors Carousel */}
+								<Box sx={{ width: '100%', display: { xs: 'none', md: 'initial' } }}>
+									<SponsorCarousel />
+								</Box>
+							</Box>
+
+							{/* Desktop View -- container for components on the left */}
+							<Stack
+								spacing={3}
+								sx={{
+									mt: 4,
+									mx: 8,
+									minWidth: 325,
+									display: {
+										xs: 'none', xl: 'flex'
+									}
+								}}
+							>
+								<RoundTimer fontSize='1.4rem' minWidth='325px' />
+								<ParticipantsLeaderboard rows={rowsLeaderboard} columns={columnsLeaderboard} />
+								<SponsorCarousel />
+							</Stack>
+
+							{/* Other components */}
+							<Outlet
+								context={{
+									teamInfo: teamDetails,
+									setTeamInfo: setTeamDetails,
+									problemDesc: problemDescription,
+									sampleTestCases: [],
+									fetchContent: getQuestionContent,
+									currQuestions: currQuestions,
+									setCurrQuestions: setCurrQuestions,
+									getRoundQuestions: getRoundQuestions,
+									problem: problem
+								}}
+							/>
+						</Box>
+					</Stack>
+
+					{/* Buy Power-ups Popover */}
+					{location.pathname === '/participant/view-specific-problem' ?
+						<ClickAwayListener mouseEvent="onMouseUp" onClickAway={handleClickAway}>
+							{/* Wrapping button and popover in Box for clickaway ref */}
+							<Box>
+								<BuyPowerUpsPopover
+									isOpen={openPopover}
+									setOpen={setOpenPopover}
+									isBuyImmunityChecked={isBuyImmunityChecked}
+									buffsState={[showBuffs, setShowBuffs]}
+									debuffsState={[showDebuffs, setShowDebuffs]}
+									detailsState={[seeDetails, setSeeDetails]}
+									powerUpState={[selectedPowerUp, setSelectedPowerUp]}
 								/>
 							</Box>
-						</Stack>
+						</ClickAwayListener>
+						: null
+					}
 
-						{/* Buy Power-ups Popover */}
-						{location.pathname === '/participant/view-specific-problem' ?
-							<ClickAwayListener mouseEvent="onMouseUp" onClickAway={handleClickAway}>
-								{/* Wrapping button and popover in Box for clickaway ref */}
-								<Box>
-									<BuyPowerUpsPopover
-										isOpen={openPopover}
-										setOpen={setOpenPopover}
-										isBuyImmunityChecked={isBuyImmunityChecked}
-										buffsState={[showBuffs, setShowBuffs]}
-										debuffsState={[showDebuffs, setShowDebuffs]}
-										detailsState={[seeDetails, setSeeDetails]}
-										powerUpState={[selectedPowerUp, setSelectedPowerUp]}
+					{/* Overall Leaderboard Modal Window */}
+					<LeaderboardModal
+						isOpen={openLeaderboard}
+						setOpen={setOpenLeaderboard}
+						rows={leaderboardRows}
+					/>
+
+					{/* Announcement Modal Window */}
+					<AnnouncementModal
+						isOpen={openAnnouncement}
+						setOpen={setOpenAnnouncement}
+						announcements={currAnnouncements}
+					/>
+
+					{/* Submit Modal Window */}
+					{location.pathname === '/participant/view-specific-problem' ?
+						<>
+							{problem ?
+								<CustomModal isOpen={openModal} setOpen={setOpenModal} windowTitle="Upload your answer">
+									<SubmitModal
+										setOpen={setOpenModal}
+										problemId={problem._id}
+										problemTitle={problem.title}
+										possiblePoints={problem.points}
+										totalCases={problem.total_cases}
+										problemSet={problem.set}
+										difficulty={problem.difficulty}
+										currRound={currRound}
+										setEvaluation={setEvaluation}
 									/>
-								</Box>
-							</ClickAwayListener>
-							: null
-						}
-
-						{/* Overall Leaderboard Modal Window */}
-						<LeaderboardModal
-							isOpen={openLeaderboard}
-							setOpen={setOpenLeaderboard}
-							rows={leaderboardRows}
-						/>
-
-						{/* Announcement Modal Window */}
-						<AnnouncementModal
-							isOpen={openAnnouncement}
-							setOpen={setOpenAnnouncement}
-							announcements={currAnnouncements}
-						/>
-
-						{/* Submit Modal Window */}
-						{location.pathname === '/participant/view-specific-problem' ?
-							<>
-								{problem ?
-									<CustomModal isOpen={openModal} setOpen={setOpenModal} windowTitle="Upload your answer">
-										<SubmitModal
-											setOpen={setOpenModal}
-											problemId={problem._id}
-											problemTitle={problem.title}
-											possiblePoints={problem.points}
-											totalCases={problem.total_cases}
-											problemSet={problem.set}
-											difficulty={problem.difficulty}
-											currRound={currRound}
-											setEvaluation={setEvaluation}
-										/>
-									</CustomModal>
-									: null
-								}
-							</>
-							: null
-						}
-					</>
+								</CustomModal>
+								: null
+							}
+						</>
+						: null
+					}
+				</>
 
 					// replace with protected page sana
 					: <LoadingOverlay />
